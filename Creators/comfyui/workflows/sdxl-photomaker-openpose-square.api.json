@@ -1,0 +1,142 @@
+{
+  "3": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL\\sd_xl_base_1.0.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "PhotoMakerLoader",
+    "inputs": {
+      "photomaker_model_name": "photomaker-v1.bin"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "gwenevere-face-clean-square-reference.png"
+    }
+  },
+  "6": {
+    "class_type": "PhotoMakerEncode",
+    "inputs": {
+      "photomaker": [
+        "4",
+        0
+      ],
+      "image": [
+        "5",
+        0
+      ],
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "full body photomaker woman, teal medieval gown"
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "close up, portrait, cropped feet, cropped head, bad anatomy, extra limbs, extra feet, text, watermark"
+    }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "9": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 123456789,
+      "steps": 36,
+      "cfg": 5.5,
+      "sampler_name": "dpmpp_2m_sde_gpu",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "3",
+        0
+      ],
+      "positive": [
+        "14",
+        0
+      ],
+      "negative": [
+        "14",
+        1
+      ],
+      "latent_image": [
+        "8",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "9",
+        0
+      ],
+      "vae": [
+        "3",
+        2
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "gwenevere_photomaker_openpose_square",
+      "images": [
+        "10",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "ControlNetLoader",
+    "inputs": {
+      "control_net_name": "control-lora-openposeXL2-rank256.safetensors"
+    }
+  },
+  "13": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "standing-full-body-openpose-square.png"
+    }
+  },
+  "14": {
+    "class_type": "ControlNetApplyAdvanced",
+    "inputs": {
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "control_net": [
+        "12",
+        0
+      ],
+      "image": [
+        "13",
+        0
+      ],
+      "strength": 0.85,
+      "start_percent": 0,
+      "end_percent": 0.9
+    }
+  }
+}

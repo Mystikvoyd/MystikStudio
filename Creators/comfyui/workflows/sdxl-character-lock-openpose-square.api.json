@@ -1,0 +1,267 @@
+{
+  "3": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL\\sd_xl_base_1.0.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "PhotoMakerLoader",
+    "inputs": {
+      "photomaker_model_name": "photomaker-v1.bin"
+    }
+  },
+  "5": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "gwenevere-face-clean-square-reference.png"
+    }
+  },
+  "6": {
+    "class_type": "PhotoMakerEncode",
+    "inputs": {
+      "photomaker": [
+        "4",
+        0
+      ],
+      "image": [
+        "5",
+        0
+      ],
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "full body photomaker woman, teal medieval gown"
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "close up, portrait, bad anatomy, extra limbs, extra feet, text, watermark"
+    }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    }
+  },
+  "9": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 123456789,
+      "steps": 38,
+      "cfg": 5.2,
+      "sampler_name": "dpmpp_2m_sde_gpu",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "23",
+        0
+      ],
+      "positive": [
+        "14",
+        0
+      ],
+      "negative": [
+        "14",
+        1
+      ],
+      "latent_image": [
+        "8",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "9",
+        0
+      ],
+      "vae": [
+        "3",
+        2
+      ]
+    }
+  },
+  "11": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "gwenevere_character_lock_square",
+      "images": [
+        "10",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "ControlNetLoader",
+    "inputs": {
+      "control_net_name": "control-lora-openposeXL2-rank256.safetensors"
+    }
+  },
+  "13": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "standing-full-body-openpose-square.png"
+    }
+  },
+  "14": {
+    "class_type": "ControlNetApplyAdvanced",
+    "inputs": {
+      "positive": [
+        "25",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "control_net": [
+        "12",
+        0
+      ],
+      "image": [
+        "13",
+        0
+      ],
+      "strength": 0.9,
+      "start_percent": 0,
+      "end_percent": 0.9
+    }
+  },
+  "15": {
+    "class_type": "IPAdapterModelLoader",
+    "inputs": {
+      "ipadapter_file": "ip-adapter-plus-face_sdxl_vit-h.safetensors"
+    }
+  },
+  "16": {
+    "class_type": "CLIPVisionLoader",
+    "inputs": {
+      "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+    }
+  },
+  "17": {
+    "class_type": "PrepImageForClipVision",
+    "inputs": {
+      "image": [
+        "5",
+        0
+      ],
+      "interpolation": "LANCZOS",
+      "crop_position": "center",
+      "sharpening": 0.05
+    }
+  },
+  "18": {
+    "class_type": "IPAdapterAdvanced",
+    "inputs": {
+      "model": [
+        "3",
+        0
+      ],
+      "ipadapter": [
+        "15",
+        0
+      ],
+      "image": [
+        "17",
+        0
+      ],
+      "weight": 0.65,
+      "weight_type": "strong middle",
+      "combine_embeds": "concat",
+      "start_at": 0,
+      "end_at": 1,
+      "embeds_scaling": "K+V",
+      "clip_vision": [
+        "16",
+        0
+      ]
+    }
+  },
+  "19": {
+    "class_type": "IPAdapterModelLoader",
+    "inputs": {
+      "ipadapter_file": "ip-adapter-plus_sdxl_vit-h.safetensors"
+    }
+  },
+  "20": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "gwenevere-full-body-retouched-square-reference.png"
+    }
+  },
+  "21": {
+    "class_type": "PrepImageForClipVision",
+    "inputs": {
+      "image": [
+        "20",
+        0
+      ],
+      "interpolation": "LANCZOS",
+      "crop_position": "center",
+      "sharpening": 0
+    }
+  },
+  "23": {
+    "class_type": "IPAdapterAdvanced",
+    "inputs": {
+      "model": [
+        "18",
+        0
+      ],
+      "ipadapter": [
+        "19",
+        0
+      ],
+      "image": [
+        "21",
+        0
+      ],
+      "weight": 0.18,
+      "weight_type": "strong middle",
+      "combine_embeds": "concat",
+      "start_at": 0,
+      "end_at": 0.95,
+      "embeds_scaling": "K+V",
+      "clip_vision": [
+        "16",
+        0
+      ]
+    }
+  },
+  "24": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "full body dark fantasy character scene"
+    }
+  },
+  "25": {
+    "class_type": "ConditioningCombine",
+    "inputs": {
+      "conditioning_1": [
+        "6",
+        0
+      ],
+      "conditioning_2": [
+        "24",
+        0
+      ]
+    }
+  }
+}

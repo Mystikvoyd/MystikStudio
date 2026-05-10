@@ -1,0 +1,9 @@
+# Non-code directories
+/book-design/
+/Icons/
+
+# Runtime data
+*.prefs.json
+*.runlog.json
+*-err.log
+*-out.log

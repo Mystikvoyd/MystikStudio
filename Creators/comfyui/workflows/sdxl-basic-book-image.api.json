@@ -1,0 +1,86 @@
+{
+  "3": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL\\Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "full body character portrait, cinematic dark fantasy realism, photorealistic, RAW photo, natural skin texture, sharp focus, highly detailed face, natural anatomy, detailed fantasy costume, dramatic rim lighting"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "3",
+        1
+      ],
+      "text": "low quality, blurry, bad anatomy, deformed body, extra limbs, extra fingers, fused fingers, mutated hands, bad hands, bad feet, floating limbs, disconnected limbs, duplicate person, cloned face, ugly face, disfigured face, poorly drawn face, bad proportions, out of frame, cropped head, cropped feet, text, watermark, logo, cartoon, anime, cgi, render, 3d, airbrushed, plastic skin, waxy skin, overexposed, nsfw"
+    }
+  },
+  "6": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 1024,
+      "height": 1280,
+      "batch_size": 1
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 123456789,
+      "steps": 35,
+      "cfg": 7.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "3",
+        0
+      ],
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "latent_image": [
+        "6",
+        0
+      ]
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "7",
+        0
+      ],
+      "vae": [
+        "3",
+        2
+      ]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "lora_test",
+      "images": [
+        "8",
+        0
+      ]
+    }
+  }
+}

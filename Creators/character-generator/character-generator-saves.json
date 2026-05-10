@@ -1,0 +1,35 @@
+﻿{
+    "version":  1,
+    "saves":  [
+                  {
+                      "id":  "5c0ddc0ef7164ebda3585605839c6b81",
+                      "name":  "Gwenevere - Standing Full Body - Dark Royal Hall - 2026-05-07 0111",
+                      "characterId":  "gwenevere",
+                      "characterName":  "Gwenevere",
+                      "poseId":  "standing",
+                      "poseName":  "Standing Full Body",
+                      "sceneId":  "dark_royal_hall",
+                      "sceneName":  "Dark Royal Hall",
+                      "prompt":  "Create a full body head-to-toe dark mythic fantasy character design of Gwenevere, the Maiden, at the beginning of Book 1 before the Fool finds her.\r\n\r\nShe is a fully clothed adult young woman with fair light skin, natural freckles, visible realistic green eyes, and a gentle wounded but composed expression. She is beautiful, deeply kind, dignified, emotionally vulnerable, and human first. She should not look like a queen, warrior, noble ruler, pampered princess, fashion model, seductress, or fantasy pinup. She should look like a good woman being displayed by a vain male kingdom that wants to possess her but does not truly cherish or protect her.\r\n\r\nHer face is soft, feminine, and natural. Realistic skin texture, subtle tiredness around the eyes, gentle lips, quiet sadness, restraint, and endurance. Her green eyes should be visible but not glowing. Her expression should feel emotionally isolated, not flirtatious, not confident, not seductive.\r\n\r\nHer hair is locked: long dark brown wavy hair with natural volume, a loose side braid falling over one shoulder, soft loose strands around the face, romantic but imperfect, slightly undone from stress and wear. The hair should not be blonde, black, overly styled, stiff, modern, or salon-perfect.\r\n\r\nHer body is a graceful adult feminine form with a slim-to-medium frame, narrow defined waist, gentle hip curve, natural softness, graceful arms, graceful legs, and balanced proportions. She should not look fat, bulky, broad, thick-waisted, childlike, athletic-warrior built, or exaggerated.\r\n\r\nHer bust should match size 5 from the provided chest reference chart. The bust should be visibly fuller than average and clearly fuller than size 2 or 3, with natural lifted volume under the gown. It should shape the bodice through tailoring, fabric tension, soft shadow, and curved cloth structure. The bust should not look flat, compressed, minimized, or hidden. It should also not be oversized, spilling out, absurd, nude, or eroticized.\r\n\r\nShe wears the locked Hall of Kings display gown. The gown uses her chosen colors: muted aqua, teal, seafoam, soft pink, and silver. The color palette should be elegant, feminine, soft, and slightly sorrowful. The cut of the gown should feel like it was chosen by a vain possessive man who wants her displayed.\r\n\r\nThe gown has bare shoulders, a formal court neckline, a fitted structured bodice, flowing layered skirt fabric, soft pink inner skirt panels, delicate gold chainwork, and an elegant front movement slit rising to the thigh. The slit should be visible but tasteful, part of the display design, not vulgar. The dress should not drag heavily on the ground. Delicate shoes should be visible.\r\n\r\nThe bodice must be fully lined, opaque, smooth, secure, and court appropriate. The upper dress must not be transparent. There should be no visible nipples, no nipple outline, no poke-through, no see-through chest fabric, and no intimate detail. The feminine shape should come from structure, tailoring, shadow, fabric folds, and fitted construction, not from exposed skin or transparent material.\r\n\r\nAdd one ornate gold Hall clasp at the waist or center of the gown. It should look beautiful but possessive, like a token placed on her by someone else. Do not add random pouches, side bags, black pouches, armlets, bracelets, or extra accessories. If including the Mercy pouch, make it extremely subtle, hidden near her heart under dress folds or chainwork, not black, not obvious, not hanging at the side.\r\n\r\nShe should look claimed but not kept. Show beauty without true care: faint wear at the hem, delicate shoes unsuited for hard travel, ceremonial tailoring made for display over comfort, restrained posture, slight guardedness in her hands, and an emotionally isolated presence.\r\n\r\nComposition: full body character concept art, head to toe, entire head visible, entire feet visible, centered standing pose, clear silhouette, no cropped face, no cropped feet, no half-body framing. Use a plain simple studio background or minimal dark fantasy backdrop so the character remains the focus.\r\n\r\nStyle: cinematic dark fantasy realism, painterly realistic concept art, polished art director quality, detailed fabric, natural skin texture, expressive eyes, realistic cloth folds, soft dramatic lighting, elegant but tragic character design.\r\n",
+                      "negativePrompt":  "erotic pose, sexualized expression, transparent bodice, visible intimate detail, nipple detail, pinup styling, exaggerated anatomy, flat chest, compressed bust, fat body, bulky body, broad body, thick waist, childlike body, queen crown, armor, modern fashion, anime, cartoon, plastic skin, glamour model confidence, heavy scenery, crowd, throne, glowing eyes, magical effects, bright cheerful lighting, random side pouch, black pouch, armlets, bracelets.",
+                      "prefix":  "book_character",
+                      "batchSize":  1,
+                      "steps":  42,
+                      "cfg":  4.8,
+                      "poseStrength":  0.65,
+                      "faceWeight":  0.68,
+                      "outfitWeight":  0.08,
+                      "generationMode":  "Prompt Freedom",
+                      "identityLoraName":  "Gwenevere_V0-1.safetensors",
+                      "identityLoraStrength":  0.6,
+                      "clothingLoraName":  "None",
+                      "clothingLoraStrength":  0.7,
+                      "realmLoraName":  "None",
+                      "realmLoraStrength":  0.5,
+                      "qualityLoraName":  "None",
+                      "qualityLoraStrength":  0.35,
+                      "createdAt":  "2026-05-07T01:17:01.5572220-07:00",
+                      "updatedAt":  "2026-05-07T01:17:01.5572220-07:00"
+                  }
+              ]
+}
