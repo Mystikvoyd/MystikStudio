@@ -173,7 +173,7 @@ $script:y = 16  # top margin to prevent header cutoff
 # Header
 # -------------------------------------------------------------------
 $hdr = New-Object System.Windows.Forms.Panel
-$hdr.Height = 64; $hdr.Left = 0; $hdr.Top = $script:y
+$hdr.Height = 72; $hdr.Left = 0; $hdr.Top = $script:y
 $hdr.Anchor = "Top, Left, Right"
 $hdr.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
 
@@ -197,11 +197,11 @@ $hdr.Controls.Add($titleLbl)
 $subLbl = New-Object System.Windows.Forms.Label
 $subLbl.Text = "Modular Creative Toolkit"
 $subLbl.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
-$subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 30
+$subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 38
 $hdr.Controls.Add($subLbl)
 
 $rp.Controls.Add($hdr)
-$script:y += 72
+$script:y += 80
 
 # -------------------------------------------------------------------
 # 2-column panel layout

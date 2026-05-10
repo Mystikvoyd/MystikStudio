@@ -79,6 +79,9 @@ Include debugging findings, logs, evidence.
 How the issue was fixed or the task completed.
 Technical details, approach taken, tradeoffs considered.
 
+**Commit:** `abc1234`  
+**Repo:** https://github.com/Mystikvoyd/MystikStudio/commit/abc1234
+
 ## Workaround
 
 If a temporary workaround exists while the ticket is open, document it here.
