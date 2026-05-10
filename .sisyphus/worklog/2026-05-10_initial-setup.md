@@ -11,7 +11,7 @@ LLM sessions can pick up without chat history.
 - Wrote `.sisyphus/CURSOR.md` — current state of the project
 - Wrote `.sisyphus/TASKS.md` — initial task queue
 - Created `tickets/README.md` — basic ticket format + lifecycle
-- Created `TICKET-001_initial-system-setup.md` — tracking ticket
+- Created `MVS-000000001_initial-system-setup.md` — tracking ticket
 - Created first worklog entry
 - **Committed** `2e12472` — pushed to `origin/master`
 
@@ -19,7 +19,7 @@ LLM sessions can pick up without chat history.
 - User requested IT-style ticket system with full fields (type, priority,
   severity, component, environment, labels, RCA, workaround, link chains)
 - Rewrote `tickets/README.md` with comprehensive template showing all fields
-- Rewrote `TICKET-001_initial-system-setup.md` to use the full IT format
+- Rewrote `MVS-000000001_initial-system-setup.md` to use the full IT format
 - Updated `.sisyphus/README.md` section 4 to reference the full ticket system
 
 **State of project at this point:**

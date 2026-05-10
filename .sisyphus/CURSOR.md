@@ -16,13 +16,13 @@ Dashboard now has 3 columns with 12 panels total.
 Form width expanded to 1000. Add-PanelBox now supports optional `Arguments`
 field for launching with args (VS Code, Terminal).
 
-### Completed (TICKET-004)
+### Completed (MVS-000000004)
 - 3rd column with 4 utility panels added
 - Arguments support for panel buttons
 - Form widened from 800→1000
 
 ### Remaining
-- TICKET-002: fine-tuning panel sizing/spacing if needed
+- MVS-000000002: fine-tuning panel sizing/spacing if needed
 
 ## Decisions Made
 
@@ -47,9 +47,9 @@ field for launching with args (VS Code, Terminal).
 ## Next Likely Steps
 
 1. User tests the dashboard changes
-2. Continue TICKET-002 polish items
+2. Continue MVS-000000002 polish items
 
 ## Pinned Tickets
 
-- `TICKET-001` — closed: Initialize .sisyphus context/knowledge system
-- `TICKET-002` — **open**: Dashboard UI polish pass (layout, alignment, fonts, logo, overscan)
+- `MVS-000000001` — closed: Initialize .sisyphus context/knowledge system
+- `MVS-000000002` — **open**: Dashboard UI polish pass (layout, alignment, fonts, logo, overscan)

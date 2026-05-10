@@ -15,6 +15,6 @@ from folders, add sub-section, consolidate ComfyUI.
   as the folder link color.
 - **COMFYUI section**: Simplified to just Scripts (Workflows moved to CREATORS
   FOLDERS, Output/Input already there).
-- Updated TICKET-002 with progress.
+- Updated MVS-000000002 with progress.
 
 **Commit:** `366e14d` — pushed to `origin/master`

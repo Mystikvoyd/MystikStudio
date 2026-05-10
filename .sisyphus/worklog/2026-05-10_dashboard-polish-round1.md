@@ -1,8 +1,8 @@
 # Worklog: 2026-05-10
 
-## Session 4 — Dashboard Polish Round 1 (TICKET-002)
+## Session 4 — Dashboard Polish Round 1 (MVS-000000002)
 
-**Goal:** Address first batch of dashboard polish items from TICKET-002.
+**Goal:** Address first batch of dashboard polish items from MVS-000000002.
 
 ### What was done
 
@@ -20,7 +20,7 @@
 ### State after session
 
 - Working tree: **clean**
-- TICKET-002 status: **in_progress** (first round done)
+- MVS-000000002 status: **in_progress** (first round done)
 - Remaining: fonts/colors pass, button alignment, tree usefulness question,
   missing functionality, architectural improvements
 

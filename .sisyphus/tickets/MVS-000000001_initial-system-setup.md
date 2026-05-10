@@ -1,5 +1,5 @@
 ---
-ticket_id:          TICKET-001
+ticket_id:          MVS-000000001
 title:              Initialize .sisyphus context/knowledge system
 type:               task
 priority:           high
@@ -51,7 +51,7 @@ All files committed in `2e12472` and pushed to `origin/master`.
 - `.sisyphus/CURSOR.md` — created (current state)
 - `.sisyphus/TASKS.md` — created (task queue)
 - `.sisyphus/tickets/README.md` — created (ticket system documentation)
-- `.sisyphus/tickets/TICKET-001_initial-system-setup.md` — created (this ticket)
+- `.sisyphus/tickets/MVS-000000001_initial-system-setup.md` — created (this ticket)
 - `.sisyphus/worklog/2026-05-10_initial-setup.md` — created (worklog entry)
 - `.sisyphus/plans/` — created (directory)
 

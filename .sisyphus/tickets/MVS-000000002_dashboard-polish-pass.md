@@ -1,5 +1,5 @@
 ---
-ticket_id:          TICKET-002
+ticket_id:          MVS-000000002
 title:              Dashboard UI polish pass — layout, alignment, fonts, logo, overscan
 type:               improvement
 priority:           medium

@@ -1,6 +1,6 @@
 # Worklog: 2026-05-10
 
-## Session 6 — 2-Column Panel Layout (TICKET-002)
+## Session 6 — 2-Column Panel Layout (MVS-000000002)
 
 **Goal:** Restructure right panel into 2 columns of GroupBox panels.
 

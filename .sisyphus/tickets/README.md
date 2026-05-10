@@ -8,10 +8,10 @@ Each ticket is a single `.md` file. The system mimics enterprise IT ticketing
 ## Naming Convention
 
 ```
-TICKET-NNN_kebab-case-title.md
+MVS-NNNNNNNNN_kebab-case-title.md
 ```
 
-Examples: `TICKET-042_dashboard-splitter-not-rendering.md`
+Examples: `MVS-000000042_dashboard-splitter-not-rendering.md`
 
 ---
 
@@ -19,7 +19,7 @@ Examples: `TICKET-042_dashboard-splitter-not-rendering.md`
 
 ```yaml
 ---
-ticket_id:          TICKET-NNN
+ticket_id:          MVS-NNNNNNNNN
 title:              Short descriptive title
 
 # ── Classification ──────────────────────────────────────────
@@ -92,13 +92,13 @@ If a temporary workaround exists while the ticket is open, document it here.
 
 ## Related Tickets
 
-- `relates_to`: TICKET-XXX
-- `blocks`:     TICKET-XXX
-- `blocked_by`: TICKET-XXX
-- `duplicates`: TICKET-XXX
-- `duplicated_by`: TICKET-XXX
-- `continues`:  TICKET-XXX    (this ticket picks up a closed ticket's issue)
-- `continued_in`: TICKET-XXX  (this ticket's issue was continued in a new ticket)
+- `relates_to`: MVS-NNNNNNNNN
+- `blocks`:     MVS-NNNNNNNNN
+- `blocked_by`: MVS-NNNNNNNNN
+- `duplicates`: MVS-NNNNNNNNN
+- `duplicated_by`: MVS-NNNNNNNNN
+- `continues`:  MVS-NNNNNNNNN    (this ticket picks up a closed ticket's issue)
+- `continued_in`: MVS-NNNNNNNNN  (this ticket's issue was continued in a new ticket)
 
 ## Notes / Comments
 
@@ -128,16 +128,16 @@ OPEN ──→ IN PROGRESS ──→ RESOLVED ──→ CLOSED
 When an issue reoccurs or a fix needs another iteration:
 
 1. **Close** the current ticket: set `status: closed`, fill `closed` date,
-   add `continued_in: TICKET-NNN` to frontmatter, and append to `Related Tickets`
+   add `continued_in: MVS-NNNNNNNNN` to frontmatter, and append to `Related Tickets`
 2. **Create** the new ticket with the **next sequential number**
-3. In the new ticket's frontmatter, add `continues: TICKET-XXX` and
+3. In the new ticket's frontmatter, add `continues: MVS-NNNNNNNNN` and
    duplicate the relevant context from the original
-4. The chain is: `TICKET-001 → TICKET-005 → TICKET-012`
+4. The chain is: `MVS-000000001 → MVS-000000005 → MVS-000000012`
 
 ## Ticket Number Allocation
 
 Scan the `tickets/` directory for the highest existing number. Increment by one.
 No centralized registry needed — filenames are the source of truth.
 
-Numbers are **never reused**. Once `TICKET-042` exists, it exists forever,
+Numbers are **never reused**. Once `MVS-000000042` exists, it exists forever,
 even if the ticket is closed or deleted.
