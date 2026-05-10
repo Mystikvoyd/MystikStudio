@@ -53,7 +53,7 @@ $form.Text = "MystikStudio Dashboard"
 $form.StartPosition = "CenterScreen"
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$form.ClientSize = New-Object System.Drawing.Size(800, 760)
+$form.ClientSize = New-Object System.Drawing.Size(1000, 760)
 $iconPath = Join-Path $PSScriptRoot "Icons\Mytikvoyd Studios.ico"
 if (Test-Path $iconPath) { $form.Icon = [System.Drawing.Icon]::new($iconPath) }
 
@@ -204,9 +204,10 @@ $rp.Controls.Add($hdr)
 $script:y += 80
 
 # -------------------------------------------------------------------
-# 2-column panel layout
+# 3-column panel layout
 # -------------------------------------------------------------------
-$colW = [math]::Floor(($rp.Width - 16) / 2)
+$colW = [math]::Floor(($rp.Width - 20) / 3)
+$gap = 8
 
 $col1 = New-Object System.Windows.Forms.Panel
 $col1.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
@@ -217,10 +218,17 @@ $rp.Controls.Add($col1)
 
 $col2 = New-Object System.Windows.Forms.Panel
 $col2.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$col2.Left = $colW + 10; $col2.Top = $script:y
-$col2.Width = $rp.Width - $colW - 14
-$col2.Anchor = "Top, Left, Right"
+$col2.Left = $colW + $gap + 4; $col2.Top = $script:y
+$col2.Width = $colW
+$col2.Anchor = "Top, Left"
 $rp.Controls.Add($col2)
+
+$col3 = New-Object System.Windows.Forms.Panel
+$col3.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$col3.Left = ($colW + $gap) * 2 + 4; $col3.Top = $script:y
+$col3.Width = $rp.Width - ($colW + $gap) * 2 - 8
+$col3.Anchor = "Top, Left, Right"
+$rp.Controls.Add($col3)
 
 # Panel box helper: creates a GroupBox with stacked buttons
 function Add-PanelBox {
@@ -252,7 +260,9 @@ function Add-PanelBox {
         
         if ($b.Target) {
             $t = $b.Target
+            $a = if ($b.ContainsKey('Arguments')) { $b.Arguments } else { $null }
             if ($b.Mode -eq 'url') { $btn.Add_Click({ Start-Process $t }.GetNewClosure()) }
+            elseif ($a) { $btn.Add_Click({ Start-Process -FilePath $t -ArgumentList $a }.GetNewClosure()) }
             else { $btn.Add_Click({ Start-Process -FilePath $t }.GetNewClosure()) }
         } else { $btn.Enabled = $false }
         
@@ -318,10 +328,40 @@ Add-PanelBox -Parent $col2 -Title "PROJECT  ·  MODELS" -Buttons @(
     @{Text="VAE"; Color="#373746"; Desc="VAE models"; Target="C:\Users\Michael\Documents\ComfyUI\models\vae"}
 )
 
+# ===================================================================
+# COLUMN 3 — 4 panels
+# ===================================================================
+$comfyRootPath = "C:\Users\Michael\Documents\ComfyUI"
+
+Add-PanelBox -Parent $col3 -Title "COMFYUI TOOLS" -Buttons @(
+    @{Text="Open ComfyUI";     Color="#325032"; Desc="Launch ComfyUI web UI"; Target="http://127.0.0.1:8000"; Mode="url"}
+    @{Text="ComfyUI Manager";   Color="#325032"; Desc="Open ComfyUI Manager tab"; Target="http://127.0.0.1:8000/manager"; Mode="url"}
+    @{Text="ComfyUI Folder";    Color="#463728"; Desc="Browse ComfyUI root"; Target=$comfyRootPath}
+)
+
+Add-PanelBox -Parent $col3 -Title "REPORTS & SESSION" -Buttons @(
+    @{Text="Reports Folder";    Color="#463728"; Desc="Browse all session reports"; Target="C:\Users\Michael\Documents\ComfyUI\Reports"}
+    @{Text="Session Module";    Color="#463728"; Desc="Shared session report module"; Target=(Join-Path $StudioRoot "shared")}
+    @{Text="LoRA Config";       Color="#463728"; Desc="LoRA tester configuration"; Target=(Join-Path $StudioRoot "Creators\lora-tester\lora-tester.config.json")}
+)
+
+Add-PanelBox -Parent $col3 -Title "DEVELOPMENT" -Buttons @(
+    @{Text="Open in VS Code";   Color="#2C2C32"; Desc="Open project in Visual Studio Code"; Target="code"; Arguments=$StudioRoot}
+    @{Text="Open Terminal";     Color="#2C2C32"; Desc="PowerShell at project root"; Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
+    @{Text="GitHub Issues";     Color="#24292E"; Desc="Open repo issues on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
+)
+
+Add-PanelBox -Parent $col3 -Title "BOOK RESOURCES" -Buttons @(
+    @{Text="Manuscript";        Color="#463728"; Desc="Book manuscript files"; Target=(Join-Path $StudioRoot "book-design\manuscript")}
+    @{Text="Reference";         Color="#463728"; Desc="Book reference materials"; Target=(Join-Path $StudioRoot "book-design\reference")}
+    @{Text="Assets";            Color="#463728"; Desc="Book design assets"; Target=(Join-Path $StudioRoot "book-design\assets")}
+)
+
 # Set column heights to tallest panel bottom
 $col1.Height = [math]::Max(1, $col1.Height)
 $col2.Height = [math]::Max(1, $col2.Height)
-$script:y = [math]::Max($col1.Top + $col1.Height, $col2.Top + $col2.Height) + 8
+$col3.Height = [math]::Max(1, $col3.Height)
+$script:y = [math]::Max($col1.Top + $col1.Height, [math]::Max($col2.Top + $col2.Height, $col3.Top + $col3.Height)) + 8
 
 $rp.Height = $script:y + 4
 
