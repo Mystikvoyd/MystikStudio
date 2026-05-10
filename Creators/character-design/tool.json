@@ -1,0 +1,6 @@
+{
+    "name": "Character Design",
+    "description": "Full character composition — chain multiple LoRAs (identity + body + style) for final character design",
+    "color": "#8C325A",
+    "launcher": "Open Character Design.vbs"
+}

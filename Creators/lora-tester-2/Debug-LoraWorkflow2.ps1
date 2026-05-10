@@ -1,6 +1,6 @@
-# Debug-CharacterWorkflow.ps1
+# Debug-LoraWorkflow2.ps1
 # Run this to see EXACTLY what JSON gets sent to ComfyUI when dual LoRA is enabled.
-# Usage: .\Debug-CharacterWorkflow.ps1
+# Usage: .\Debug-LoraWorkflow2.ps1
 # It will NOT actually send anything to ComfyUI - just prints the JSON so you can inspect it.
 
 param(
@@ -91,7 +91,7 @@ Write-Host ""
 # ---- Full JSON ----
 $body = [pscustomobject]@{
     prompt    = $workflow
-    client_id = "character-enhancer-debug"
+    client_id = "lora-tester-2-debug"
 } | ConvertTo-Json -Depth 100
 
 Write-Host "--- Full JSON body (check for nodes 100+101 and wiring) ---" -ForegroundColor Cyan

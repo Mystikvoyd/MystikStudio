@@ -7,10 +7,10 @@ $ErrorActionPreference = "Stop"
 
 $LoraTesterRoot     = $PSScriptRoot
 $ProjectRoot        = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$ConfigPath         = Join-Path $LoraTesterRoot "character-enhancer.config.json"
+$ConfigPath         = Join-Path $LoraTesterRoot "lora-tester-2.config.json"
 $InvokeScriptPath   = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyDualLoraTestImage.ps1"
-$PrefsPath   = Join-Path $LoraTesterRoot "character-enhancer.prefs.json"
-$RunLogPath  = Join-Path $LoraTesterRoot "character-enhancer.runlog.json"
+$PrefsPath   = Join-Path $LoraTesterRoot "lora-tester-2.prefs.json"
+$RunLogPath  = Join-Path $LoraTesterRoot "lora-tester-2.runlog.json"
 
 # Session state
 $script:SessionActive    = $false
@@ -88,7 +88,7 @@ function New-SessionReport {
     $sb        = New-Object System.Text.StringBuilder
 
     [void]$sb.Append('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">')
-    [void]$sb.Append('<title>LoRA Test Session Report</title>')
+    [void]$sb.Append('<title>Dual LoRA Test Session Report</title>')
     [void]$sb.Append('<style>')
     [void]$sb.Append('*{box-sizing:border-box;margin:0;padding:0}')
     [void]$sb.Append('body{font-family:"Segoe UI",sans-serif;background:#111116;color:#e0ddd8;padding:32px}')
@@ -137,7 +137,7 @@ function New-SessionReport {
     }
 
     [void]$sb.Append('</head><body>')
-    [void]$sb.Append('<h1>LoRA Test Session Report</h1>')
+    [void]$sb.Append('<h1>Dual LoRA Test Session Report</h1>')
 
     [void]$sb.Append('<div class="toolbar">')
     [void]$sb.Append('<div class="session-meta">Generated: ' + $timestamp + ' &nbsp;&middot;&nbsp; ' + $count + ' generation(s)')
@@ -523,7 +523,7 @@ Add-Type -AssemblyName System.Drawing
 # Form
 # ---------------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
-$form.Text          = "ComfyUI Character Enhancer"
+$form.Text          = "ComfyUI LoRA Tester 2"
 $form.Width         = 1280
 $form.Height        = 860
 $form.StartPosition = "CenterScreen"
@@ -1000,7 +1000,7 @@ $script:btnSession.Add_Click({
         $dlg                  = New-Object System.Windows.Forms.SaveFileDialog
         $dlg.Title            = "Save Session Report"
         $dlg.Filter           = "HTML file (*.html)|*.html"
-        $dlg.FileName         = "lora-session-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+        $dlg.FileName         = "lora2-session-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
         $dlg.InitialDirectory = $script:ReportsFolder
         if ($dlg.ShowDialog() -eq "OK") {
             try {

@@ -2,10 +2,10 @@ Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 
 scriptFolder = fso.GetParentFolderName(WScript.ScriptFullName)
-scriptPath = fso.BuildPath(scriptFolder, "Start-CharacterEnhancer.ps1")
+scriptPath = fso.BuildPath(scriptFolder, "Start-CharacterDesign.ps1")
 
 If Not fso.FileExists(scriptPath) Then
-    MsgBox "Cannot find Start-CharacterEnhancer.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
+    MsgBox "Cannot find Start-CharacterDesign.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
     WScript.Quit
 End If
 

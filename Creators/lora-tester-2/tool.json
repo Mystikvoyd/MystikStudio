@@ -1,0 +1,6 @@
+{
+    "name": "LoRA Tester 2",
+    "description": "Dual-LoRA testing — prompt + LoRA 1 + LoRA 2 to see combined outcomes",
+    "color": "#5A328C",
+    "launcher": "Open LoRA Tester 2.vbs"
+}
