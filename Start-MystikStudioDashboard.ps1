@@ -69,6 +69,25 @@ $split.Panel1MinSize = 120
 $split.Panel2MinSize = 350
 $split.SplitterDistance = 240
 
+# Status bar at bottom of the window
+$statusBar = New-Object System.Windows.Forms.Panel
+$statusBar.Dock = "Bottom"; $statusBar.Height = 24
+$statusBar.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
+
+$statusLbl = New-Object System.Windows.Forms.Label
+$statusLbl.Dock = "Fill"
+$statusLbl.Text = "MystikStudio  |  $(@($creatorTools).Count + @($webTools).Count) tools"
+$statusLbl.Font = New-Object System.Drawing.Font("Segoe UI", 7)
+$statusLbl.ForeColor = [System.Drawing.Color]::FromArgb(130,130,140)
+$statusLbl.TextAlign = "MiddleLeft"
+$statusLbl.Padding = New-Object System.Windows.Forms.Padding(10,0,0,0)
+$statusBar.Controls.Add($statusLbl)
+
+# Reorder: status bar first, then split fills the rest
+$form.Controls.Remove($split)
+$form.Controls.Add($statusBar)
+$form.Controls.Add($split)
+
 # ===================================================================
 # LEFT PANEL — Folder browser
 # ===================================================================
@@ -148,13 +167,13 @@ $rp.Width = $rightPanel.ClientSize.Width - 4
 $rightPanel.Controls.Add($rp)
 $rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width - 4 })
 
-$script:y = 12  # increased to prevent header cutoff under title bar
+$script:y = 16  # top margin to prevent header cutoff
 
 # -------------------------------------------------------------------
 # Header
 # -------------------------------------------------------------------
 $hdr = New-Object System.Windows.Forms.Panel
-$hdr.Height = 56; $hdr.Left = 0; $hdr.Top = $script:y
+$hdr.Height = 64; $hdr.Left = 0; $hdr.Top = $script:y
 $hdr.Anchor = "Top, Left, Right"
 $hdr.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
 
@@ -182,7 +201,7 @@ $subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 30
 $hdr.Controls.Add($subLbl)
 
 $rp.Controls.Add($hdr)
-$script:y += 64
+$script:y += 72
 
 # -------------------------------------------------------------------
 # 2-column panel layout
@@ -304,22 +323,7 @@ $col1.Height = [math]::Max(1, $col1.Height)
 $col2.Height = [math]::Max(1, $col2.Height)
 $script:y = [math]::Max($col1.Top + $col1.Height, $col2.Top + $col2.Height) + 8
 
-# -------------------------------------------------------------------
-# Footer
-# -------------------------------------------------------------------
-$sep = New-Object System.Windows.Forms.Label
-$sep.BorderStyle = "Fixed3D"; $sep.Left = 0; $sep.Top = $script:y
-$sep.Anchor = "Top, Left, Right"; $sep.Height = 2
-$rp.Controls.Add($sep); $script:y += 14
-
-$footer = New-Object System.Windows.Forms.Label
-$footer.Text = "MystikStudio  |  $(@($creatorTools).Count + @($webTools).Count) tools"
-$footer.ForeColor = [System.Drawing.Color]::FromArgb(80,80,90)
-$footer.Font = New-Object System.Drawing.Font("Segoe UI", 7)
-$footer.AutoSize = $true; $footer.Left = 8; $footer.Top = $script:y
-$rp.Controls.Add($footer)
-
-$rp.Height = $script:y + 20
+$rp.Height = $script:y + 4
 
 $form.Add_Shown({ $form.Activate() })
 [void]$form.ShowDialog()
