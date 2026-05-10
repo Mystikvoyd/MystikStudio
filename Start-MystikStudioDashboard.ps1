@@ -278,28 +278,16 @@ function Add-PanelBox {
 }
 
 # ===================================================================
-# COLUMN 1 — Character suite + Creators folders + ComfyUI + Links
+# COLUMN 1 — Character Suite + folders + ComfyUI + Links
 # ===================================================================
-$launcherTools = @($creatorTools | Where-Object { $_.Launcher })
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-$charTools = @($launcherTools | Where-Object { $_.Name -match 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
-$otherLaunchers = @($launcherTools | Where-Object { $_.Name -notmatch 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
-
-$charBtns = @()
-foreach ($t in $charTools) {
-    $charBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
-}
-
-Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons $charBtns
-
-$otherBtns = @()
-foreach ($t in $otherLaunchers) {
-    $otherBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
-}
-if ($otherBtns.Count -gt 0) {
-    Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons $otherBtns
-}
+Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons @(
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio"}
+    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge"}
+    @{Text="fusion"; Color="#8B00FF"; Desc="Character Fusion"}
+    @{Text="lab";    Color="#4169E1"; Desc="Character Lab"}
+)
 
 Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
     @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
