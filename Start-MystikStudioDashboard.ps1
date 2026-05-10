@@ -204,43 +204,6 @@ $rp.Controls.Add($hdr)
 $script:y += 72
 
 # -------------------------------------------------------------------
-# Character Suite brand bar (centered, below header)
-# -------------------------------------------------------------------
-$csBar = New-Object System.Windows.Forms.Panel
-$csBar.Height = 36; $csBar.Left = 0; $csBar.Top = $script:y
-$csBar.Anchor = "Top, Left, Right"
-$csBar.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
-
-$csData = @(
-    @{Text="Studio"; Color="#DC143C"}  # Crimson Red
-    @{Text="forge";  Color="#FF69B4"}  # Pink
-    @{Text="fusion"; Color="#8B00FF"}  # Purple
-    @{Text="lab";    Color="#4169E1"}  # Blue
-)
-$csGap = 16
-$csLabels = @()
-foreach ($c in $csData) {
-    $lbl = New-Object System.Windows.Forms.Label
-    $lbl.Text = $c.Text
-    $lbl.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-    $lbl.ForeColor = ColorFromHex $c.Color
-    $lbl.AutoSize = $true
-    $lbl.Top = 8
-    $csBar.Controls.Add($lbl)
-    $csLabels += $lbl
-}
-function Center-CSItems {
-    $tw = 0; foreach ($l in $csLabels) { $tw += $l.Width }
-    $tw += $csGap * ($csLabels.Count - 1)
-    $lx = [math]::Max(8, ($csBar.Width - $tw) / 2)
-    foreach ($l in $csLabels) { $l.Left = $lx; $lx += $l.Width + $csGap }
-}
-Center-CSItems
-$csBar.Add_Resize({ Center-CSItems })
-$rp.Controls.Add($csBar)
-$script:y += 40
-
-# -------------------------------------------------------------------
 # 3-column panel layout
 # -------------------------------------------------------------------
 $colW = [math]::Floor(($rp.Width - 20) / 3)
@@ -315,28 +278,15 @@ function Add-PanelBox {
 }
 
 # ===================================================================
-# COLUMN 1 — Character suite + Creators folders + ComfyUI + Links
+# COLUMN 1 — 4 panels
 # ===================================================================
 $launcherTools = @($creatorTools | Where-Object { $_.Launcher })
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-$charTools = @($launcherTools | Where-Object { $_.Name -match 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
-$otherLaunchers = @($launcherTools | Where-Object { $_.Name -notmatch 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
-
-$charBtns = @()
-foreach ($t in $charTools) {
-    $charBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
-}
-
-Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons $charBtns
-
-$otherBtns = @()
-foreach ($t in $otherLaunchers) {
-    $otherBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
-}
-if ($otherBtns.Count -gt 0) {
-    Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons $otherBtns
-}
+Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons @(
+    @{Text=$launcherTools[0].Name; Color=$launcherTools[0].Color; Desc=$launcherTools[0].Description; Target=$launcherTools[0].Launcher}
+    @{Text=$launcherTools[1].Name; Color=$launcherTools[1].Color; Desc=$launcherTools[1].Description; Target=$launcherTools[1].Launcher}
+)
 
 Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
     @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
@@ -353,8 +303,15 @@ Add-PanelBox -Parent $col1 -Title "LINKS" -Buttons @(
 )
 
 # ===================================================================
-# COLUMN 2 — 4 panels
+# COLUMN 2 — 5 panels (Character Suite at top center)
 # ===================================================================
+Add-PanelBox -Parent $col2 -Title "CHARACTER SUITE" -Buttons @(
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio tools"}
+    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge tools"}
+    @{Text="fusion"; Color="#8B00FF"; Desc="Character Fusion tools"}
+    @{Text="lab";    Color="#4169E1"; Desc="Character Lab tools"}
+)
+
 $webBtnList = @()
 foreach ($t in $webTools) {
     $target = if ($t.Folder) { $t.Folder } else { $t.Launcher }
