@@ -245,6 +245,7 @@ function Add-PanelBox {
     
     $box.Height = $yy + 4
     $Parent.Controls.Add($box)
+    $Parent.Height = $box.Top + $box.Height + 4
 }
 
 # ===================================================================
