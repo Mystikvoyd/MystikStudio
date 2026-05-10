@@ -53,12 +53,12 @@ $form.Text = "MystikStudio Dashboard"
 $form.StartPosition = "CenterScreen"
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$form.ClientSize = New-Object System.Drawing.Size(630, 700)
+$form.ClientSize = New-Object System.Drawing.Size(700, 700)
 
 # Main split: folders panel (left) | tools panel (right)
 $split = New-Object System.Windows.Forms.SplitContainer
 $split.Dock = "Fill"
-$split.SplitterDistance = 210
+$split.SplitterDistance = 200
 $split.SplitterWidth = 4
 $split.SplitterIncrement = 1
 $split.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
@@ -177,10 +177,8 @@ function Add-Section([string]$Text) {
 }
 
 function New-Btn([string]$Text, [string]$Color, [string]$Desc, [string]$Target, [string]$Mode) {
-    $col = ($script:cx - 5) / 192
-    $row = $script:row
-    $bx = 5 + $col * 192
-    $by = $script:y + $row * 42
+    $bx = 5 + [int]$script:col * 192
+    $by = $script:y + [int]$script:row * 42
     
     $btn = New-Object System.Windows.Forms.Button
     $btn.Text = $Text
@@ -199,11 +197,16 @@ function New-Btn([string]$Text, [string]$Color, [string]$Desc, [string]$Target, 
     if ($Desc) { (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $Desc) }
     
     $rp.Controls.Add($btn)
-    $script:row++
+    $script:col++
+    if ([int]$script:col -ge 2) { $script:col = 0; $script:row++ }
 }
 
-function New-RowStart { $script:cx = 5; $script:row = 0 }
-function New-RowEnd { $script:y += ([Math]::Max($script:row,2) * 42 / 2) + 6 }
+function New-RowStart { $script:col = 0; $script:row = 0 }
+function New-RowEnd { 
+    if ([int]$script:col -gt 0) { $script:row++ }
+    $script:y += ([int]$script:row * 42) + 6
+    $script:col = 0; $script:row = 0 
+}
 
 # ===================================================================
 # Build tools
