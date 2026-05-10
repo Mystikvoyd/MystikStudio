@@ -8,7 +8,7 @@ status:             in_progress
 created:            2026-05-10 05:15
 updated:            2026-05-10 05:45
 reporter:           user
-assignee:           unassigned
+assignee:           2026-05-10-master-session
 component:          dashboard
 environment:        Start-MystikStudioDashboard.ps1 — WinForms split-panel
 labels:

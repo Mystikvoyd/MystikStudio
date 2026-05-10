@@ -118,10 +118,21 @@ OPEN ──→ IN PROGRESS ──→ RESOLVED ──→ CLOSED
 | Status | Meaning |
 |--------|---------|
 | `open` | Ticket created, not yet being worked |
-| `in_progress` | Work is actively happening |
+| `in_progress` | A session is actively working on this — **do not pick up** |
 | `resolved` | Fix/implementation complete, awaiting verification |
 | `closed` | Verified and closed |
 | `reopened` | Issue resurfaced after being closed |
+
+### Ownership Rule
+
+When you start working on a ticket:
+1. Set `status: in_progress`
+2. Set `assignee` to identify your session (e.g. `assignee: 2026-05-10-session-1`)
+3. **Do not touch** any ticket with `status: in_progress` unless you are the `assignee`
+4. When done, set `status: resolved` or `closed` and note the resolution
+
+This prevents different sessions (or different people) from
+accidentally working on the same item.
 
 ## Continuation Chain
 
