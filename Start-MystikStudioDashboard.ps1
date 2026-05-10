@@ -135,7 +135,7 @@ $tree.Add_NodeMouseDoubleClick({
 })
 
 # ===================================================================
-# RIGHT PANEL — Tool buttons
+# RIGHT PANEL — Tool buttons in 2-column panel layout
 # ===================================================================
 $rightPanel = $split.Panel2
 $rightPanel.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
@@ -148,155 +148,167 @@ $rp.Width = $rightPanel.ClientSize.Width - 4
 $rightPanel.Controls.Add($rp)
 $rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width - 4 })
 
-$script:y = 4
+$script:y = 12  # increased to prevent header cutoff under title bar
 
-function Add-Header {
-    $p = New-Object System.Windows.Forms.Panel
-    $p.Height = 56; $p.Left = 0; $p.Top = $script:y
-    $p.Anchor = "Top, Left, Right"
-    $p.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+# -------------------------------------------------------------------
+# Header
+# -------------------------------------------------------------------
+$hdr = New-Object System.Windows.Forms.Panel
+$hdr.Height = 56; $hdr.Left = 0; $hdr.Top = $script:y
+$hdr.Anchor = "Top, Left, Right"
+$hdr.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+
+if (Test-Path $iconPath) {
+    $logo = New-Object System.Windows.Forms.PictureBox
+    $logo.Image = [System.Drawing.Icon]::new($iconPath).ToBitmap()
+    $logo.Size = New-Object System.Drawing.Size(32, 32)
+    $logo.SizeMode = "StretchImage"
+    $logo.Left = 8; $logo.Top = 8
+    $hdr.Controls.Add($logo)
+}
+
+$titleLbl = New-Object System.Windows.Forms.Label
+$titleLbl.Text = "MystikStudio"
+$titleLbl.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+$titleLbl.ForeColor = [System.Drawing.Color]::FromArgb(220,180,100)
+$titleLbl.AutoSize = $true
+$titleLbl.Left = 44; $titleLbl.Top = 4
+$hdr.Controls.Add($titleLbl)
+
+$subLbl = New-Object System.Windows.Forms.Label
+$subLbl.Text = "Modular Creative Toolkit"
+$subLbl.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
+$subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 30
+$hdr.Controls.Add($subLbl)
+
+$rp.Controls.Add($hdr)
+$script:y += 64
+
+# -------------------------------------------------------------------
+# 2-column panel layout
+# -------------------------------------------------------------------
+$colW = [math]::Floor(($rp.Width - 16) / 2)
+
+$col1 = New-Object System.Windows.Forms.Panel
+$col1.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$col1.Left = 4; $col1.Top = $script:y
+$col1.Width = $colW
+$col1.Anchor = "Top, Left"
+$rp.Controls.Add($col1)
+
+$col2 = New-Object System.Windows.Forms.Panel
+$col2.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$col2.Left = $colW + 10; $col2.Top = $script:y
+$col2.Width = $rp.Width - $colW - 14
+$col2.Anchor = "Top, Left, Right"
+$rp.Controls.Add($col2)
+
+# Panel box helper: creates a GroupBox with stacked buttons
+function Add-PanelBox {
+    param(
+        [System.Windows.Forms.Panel]$Parent,
+        [string]$Title,
+        [object[]]$Buttons
+    )
+    $box = New-Object System.Windows.Forms.GroupBox
+    $box.Text = "  $Title"
+    $box.Left = 1; $box.Top = $Parent.Height + 4
+    $box.Width = $Parent.Width - 2
+    $box.ForeColor = [System.Drawing.Color]::FromArgb(170,180,200)
+    $box.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+    $box.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
     
-    $logo = $null
-    if (Test-Path $iconPath) {
-        $logo = New-Object System.Windows.Forms.PictureBox
-        $logo.Image = [System.Drawing.Icon]::new($iconPath).ToBitmap()
-        $logo.Size = New-Object System.Drawing.Size(32, 32)
-        $logo.SizeMode = "StretchImage"
-        $logo.Left = 8; $logo.Top = 8
-        $p.Controls.Add($logo)
+    $yy = 20
+    $bw = $box.Width - 16
+    foreach ($b in $Buttons) {
+        $btn = New-Object System.Windows.Forms.Button
+        $btn.Text = $b.Text; $btn.Left = 8; $btn.Top = $yy
+        $btn.Width = $bw; $btn.Height = 30
+        $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
+        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
+        $btn.FlatAppearance.BorderSize = 0
+        $btn.BackColor = ColorFromHex $b.Color
+        $btn.TextAlign = "MiddleLeft"
+        $btn.Padding = New-Object System.Windows.Forms.Padding(6,0,0,0)
+        
+        if ($b.Target) {
+            $t = $b.Target
+            if ($b.Mode -eq 'url') { $btn.Add_Click({ Start-Process $t }.GetNewClosure()) }
+            else { $btn.Add_Click({ Start-Process -FilePath $t }.GetNewClosure()) }
+        } else { $btn.Enabled = $false }
+        
+        if ($b.Desc) { (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $b.Desc) }
+        
+        $box.Controls.Add($btn)
+        $yy += 34
     }
     
-    $t = New-Object System.Windows.Forms.Label
-    $t.Text = "MystikStudio"; $t.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-    $t.ForeColor = [System.Drawing.Color]::FromArgb(220,180,100); $t.AutoSize = $true
-    $t.Left = 44; $t.Top = 4; $p.Controls.Add($t)
-    
-    $s = New-Object System.Windows.Forms.Label
-    $s.Text = "Modular Creative Toolkit"; $s.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
-    $s.AutoSize = $true; $s.Left = 46; $s.Top = 30; $p.Controls.Add($s)
-    
-    $rp.Controls.Add($p); $script:y += 60
-}
-
-function Add-Section([string]$Text) {
-    $l = New-Object System.Windows.Forms.Label
-    $l.Text = "  $Text"; $l.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-    $l.ForeColor = [System.Drawing.Color]::FromArgb(140,160,200)
-    $l.BackColor = [System.Drawing.Color]::FromArgb(30,30,42)
-    $l.Left = 0; $l.Top = $script:y; $l.Height = 24
-    $l.Anchor = "Top, Left, Right"
-    $l.TextAlign = "MiddleLeft"
-    $rp.Controls.Add($l); $script:y += 28
-}
-
-function Add-SubSection([string]$Text) {
-    $l = New-Object System.Windows.Forms.Label
-    $l.Text = "    $Text"; $l.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-    $l.ForeColor = [System.Drawing.Color]::FromArgb(110,120,140)
-    $l.BackColor = [System.Drawing.Color]::FromArgb(26,26,36)
-    $l.Left = 0; $l.Top = $script:y; $l.Height = 22
-    $l.Anchor = "Top, Left, Right"
-    $l.TextAlign = "MiddleLeft"
-    $rp.Controls.Add($l); $script:y += 24
-}
-
-function New-Btn([string]$Text, [string]$Color, [string]$Desc, [string]$Target, [string]$Mode) {
-    $bx = 5 + [int]$script:col * 192
-    $by = $script:y + [int]$script:row * 42
-    
-    $btn = New-Object System.Windows.Forms.Button
-    $btn.Text = $Text
-    $btn.Left = $bx; $btn.Top = $by; $btn.Width = 184; $btn.Height = 36
-    $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
-    $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
-    $btn.FlatAppearance.BorderSize = 0
-    $btn.BackColor = ColorFromHex $Color
-    
-    if ($Target) {
-        $t = $Target
-        if ($Mode -eq 'url') { $btn.Add_Click({ Start-Process $t }.GetNewClosure()) }
-        else { $btn.Add_Click({ Start-Process -FilePath $t }.GetNewClosure()) }
-    } else { $btn.Enabled = $false }
-    
-    if ($Desc) { (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $Desc) }
-    
-    $rp.Controls.Add($btn)
-    $script:col++
-    if ([int]$script:col -ge 2) { $script:col = 0; $script:row++ }
-}
-
-function New-RowStart { $script:col = 0; $script:row = 0 }
-function New-RowEnd { 
-    if ([int]$script:col -gt 0) { $script:row++ }
-    $script:y += ([int]$script:row * 42) + 6
-    $script:col = 0; $script:row = 0 
+    $box.Height = $yy + 4
+    $Parent.Controls.Add($box)
 }
 
 # ===================================================================
-# Build tools
+# COLUMN 1 — 4 panels
 # ===================================================================
-Add-Header
+$launcherTools = @($creatorTools | Where-Object { $_.Launcher })
+$folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-# --- CREATORS ---
-Add-Section "CREATORS"
-New-RowStart
-foreach ($t in $creatorTools) {
-    if (-not $t.Folder) { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Launcher }
+Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons @(
+    @{Text=$launcherTools[0].Name; Color=$launcherTools[0].Color; Desc=$launcherTools[0].Description; Target=$launcherTools[0].Launcher}
+    @{Text=$launcherTools[1].Name; Color=$launcherTools[1].Color; Desc=$launcherTools[1].Description; Target=$launcherTools[1].Launcher}
+)
+
+Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
+    @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
+    @{Text="ComfyUI Output"; Color="#463728"; Desc="Generated images"; Target="C:\Users\Michael\Documents\ComfyUI\output"}
+    @{Text="ComfyUI Input";  Color="#463728"; Desc="ControlNet images"; Target="C:\Users\Michael\Documents\ComfyUI\input"}
+)
+
+Add-PanelBox -Parent $col1 -Title "COMFYUI" -Buttons @(
+    @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
+)
+
+Add-PanelBox -Parent $col1 -Title "LINKS" -Buttons @(
+    @{Text="GitHub Repo"; Color="#24292E"; Desc="MystikStudio on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio"; Mode="url"}
+)
+
+# ===================================================================
+# COLUMN 2 — 4 panels
+# ===================================================================
+$webBtnList = @()
+foreach ($t in $webTools) {
+    $target = if ($t.Folder) { $t.Folder } else { $t.Launcher }
+    $webBtnList += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$target}
 }
-New-RowEnd
+Add-PanelBox -Parent $col2 -Title "WEB APPS" -Buttons $webBtnList
 
-# --- Creator folders (sub-section) ---
-Add-SubSection "CREATORS FOLDERS"
-New-RowStart
-foreach ($t in $creatorTools) {
-    if ($t.Folder) { New-Btn -Text $t.Name -Color "#463728" -Desc $t.Description -Target $t.Folder }
-}
-New-Btn -Text "ComfyUI Output" -Color "#463728" -Desc "Generated images" -Target "C:\Users\Michael\Documents\ComfyUI\output"
-New-Btn -Text "ComfyUI Input"  -Color "#463728" -Desc "ControlNet images" -Target "C:\Users\Michael\Documents\ComfyUI\input"
-New-RowEnd
+Add-PanelBox -Parent $col2 -Title "PROJECT  ·  DESIGN" -Buttons @(
+    @{Text="Book Design"; Color="#373746"; Desc="Assets, manuscript"; Target=(Join-Path $StudioRoot "book-design")}
+)
 
-# --- COMFYUI ---
-Add-Section "COMFYUI"
-New-RowStart
-New-Btn -Text "Scripts"   -Color "#325032" -Desc "ComfyUI automation scripts" -Target (Join-Path $StudioRoot "Creators\comfyui\scripts")
-New-RowEnd
+Add-PanelBox -Parent $col2 -Title "PROJECT  ·  DATA" -Buttons @(
+    @{Text="Shared"; Color="#373746"; Desc="Session module, sizes"; Target=(Join-Path $StudioRoot "shared")}
+    @{Text="Reports"; Color="#373746"; Desc="Session HTML reports"; Target="C:\Users\Michael\Documents\ComfyUI\Reports"}
+)
 
-# --- WEB APPS ---
-if ($webTools.Count -gt 0) {
-    Add-Section "WEB APPS"
-    New-RowStart
-    foreach ($t in $webTools) {
-        if ($t.Folder) { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Folder }
-        else { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Launcher }
-    }
-    New-RowEnd
-}
+Add-PanelBox -Parent $col2 -Title "PROJECT  ·  MODELS" -Buttons @(
+    @{Text="LoRA Models"; Color="#373746"; Desc="Browse LoRA files"; Target="C:\Users\Michael\Documents\ComfyUI\models\loras"}
+    @{Text="Checkpoints"; Color="#373746"; Desc="Checkpoint files"; Target="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
+    @{Text="ControlNet"; Color="#373746"; Desc="ControlNet models"; Target="C:\Users\Michael\Documents\ComfyUI\models\controlnet"}
+    @{Text="VAE"; Color="#373746"; Desc="VAE models"; Target="C:\Users\Michael\Documents\ComfyUI\models\vae"}
+)
 
-# --- LINKS ---
-Add-Section "LINKS"
-New-RowStart
-New-Btn -Text "GitHub Repo" -Color "#24292E" -Desc "MystikStudio on GitHub" -Target "https://github.com/Mystikvoyd/MystikStudio" -Mode "url"
-New-RowEnd
+# Set column heights to tallest panel bottom
+$col1.Height = [math]::Max(1, $col1.Height)
+$col2.Height = [math]::Max(1, $col2.Height)
+$script:y = [math]::Max($col1.Top + $col1.Height, $col2.Top + $col2.Height) + 8
 
-# --- PROJECT ---
-Add-Section "PROJECT FILES"
-New-RowStart
-New-Btn -Text "Book Design"      -Color "#373746" -Desc "Assets, manuscript" -Target (Join-Path $StudioRoot "book-design")
-New-Btn -Text "Shared"           -Color "#373746" -Desc "Session, Sizes"    -Target (Join-Path $StudioRoot "shared")
-New-Btn -Text "Reports"          -Color "#373746" -Desc "Session HTML"      -Target "C:\Users\Michael\Documents\ComfyUI\Reports"
-New-RowEnd
-
-New-RowStart
-New-Btn -Text "LoRA Models"      -Color "#373746" -Desc "Browse LoRA files" -Target "C:\Users\Michael\Documents\ComfyUI\models\loras"
-New-Btn -Text "Checkpoints"      -Color "#373746" -Desc "Checkpoint files"  -Target "C:\Users\Michael\Documents\ComfyUI\models\checkpoints"
-New-Btn -Text "ControlNet"       -Color "#373746" -Desc "ControlNet models" -Target "C:\Users\Michael\Documents\ComfyUI\models\controlnet"
-New-Btn -Text "VAE"              -Color "#373746" -Desc "VAE models"        -Target "C:\Users\Michael\Documents\ComfyUI\models\vae"
-New-RowEnd
-
-# --- Footer ---
-$script:y += 4
+# -------------------------------------------------------------------
+# Footer
+# -------------------------------------------------------------------
 $sep = New-Object System.Windows.Forms.Label
-$sep.BorderStyle = "Fixed3D"; $sep.Left = 0; $sep.Top = $script:y; $sep.Anchor = "Top, Left, Right"; $sep.Height = 2
+$sep.BorderStyle = "Fixed3D"; $sep.Left = 0; $sep.Top = $script:y
+$sep.Anchor = "Top, Left, Right"; $sep.Height = 2
 $rp.Controls.Add($sep); $script:y += 14
 
 $footer = New-Object System.Windows.Forms.Label
@@ -306,7 +318,6 @@ $footer.Font = New-Object System.Drawing.Font("Segoe UI", 7)
 $footer.AutoSize = $true; $footer.Left = 8; $footer.Top = $script:y
 $rp.Controls.Add($footer)
 
-# Set inner panel height to fit all content
 $rp.Height = $script:y + 20
 
 $form.Add_Shown({ $form.Activate() })

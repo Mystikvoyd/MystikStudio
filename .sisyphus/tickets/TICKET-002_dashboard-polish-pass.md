@@ -84,8 +84,14 @@ All items listed here are initial observations — more may surface during the w
   (indented, smaller font) under CREATORS with Workflows, Output, Input —
   all using brown (#463728) folder color. COMFYUI section simplified to
   just Scripts (the only unique ComfyUI item). Added `Add-SubSection` function.
+- **2-column panel layout**: Complete right panel restructure. Replaced
+  vertical single-column layout with 2 side-by-side columns, each containing
+  GroupBox panels. 8 panels total (4 per column). Added `Add-PanelBox`
+  helper function. Buttons are full-width inside panels with left-aligned
+  text. Header `$script:y` increased from 4→12 to prevent title cutoff.
+- **Panel distribution**: Col 1 = CREATORS, CREATORS FOLDERS, COMFYUI, LINKS.
+  Col 2 = WEB APPS, PROJECT·DESIGN, PROJECT·DATA, PROJECT·MODELS.
 
 ### Remaining
-- Font sizes/colors need a style pass (button text, section headers)
-- Tree usefulness still in question (user suggested buttons might replace it)
-- Missing functionality and architectural improvements TBD
+- Font sizes/colors could still use refinement
+- Fine-tuning panel sizing/spacing
