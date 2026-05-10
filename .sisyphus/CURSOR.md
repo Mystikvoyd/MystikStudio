@@ -1,22 +1,20 @@
 # CURSOR — Current State
 
-**Last updated:** 2026-05-10 05:45
-**Session focus:** Dashboard polish — first round of TICKET-002 fixes
+**Last updated:** 2026-05-10 06:00
+**Session focus:** Dashboard layout reorg — generators vs folders, sub-section
 
 ---
 
 ## Active Context
 
-Working on TICKET-002 dashboard polish. Made first round of fixes:
+Working on TICKET-002 dashboard polish. Layout reorganization done:
 
-1. **Tree text cutoff** — splitter widened 160→240, tree fills panel dynamically
-2. **Form icon** — title bar now shows `Mytikvoyd Studios.ico`
-3. **Logo in header** — 32x32 icon appears next to the MystikStudio title
-4. **Right panel dynamic layout** — removed hardcoded 390px width, now fills
-   available space via Anchor + resize handler
-5. **Form wider** — 700→800 for more breathing room
+1. **CREATORS**: only the 2 generators (Character Generator, LoRA Tester)
+2. **CREATORS FOLDERS** sub-section (indented): Workflows, Output, Input (brown)
+3. **COMFYUI** section: Scripts only
+4. Added `Add-SubSection` function (indented, smaller/darker label)
 
-Remaining polish: fonts/colors pass, button alignment, tree usefulness question,
+Remaining polish: fonts/colors style pass, tree usefulness question,
 missing functionality, architectural improvements.
 
 ## Decisions Made
