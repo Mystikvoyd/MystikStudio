@@ -47,9 +47,11 @@ Before finishing a session, update:
 
 - Tickets are numbered sequentially: `TICKET-001`, `TICKET-002`, ...
 - Each ticket is a single `.md` file in `tickets/`
-- Fields: `title`, `status`, `opened`, `closed`, `problem`, `solution`, `files`
+- Full IT-style frontmatter: type, priority, severity, status, timestamps,
+  reporter, assignee, component, labels, and link fields
 - **When a ticket is closed and the same issue reoccurs or needs continuation:**
   - Close the old ticket with `continued_in: TICKET-NNN`
   - Create a NEW ticket (next sequential number) that starts with `continues: TICKET-XXX`
   - This creates a traceable chain without reusing numbers
 - Never reuse a ticket number. Numbers are unique forever.
+- See `tickets/README.md` for the full template and lifecycle rules.

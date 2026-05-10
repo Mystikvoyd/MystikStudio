@@ -1,54 +1,140 @@
-# Tickets Workflow
+# Ticket System — IT-Style Issue Tracking
 
-## Ticket File Format
+Each ticket is a single `.md` file. The system mimics enterprise IT ticketing
+(Jira, ServiceNow, Zendesk) but lives entirely in the repo as flat files.
 
-Each ticket is a single `.md` file named:
+---
+
+## Naming Convention
 
 ```
-TICKET-NNN_short-description.md
+TICKET-NNN_kebab-case-title.md
 ```
 
-### Required Fields
+Examples: `TICKET-042_dashboard-splitter-not-rendering.md`
+
+---
+
+## Ticket Template
 
 ```yaml
 ---
-title: Short title
-status: open | closed
-opened: YYYY-MM-DD
-closed: YYYY-MM-DD       # only when status=closed
-continued_in: TICKET-NNN # only when status=closed and reopened later
-continues: TICKET-XXX    # only when this ticket continues a closed one
-type: bug | feature | task | improvement
-priority: low | medium | high | critical
+ticket_id:          TICKET-NNN
+title:              Short descriptive title
+
+# ── Classification ──────────────────────────────────────────
+type:               bug | feature | task | improvement | incident | research | support
+priority:           critical | high | medium | low
+severity:           blocker | major | minor | cosmetic | enhancement
+status:             open | in_progress | resolved | closed | reopened
+
+# ── Timestamps ──────────────────────────────────────────────
+created:            YYYY-MM-DD HH:MM
+updated:            YYYY-MM-DD HH:MM
+resolved:           YYYY-MM-DD HH:MM     # when a solution was identified
+closed:             YYYY-MM-DD HH:MM     # when the ticket was officially closed
+
+# ── Ownership ───────────────────────────────────────────────
+reporter:           Who opened this (name / system / github-user)
+assignee:           Who is working on it
+
+# ── Context ─────────────────────────────────────────────────
+component:          Which part of the system (e.g. dashboard, lora-tester, character-gen)
+environment:        Any relevant environment details
+labels:
+  - label-one
+  - label-two
 ---
 ```
 
-### Body
+### Body Sections
 
-```markdown
-## Problem
-What's wrong / what's needed / why
+```
+## Description
 
-## Solution
-How it was fixed / implemented (only when closed)
+Full detailed explanation of the issue or request.
+What is this ticket about? Why does it matter?
+
+## Steps to Reproduce
+
+1. Step one
+2. Step two
+3. ...
+
+## Expected Behavior
+
+What *should* happen.
+
+## Actual Behavior
+
+What *actually* happens (if different from expected).
+
+## Root Cause Analysis
+
+What caused the problem at a fundamental level.
+Include debugging findings, logs, evidence.
+
+## Resolution
+
+How the issue was fixed or the task completed.
+Technical details, approach taken, tradeoffs considered.
+
+## Workaround
+
+If a temporary workaround exists while the ticket is open, document it here.
 
 ## Files Affected
-- path/to/file.ext — what changed
 
-## Notes
-Any additional context
+- `path/to/file.ext` — what changed and why
+
+## Related Tickets
+
+- `relates_to`: TICKET-XXX
+- `blocks`:     TICKET-XXX
+- `blocked_by`: TICKET-XXX
+- `duplicates`: TICKET-XXX
+- `duplicated_by`: TICKET-XXX
+- `continues`:  TICKET-XXX    (this ticket picks up a closed ticket's issue)
+- `continued_in`: TICKET-XXX  (this ticket's issue was continued in a new ticket)
+
+## Notes / Comments
+
+Any additional information, discussion, decisions, or external references.
+Add a `---[YYYY-MM-DD]---` separator for chronological updates.
+```
+---
+
+## Lifecycle
+
+```
+OPEN ──→ IN PROGRESS ──→ RESOLVED ──→ CLOSED
+  ↑                          │
+  └────── REOPENED ←─────────┘
 ```
 
-## Lifecycle Rules
+| Status | Meaning |
+|--------|---------|
+| `open` | Ticket created, not yet being worked |
+| `in_progress` | Work is actively happening |
+| `resolved` | Fix/implementation complete, awaiting verification |
+| `closed` | Verified and closed |
+| `reopened` | Issue resurfaced after being closed |
 
-1. **Open** → create file with `status: open`, fill in problem/context
-2. **Work** → reference the ticket in commits (`refs TICKET-005`)
-3. **Close** → fill `closed` date and `Solution` section, set `status: closed`
-4. **Reopen / Continue** → close old ticket with `continued_in: TICKET-NNN`,
-   create new sequential ticket number with `continues: TICKET-XXX`
-5. **Never reuse a number** — once `TICKET-042` exists, it's taken forever
+## Continuation Chain
 
-## Number Allocation
+When an issue reoccurs or a fix needs another iteration:
 
-Just check what the highest number in the directory is and increment by one.
-No centralized registry needed — filenames are the registry.
+1. **Close** the current ticket: set `status: closed`, fill `closed` date,
+   add `continued_in: TICKET-NNN` to frontmatter, and append to `Related Tickets`
+2. **Create** the new ticket with the **next sequential number**
+3. In the new ticket's frontmatter, add `continues: TICKET-XXX` and
+   duplicate the relevant context from the original
+4. The chain is: `TICKET-001 → TICKET-005 → TICKET-012`
+
+## Ticket Number Allocation
+
+Scan the `tickets/` directory for the highest existing number. Increment by one.
+No centralized registry needed — filenames are the source of truth.
+
+Numbers are **never reused**. Once `TICKET-042` exists, it exists forever,
+even if the ticket is closed or deleted.
