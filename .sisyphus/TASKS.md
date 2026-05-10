@@ -10,28 +10,24 @@
 
 | # | Task | Status | Ticket |
 |---|------|--------|--------|
-| 1 | Dashboard — fonts/colors style pass | pending | TICKET-002 |
-| 2 | Dashboard — decide on tree usefulness | pending | TICKET-002 |
+| 1 | Dashboard — fine-tune panel sizing/spacing | pending | TICKET-002 |
 
 ## Task Details
 
-### Task 1: Font/color style pass
-- Review and unify font sizes, colors, and button styling
-
-### Task 2: Tree usefulness
-- User questioned whether tree adds value vs. buttons
-- Either remove, simplify, or justify keeping it
+### Task 1: Fine-tune panels
+- Adjust GroupBox padding, button widths, gap between columns
+- Font/color refinement if needed
 
 ## Completed Tasks
 
 | # | Task | Ticket | Date |
 |---|------|--------|------|
+| — | 2-column panel layout (8 GroupBox panels) | TICKET-002 | 2026-05-10 |
 | — | Layout reorg: generators vs folders, sub-section, brown color | TICKET-002 | 2026-05-10 |
 | — | Tree text cutoff + form icon + logo + dynamic widths | TICKET-002 | 2026-05-10 |
 | — | Create .sisyphus context system | TICKET-001 | 2026-05-10 |
 | — | Upgrade ticket system to full IT-style format | TICKET-001 | 2026-05-10 |
 | — | Commit dashboard layout fixes + untracked files | `cbf6a07` | 2026-05-10 |
-| — | Push all commits to GitHub | — | 2026-05-10 |
 | — | Verify dashboard split-panel works | — | 2026-05-10 |
 
 ---

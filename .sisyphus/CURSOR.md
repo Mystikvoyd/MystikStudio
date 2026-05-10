@@ -1,21 +1,22 @@
 # CURSOR — Current State
 
-**Last updated:** 2026-05-10 06:00
-**Session focus:** Dashboard layout reorg — generators vs folders, sub-section
+**Last updated:** 2026-05-10 06:30
+**Session focus:** 2-column panel layout — 8 GroupBox panels in 2 columns
 
 ---
 
 ## Active Context
 
-Working on TICKET-002 dashboard polish. Layout reorganization done:
+Working on TICKET-002 dashboard polish. Right panel completely restructured
+into 2-column panel layout:
 
-1. **CREATORS**: only the 2 generators (Character Generator, LoRA Tester)
-2. **CREATORS FOLDERS** sub-section (indented): Workflows, Output, Input (brown)
-3. **COMFYUI** section: Scripts only
-4. Added `Add-SubSection` function (indented, smaller/darker label)
+**Column 1 (4 panels):** CREATORS, CREATORS FOLDERS, COMFYUI, LINKS
+**Column 2 (4 panels):** WEB APPS, PROJECT·DESIGN, PROJECT·DATA, PROJECT·MODELS
 
-Remaining polish: fonts/colors style pass, tree usefulness question,
-missing functionality, architectural improvements.
+Each panel is a GroupBox with a titled border containing stacked full-width
+buttons. Header Y offset bumped to 12 to prevent title bar cutoff.
+
+Remaining: fine-tuning panel sizing/spacing, fonts/colors refinement.
 
 ## Decisions Made
 
