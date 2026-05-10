@@ -278,15 +278,28 @@ function Add-PanelBox {
 }
 
 # ===================================================================
-# COLUMN 1 — 4 panels
+# COLUMN 1 — LoRA tools + Creators folders + ComfyUI + Links
 # ===================================================================
 $launcherTools = @($creatorTools | Where-Object { $_.Launcher })
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons @(
-    @{Text=$launcherTools[0].Name; Color=$launcherTools[0].Color; Desc=$launcherTools[0].Description; Target=$launcherTools[0].Launcher}
-    @{Text=$launcherTools[1].Name; Color=$launcherTools[1].Color; Desc=$launcherTools[1].Description; Target=$launcherTools[1].Launcher}
-)
+$loraTools = @($launcherTools | Where-Object { $_.Name -match 'LoRA|Character Design' })
+$otherLaunchers = @($launcherTools | Where-Object { $_.Name -notmatch 'LoRA|Character Design' })
+
+$loraBtns = @()
+foreach ($t in $loraTools) {
+    $loraBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
+}
+
+Add-PanelBox -Parent $col1 -Title "LORA TOOLS" -Buttons $loraBtns
+
+$otherBtns = @()
+foreach ($t in $otherLaunchers) {
+    $otherBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
+}
+if ($otherBtns.Count -gt 0) {
+    Add-PanelBox -Parent $col1 -Title "CREATORS" -Buttons $otherBtns
+}
 
 Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
     @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
