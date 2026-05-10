@@ -1,17 +1,23 @@
 # CURSOR — Current State
 
-**Last updated:** 2026-05-10 05:00
-**Session focus:** Committed all pending changes — repo is clean
+**Last updated:** 2026-05-10 05:45
+**Session focus:** Dashboard polish — first round of TICKET-002 fixes
 
 ---
 
 ## Active Context
 
-All pending changes have been committed and pushed (`cbf6a07`).
-The working tree is clean — nothing staged, nothing modified, no untracked files.
+Working on TICKET-002 dashboard polish. Made first round of fixes:
 
-- Dashboard split-panel layout fixes (splitter timing, min sizes, anchor binding) committed
-- `Write-LoraReport.py`, `public/` web dashboard, and dashboard-app README committed
+1. **Tree text cutoff** — splitter widened 160→240, tree fills panel dynamically
+2. **Form icon** — title bar now shows `Mytikvoyd Studios.ico`
+3. **Logo in header** — 32x32 icon appears next to the MystikStudio title
+4. **Right panel dynamic layout** — removed hardcoded 390px width, now fills
+   available space via Anchor + resize handler
+5. **Form wider** — 700→800 for more breathing room
+
+Remaining polish: fonts/colors pass, button alignment, tree usefulness question,
+missing functionality, architectural improvements.
 
 ## Decisions Made
 
@@ -28,13 +34,15 @@ The working tree is clean — nothing staged, nothing modified, no untracked fil
 
 ## Known Issues
 
-- Dashboard split-panel changes are committed but **not yet tested** — should verify they launch correctly
-- No open tickets or issues on GitHub
+- Tree may not be useful given buttons already cover navigation (user's comment)
+- Font sizes/colors still need a style pass
+- Button alignment could be cleaner
+- Missing functionality and architectural improvements not yet explored
 
 ## Next Likely Steps
 
-1. Test the dashboard still launches and renders correctly
-2. Continue with whatever feature/bug work was in progress
+1. User tests the dashboard changes
+2. Continue TICKET-002 polish items
 
 ## Pinned Tickets
 

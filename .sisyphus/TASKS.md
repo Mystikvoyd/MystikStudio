@@ -10,17 +10,21 @@
 
 | # | Task | Status | Ticket |
 |---|------|--------|--------|
-| 1 | Dashboard UI polish pass | pending | TICKET-002 |
+| 1 | Dashboard — fonts/colors style pass | pending | TICKET-002 |
+| 2 | Dashboard — button alignment cleanup | pending | TICKET-002 |
+| 3 | Dashboard — decide on tree usefulness | pending | TICKET-002 |
 
 ## Task Details
 
-### Task 1: Dashboard UI polish (ref TICKET-002)
-- Fix layout/spacing and button alignment in right panel
-- Fix text overflow (words off-screen)
-- Apply consistent font sizes and colors
-- Add logo/icon at top of window
-- Set window title bar icon from `Icons/Mytikvoyd Studios.ico`
-- Address missing functionality and architectural improvements
+### Task 1: Font/color style pass
+- Review and unify font sizes, colors, and button styling
+
+### Task 2: Button alignment
+- Ensure 2-column grid is properly aligned and evenly spaced
+
+### Task 3: Tree usefulness
+- User questioned whether tree adds value vs. buttons
+- Either remove, simplify, or justify keeping it
 
 ---
 

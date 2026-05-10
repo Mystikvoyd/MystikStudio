@@ -4,9 +4,9 @@ title:              Dashboard UI polish pass — layout, alignment, fonts, logo,
 type:               improvement
 priority:           medium
 severity:           minor
-status:             open
+status:             in_progress
 created:            2026-05-10 05:15
-updated:            2026-05-10 05:15
+updated:            2026-05-10 05:45
 reporter:           user
 assignee:           unassigned
 component:          dashboard
@@ -66,3 +66,22 @@ Multiple rough edges (see items below).
 
 User confirmed: "Dashboard works, needs polish."
 All items listed here are initial observations — more may surface during the work.
+
+## Progress
+
+### Done (2026-05-10)
+- **Tree text cutoff**: SplitterDistance increased from 160→240. Removed
+  hardcoded `$tree.Width = 152`, now dynamically fills panel via
+  `$leftPanel.ClientSize.Width - 8` + Anchor binding.
+- **Form title bar icon**: Added `$form.Icon` using `Icons/Mytikvoyd Studios.ico`
+- **Logo at top**: Header now includes a 32x32 PictureBox with the icon
+- **Right panel dynamic width**: Removed AutoSize + hardcoded 390px min.
+  Inner panel now uses Anchor + resize handler to fill the right panel.
+  Section labels and separator also use Anchor = "Top, Left, Right" to stretch.
+- **Form width**: Increased from 700→800 for more comfortable layout
+
+### Remaining
+- Font sizes/colors need a style pass
+- Button alignment could be cleaner
+- Missing functionality and architectural improvements TBD
+- Tree usefulness still in question (user suggested buttons might replace it)

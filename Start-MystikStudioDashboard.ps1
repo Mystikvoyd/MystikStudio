@@ -53,7 +53,9 @@ $form.Text = "MystikStudio Dashboard"
 $form.StartPosition = "CenterScreen"
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$form.ClientSize = New-Object System.Drawing.Size(700, 700)
+$form.ClientSize = New-Object System.Drawing.Size(800, 700)
+$iconPath = Join-Path $PSScriptRoot "Icons\Mytikvoyd Studios.ico"
+if (Test-Path $iconPath) { $form.Icon = [System.Drawing.Icon]::new($iconPath) }
 
 # Main split: folders panel (left) | tools panel (right)
 $split = New-Object System.Windows.Forms.SplitContainer
@@ -65,7 +67,7 @@ $form.Controls.Add($split)
 # Set min sizes after adding to form so Width is known
 $split.Panel1MinSize = 120
 $split.Panel2MinSize = 350
-$split.SplitterDistance = 160
+$split.SplitterDistance = 240
 
 # ===================================================================
 # LEFT PANEL — Folder browser
@@ -86,7 +88,7 @@ $leftPanel.Controls.Add($lblFolders)
 
 $tree = New-Object System.Windows.Forms.TreeView
 $tree.Left = 4; $tree.Top = 30
-$tree.Width = 152
+$tree.Width = $leftPanel.ClientSize.Width - 8
 $tree.Height = $leftPanel.Height - 36
 $tree.Anchor = "Top, Bottom, Left, Right"
 $tree.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
@@ -140,26 +142,38 @@ $rightPanel.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
 $rightPanel.AutoScroll = $true
 
 $rp = New-Object System.Windows.Forms.Panel
-$rp.AutoSize = $true; $rp.AutoSizeMode = "GrowAndShrink"
 $rp.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$rp.MinimumSize = New-Object System.Drawing.Size(390, 0)
+$rp.Anchor = "Top, Left, Right"
+$rp.Width = $rightPanel.ClientSize.Width - 4
 $rightPanel.Controls.Add($rp)
+$rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width - 4 })
 
 $script:y = 4
 
 function Add-Header {
     $p = New-Object System.Windows.Forms.Panel
-    $p.Width = 390; $p.Height = 56; $p.Left = 5; $p.Top = $script:y
+    $p.Height = 56; $p.Left = 0; $p.Top = $script:y
+    $p.Anchor = "Top, Left, Right"
     $p.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+    
+    $logo = $null
+    if (Test-Path $iconPath) {
+        $logo = New-Object System.Windows.Forms.PictureBox
+        $logo.Image = [System.Drawing.Icon]::new($iconPath).ToBitmap()
+        $logo.Size = New-Object System.Drawing.Size(32, 32)
+        $logo.SizeMode = "StretchImage"
+        $logo.Left = 8; $logo.Top = 8
+        $p.Controls.Add($logo)
+    }
     
     $t = New-Object System.Windows.Forms.Label
     $t.Text = "MystikStudio"; $t.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
     $t.ForeColor = [System.Drawing.Color]::FromArgb(220,180,100); $t.AutoSize = $true
-    $t.Left = 8; $t.Top = 4; $p.Controls.Add($t)
+    $t.Left = 44; $t.Top = 4; $p.Controls.Add($t)
     
     $s = New-Object System.Windows.Forms.Label
     $s.Text = "Modular Creative Toolkit"; $s.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
-    $s.AutoSize = $true; $s.Left = 10; $s.Top = 30; $p.Controls.Add($s)
+    $s.AutoSize = $true; $s.Left = 46; $s.Top = 30; $p.Controls.Add($s)
     
     $rp.Controls.Add($p); $script:y += 60
 }
@@ -169,7 +183,8 @@ function Add-Section([string]$Text) {
     $l.Text = "  $Text"; $l.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
     $l.ForeColor = [System.Drawing.Color]::FromArgb(140,160,200)
     $l.BackColor = [System.Drawing.Color]::FromArgb(30,30,42)
-    $l.Left = 0; $l.Top = $script:y; $l.Width = 390; $l.Height = 24
+    $l.Left = 0; $l.Top = $script:y; $l.Height = 24
+    $l.Anchor = "Top, Left, Right"
     $l.TextAlign = "MiddleLeft"
     $rp.Controls.Add($l); $script:y += 28
 }
@@ -265,7 +280,7 @@ New-RowEnd
 # --- Footer ---
 $script:y += 4
 $sep = New-Object System.Windows.Forms.Label
-$sep.BorderStyle = "Fixed3D"; $sep.Left = 0; $sep.Top = $script:y; $sep.Width = 390; $sep.Height = 2
+$sep.BorderStyle = "Fixed3D"; $sep.Left = 0; $sep.Top = $script:y; $sep.Anchor = "Top, Left, Right"; $sep.Height = 2
 $rp.Controls.Add($sep); $script:y += 14
 
 $footer = New-Object System.Windows.Forms.Label
@@ -274,6 +289,9 @@ $footer.ForeColor = [System.Drawing.Color]::FromArgb(80,80,90)
 $footer.Font = New-Object System.Drawing.Font("Segoe UI", 7)
 $footer.AutoSize = $true; $footer.Left = 8; $footer.Top = $script:y
 $rp.Controls.Add($footer)
+
+# Set inner panel height to fit all content
+$rp.Height = $script:y + 20
 
 $form.Add_Shown({ $form.Activate() })
 [void]$form.ShowDialog()
