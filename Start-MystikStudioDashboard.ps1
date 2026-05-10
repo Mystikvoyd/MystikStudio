@@ -53,7 +53,7 @@ $form.Text = "MystikStudio Dashboard"
 $form.StartPosition = "CenterScreen"
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$form.ClientSize = New-Object System.Drawing.Size(800, 700)
+$form.ClientSize = New-Object System.Drawing.Size(800, 760)
 $iconPath = Join-Path $PSScriptRoot "Icons\Mytikvoyd Studios.ico"
 if (Test-Path $iconPath) { $form.Icon = [System.Drawing.Icon]::new($iconPath) }
 
