@@ -58,11 +58,14 @@ $form.ClientSize = New-Object System.Drawing.Size(700, 700)
 # Main split: folders panel (left) | tools panel (right)
 $split = New-Object System.Windows.Forms.SplitContainer
 $split.Dock = "Fill"
-$split.SplitterDistance = 200
 $split.SplitterWidth = 4
 $split.SplitterIncrement = 1
 $split.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
 $form.Controls.Add($split)
+# Set min sizes after adding to form so Width is known
+$split.Panel1MinSize = 120
+$split.Panel2MinSize = 350
+$split.SplitterDistance = 160
 
 # ===================================================================
 # LEFT PANEL — Folder browser
@@ -76,13 +79,14 @@ $lblFolders.Text = "  EXPLORER"
 $lblFolders.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $lblFolders.ForeColor = [System.Drawing.Color]::FromArgb(140,160,200)
 $lblFolders.BackColor = [System.Drawing.Color]::FromArgb(30,30,40)
-$lblFolders.Height = 24; $lblFolders.Width = $leftPanel.Width - 8
+$lblFolders.Height = 24
 $lblFolders.Left = 4; $lblFolders.Top = 4; $lblFolders.TextAlign = "MiddleLeft"
+$lblFolders.Anchor = "Top, Left, Right"
 $leftPanel.Controls.Add($lblFolders)
 
 $tree = New-Object System.Windows.Forms.TreeView
 $tree.Left = 4; $tree.Top = 30
-$tree.Width = $leftPanel.Width - 8
+$tree.Width = 152
 $tree.Height = $leftPanel.Height - 36
 $tree.Anchor = "Top, Bottom, Left, Right"
 $tree.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
@@ -126,12 +130,6 @@ $root.Expand(); $comfyNode.Expand()
 
 $tree.Add_NodeMouseDoubleClick({
     if ($_.Node.Tag) { Start-Process -FilePath ([string]$_.Node.Tag) }
-})
-
-# Left panel resize event to keep tree sized
-$leftPanel.Add_Resize({
-    $tree.Width = $leftPanel.Width - 8
-    $lblFolders.Width = $leftPanel.Width - 8
 })
 
 # ===================================================================

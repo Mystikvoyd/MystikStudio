@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/map.css">
+</head>
+<body class="map-body">
+    <main class="map-shell">
+        <header class="map-topbar">
+            <div>
+                <p class="eyebrow">Local world map</p>
+                <h1 id="mapTitle">Interactive Map</h1>
+            </div>
+            <div class="map-actions">
+                <a class="ghost-link" href="/">Story Bible</a>
+                <button type="button" class="ghost-button" id="fitButton">Fit</button>
+                <button type="button" class="ghost-button" id="zoomOutButton">-</button>
+                <button type="button" class="ghost-button" id="zoomInButton">+</button>
+            </div>
+        </header>
+
+        <section class="map-layout">
+            <aside class="panel map-sidebar">
+                <label class="search-box">
+                    <span>Find Location</span>
+                    <input id="mapSearch" type="search" autocomplete="off" placeholder="Realm, city, province">
+                </label>
+                <section class="route-planner" aria-label="Travel planner">
+                    <div class="route-grid">
+                        <label>
+                            <span>From</span>
+                            <select id="routeFrom"></select>
+                        </label>
+                        <label>
+                            <span>To</span>
+                            <select id="routeTo"></select>
+                        </label>
+                        <label>
+                            <span>Mode</span>
+                            <select id="travelMode">
+                                <option value="road">Road party</option>
+                                <option value="foot">On foot</option>
+                                <option value="mounted">Mounted</option>
+                                <option value="wagon">Wagon</option>
+                                <option value="river">River boat</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="route-result" id="routeResult">Choose two locations</div>
+                </section>
+                <div class="map-status" id="mapStatus">Loading map</div>
+                <div class="map-location-list" id="locationList"></div>
+            </aside>
+
+            <section class="map-stage-panel">
+                <div class="map-viewport" id="mapViewport">
+                    <div class="map-canvas" id="mapCanvas">
+                        <img id="mapImage" alt="World map">
+                        <svg class="route-layer" id="routeLayer" aria-hidden="true"></svg>
+                        <div class="marker-layer" id="markerLayer"></div>
+                    </div>
+                </div>
+
+                <article class="map-focus-card" id="focusCard" hidden>
+                    <p class="eyebrow" id="focusType">Location</p>
+                    <h2 id="focusName">Location</h2>
+                    <p id="focusNote"></p>
+                    <a id="focusEntryLink" class="primary-link" href="/">Open Entry</a>
+                </article>
+            </section>
+        </section>
+    </main>
+
+    <script src="/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Story Bible</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Local story bible</p>
+                <h1 id="bookTitleHeading">The Fool &amp; The Maiden</h1>
+            </div>
+            <div class="top-actions">
+                <a class="ghost-link" href="/map.html">Map</a>
+                <button type="button" class="ghost-button" id="refreshButton">Refresh</button>
+                <div class="live-status" aria-live="polite">
+                    <span class="live-dot" id="liveDot"></span>
+                    <span id="connectionStatus">Connecting</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="summary-strip" aria-label="Project summary">
+            <article class="stat-tile">
+                <span>Realms</span>
+                <strong id="realmCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Characters</span>
+                <strong id="characterCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Cities</span>
+                <strong id="cityCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Rulers</span>
+                <strong id="rulerCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Politics</span>
+                <strong id="politicsCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Visual Refs</span>
+                <strong id="visualReferenceCount">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Draft Words</span>
+                <strong id="totalWords">0</strong>
+            </article>
+            <article class="stat-tile">
+                <span>Reference Words</span>
+                <strong id="referenceWords">0</strong>
+            </article>
+        </section>
+
+        <section class="library-layout">
+            <aside class="panel library-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Index</p>
+                        <h2>Tracked Things</h2>
+                    </div>
+                </div>
+                <label class="search-box">
+                    <span>Search</span>
+                    <input id="searchInput" type="search" autocomplete="off" placeholder="Names, laws, cities, monsters">
+                </label>
+                <div class="category-tabs" id="categoryTabs"></div>
+                <div class="entity-list" id="entityList"></div>
+            </aside>
+
+            <section class="panel detail-panel" id="detailPanel">
+                <div class="detail-hero">
+                    <button type="button" class="portrait-frame image-open-button" id="portraitButton" title="Open image viewer">
+                        <img id="entityImage" alt="" src="/assets/characters/the-fool.svg">
+                    </button>
+                    <div class="detail-heading">
+                        <p class="eyebrow" id="entityCategory">Character</p>
+                        <h2 id="entityName">The Fool</h2>
+                        <a id="mapLink" class="primary-link detail-map-link" href="/map.html" hidden>Open On Map</a>
+                        <div class="tag-row" id="entityTags"></div>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <section>
+                        <div class="section-heading">
+                            <h3>Biography</h3>
+                        </div>
+                        <p id="entityBiography"></p>
+                    </section>
+
+                    <section>
+                        <div class="section-heading">
+                            <h3 id="propertiesTitle">Physical Properties</h3>
+                        </div>
+                        <div class="property-grid" id="physicalGrid"></div>
+                    </section>
+
+                    <section>
+                        <div class="section-heading">
+                            <h3>AI Prompt</h3>
+                            <button type="button" class="icon-button" id="copyPromptButton" title="Copy AI prompt">Copy</button>
+                        </div>
+                        <pre class="prompt-box" id="promptBox"></pre>
+                    </section>
+
+                    <section>
+                        <div class="section-heading">
+                            <h3>Concept Art &amp; References</h3>
+                        </div>
+                        <div class="reference-gallery" id="referenceGallery"></div>
+                    </section>
+
+                    <section id="customSectionsWrap" hidden>
+                        <div class="section-heading">
+                            <h3>Repository Sections</h3>
+                        </div>
+                        <div class="custom-sections" id="customSections"></div>
+                    </section>
+
+                    <section id="crossReferenceSection" hidden>
+                        <div class="section-heading">
+                            <h3>Cross References</h3>
+                        </div>
+                        <div class="xref-grid" id="crossReferenceGrid"></div>
+                    </section>
+
+                    <section>
+                        <div class="section-heading">
+                            <h3>Important Details</h3>
+                        </div>
+                        <div class="detail-feed" id="detailFeed"></div>
+                    </section>
+                </div>
+            </section>
+
+            <aside class="panel intake-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Append</p>
+                        <h2>Create Or Add</h2>
+                    </div>
+                </div>
+
+                <form id="intakeForm" class="intake-form">
+                    <label>
+                        <span>Type</span>
+                        <select id="intakeCollection" name="collection">
+                            <option value="realms">Realm / Nation</option>
+                            <option value="characters">Character</option>
+                            <option value="cities">City</option>
+                            <option value="places">Place</option>
+                            <option value="rulers">Ruler</option>
+                            <option value="politics">Politics</option>
+                            <option value="factions">Faction</option>
+                            <option value="visualReferences">Visual Reference</option>
+                            <option value="items">Item</option>
+                            <option value="events">Event</option>
+                            <option value="openQuestions">Open Question</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Name</span>
+                        <input id="intakeName" name="name" type="text" autocomplete="off">
+                    </label>
+
+                    <label>
+                        <span>Image Path</span>
+                        <input id="imageSrc" name="imageSrc" type="text" autocomplete="off">
+                    </label>
+
+                    <label>
+                        <span>Image Prompt</span>
+                        <textarea id="imagePrompt" name="imagePrompt"></textarea>
+                    </label>
+
+                    <label>
+                        <span>Biography / Description</span>
+                        <textarea id="biographyInput" name="biography"></textarea>
+                    </label>
+
+                    <fieldset class="physical-fieldset">
+                        <legend>Physical Properties</legend>
+                        <input id="heightInput" placeholder="Height">
+                        <input id="ageInput" placeholder="Age">
+                        <input id="buildInput" placeholder="Build">
+                        <input id="hairInput" placeholder="Hair">
+                        <input id="eyesInput" placeholder="Eyes">
+                        <input id="voiceInput" placeholder="Voice">
+                        <textarea id="scaleInput" placeholder="Scale notes"></textarea>
+                    </fieldset>
+
+                    <label>
+                        <span>AI Prompt</span>
+                        <textarea id="aiPromptInput" name="aiPrompt"></textarea>
+                    </label>
+
+                    <label>
+                        <span>Important Details</span>
+                        <textarea id="detailsInput" name="details"></textarea>
+                    </label>
+
+                    <label>
+                        <span>Tags</span>
+                        <input id="tagsInput" name="tags" type="text" autocomplete="off">
+                    </label>
+
+                    <button type="submit" class="primary-button">Append / Create</button>
+                    <p class="form-status" id="formStatus" aria-live="polite"></p>
+                </form>
+            </aside>
+        </section>
+
+        <section class="world-grid" id="worldGrid"></section>
+
+        <section class="panel manuscript-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Manuscript</p>
+                    <h2>Draft Progress</h2>
+                </div>
+                <span id="draftProgressText">0% of target</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="draftProgressBar"></div>
+            </div>
+            <div class="chapter-list" id="chapterList"></div>
+        </section>
+    </main>
+
+    <div class="image-modal" id="imageModal" hidden>
+        <div class="image-modal-panel">
+            <div class="image-modal-toolbar">
+                <div>
+                    <strong id="modalTitle">Image</strong>
+                    <span id="modalZoomText">100%</span>
+                </div>
+                <label class="zoom-control">
+                    <span>Zoom</span>
+                    <input id="modalZoom" type="range" min="0.5" max="4" step="0.05" value="1">
+                </label>
+                <a id="modalDownload" class="download-button" href="#" download>Download</a>
+                <button type="button" class="ghost-button" id="modalClose">Close</button>
+            </div>
+            <div class="image-modal-stage">
+                <img id="modalImage" alt="">
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
