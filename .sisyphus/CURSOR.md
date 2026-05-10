@@ -39,3 +39,4 @@ The working tree is clean — nothing staged, nothing modified, no untracked fil
 ## Pinned Tickets
 
 - `TICKET-001` — closed: Initialize .sisyphus context/knowledge system
+- `TICKET-002` — **open**: Dashboard UI polish pass (layout, alignment, fonts, logo, overscan)
