@@ -278,20 +278,20 @@ function Add-PanelBox {
 }
 
 # ===================================================================
-# COLUMN 1 — LoRA tools + Creators folders + ComfyUI + Links
+# COLUMN 1 — Character suite + Creators folders + ComfyUI + Links
 # ===================================================================
 $launcherTools = @($creatorTools | Where-Object { $_.Launcher })
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-$loraTools = @($launcherTools | Where-Object { $_.Name -match 'LoRA|Character Design' })
-$otherLaunchers = @($launcherTools | Where-Object { $_.Name -notmatch 'LoRA|Character Design' })
+$charTools = @($launcherTools | Where-Object { $_.Name -match 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
+$otherLaunchers = @($launcherTools | Where-Object { $_.Name -notmatch 'LoRA Lab|LoRA Fusion|Character Forge|Character Studio' })
 
-$loraBtns = @()
-foreach ($t in $loraTools) {
-    $loraBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
+$charBtns = @()
+foreach ($t in $charTools) {
+    $charBtns += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$t.Launcher}
 }
 
-Add-PanelBox -Parent $col1 -Title "LORA TOOLS" -Buttons $loraBtns
+Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons $charBtns
 
 $otherBtns = @()
 foreach ($t in $otherLaunchers) {

@@ -506,7 +506,7 @@ Add-Type -AssemblyName System.Drawing
 # Form
 # ---------------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
-$form.Text          = "ComfyUI LoRA Tester"
+$form.Text          = "LoRA Lab"
 $form.Width         = 1280
 $form.Height        = 860
 $form.StartPosition = "CenterScreen"

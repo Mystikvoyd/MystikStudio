@@ -1369,7 +1369,7 @@ $Poses = Get-ConfigArray -Value $Config.poses
 $Scenes = Get-ConfigArray -Value $Config.scenes
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "Book Character Generator - ComfyUI"
+$form.Text = "Character Studio"
 $form.StartPosition = "CenterScreen"
 $form.Size = New-Object System.Drawing.Size(1450, 980)
 $form.MinimumSize = New-Object System.Drawing.Size(1320, 900)

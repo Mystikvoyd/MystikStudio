@@ -547,7 +547,7 @@ Add-Type -AssemblyName System.Drawing
 # Form
 # ---------------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
-$form.Text          = "ComfyUI Character Design"
+$form.Text          = "Character Forge"
 $form.Width         = 1280
 $form.Height        = 860
 $form.StartPosition = "CenterScreen"

@@ -1,6 +1,6 @@
 {
-    "name": "LoRA Tester 2",
-    "description": "Dual-LoRA testing — prompt + LoRA 1 + LoRA 2 to see combined outcomes",
+    "name": "LoRA Fusion",
+    "description": "Dual LoRA combination testing — see how two LoRAs interact before committing to final design",
     "color": "#5A328C",
     "launcher": "Open LoRA Tester 2.vbs"
 }

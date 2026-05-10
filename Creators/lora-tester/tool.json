@@ -1,6 +1,6 @@
 {
-    "name": "LoRA Tester",
-    "description": "Test LoRAs with ComfyUI — prompt, seed, sampler, checkpoint controls",
+    "name": "LoRA Lab",
+    "description": "Single LoRA consistency testing — validate models, tune strength, compare outputs",
     "color": "#325A8C",
     "launcher": "Open LoRA Tester.vbs"
 }
