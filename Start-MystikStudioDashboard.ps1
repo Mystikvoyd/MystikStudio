@@ -283,10 +283,10 @@ function Add-PanelBox {
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
 Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons @(
-    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio — generate characters with pose locking"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
-    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge — final character composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
-    @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion — dual LoRA combination testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
-    @{Text="lab";    Color="#4169E1"; Desc="LoRA Lab — single LoRA consistency testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters with pose locking"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
+    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge - final character composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
+    @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA combination testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
+    @{Text="lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA consistency testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
 )
 
 Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
