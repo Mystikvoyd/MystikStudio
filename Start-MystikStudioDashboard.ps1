@@ -189,6 +189,17 @@ function Add-Section([string]$Text) {
     $rp.Controls.Add($l); $script:y += 28
 }
 
+function Add-SubSection([string]$Text) {
+    $l = New-Object System.Windows.Forms.Label
+    $l.Text = "    $Text"; $l.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+    $l.ForeColor = [System.Drawing.Color]::FromArgb(110,120,140)
+    $l.BackColor = [System.Drawing.Color]::FromArgb(26,26,36)
+    $l.Left = 0; $l.Top = $script:y; $l.Height = 22
+    $l.Anchor = "Top, Left, Right"
+    $l.TextAlign = "MiddleLeft"
+    $rp.Controls.Add($l); $script:y += 24
+}
+
 function New-Btn([string]$Text, [string]$Color, [string]$Desc, [string]$Target, [string]$Mode) {
     $bx = 5 + [int]$script:col * 192
     $by = $script:y + [int]$script:row * 42
@@ -230,10 +241,16 @@ Add-Header
 Add-Section "CREATORS"
 New-RowStart
 foreach ($t in $creatorTools) {
-    if ($t.Folder) { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Folder }
-    else { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Launcher }
+    if (-not $t.Folder) { New-Btn -Text $t.Name -Color $t.Color -Desc $t.Description -Target $t.Launcher }
 }
-# Creators also have output/input
+New-RowEnd
+
+# --- Creator folders (sub-section) ---
+Add-SubSection "CREATORS FOLDERS"
+New-RowStart
+foreach ($t in $creatorTools) {
+    if ($t.Folder) { New-Btn -Text $t.Name -Color "#463728" -Desc $t.Description -Target $t.Folder }
+}
 New-Btn -Text "ComfyUI Output" -Color "#463728" -Desc "Generated images" -Target "C:\Users\Michael\Documents\ComfyUI\output"
 New-Btn -Text "ComfyUI Input"  -Color "#463728" -Desc "ControlNet images" -Target "C:\Users\Michael\Documents\ComfyUI\input"
 New-RowEnd
@@ -241,8 +258,7 @@ New-RowEnd
 # --- COMFYUI ---
 Add-Section "COMFYUI"
 New-RowStart
-New-Btn -Text "Workflows" -Color "#325032" -Desc "SDXL workflow JSONs" -Target (Join-Path $StudioRoot "Creators\comfyui\workflows")
-New-Btn -Text "Scripts"   -Color "#325032" -Desc "ComfyUI scripts"    -Target (Join-Path $StudioRoot "Creators\comfyui\scripts")
+New-Btn -Text "Scripts"   -Color "#325032" -Desc "ComfyUI automation scripts" -Target (Join-Path $StudioRoot "Creators\comfyui\scripts")
 New-RowEnd
 
 # --- WEB APPS ---

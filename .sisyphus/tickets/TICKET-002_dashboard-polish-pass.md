@@ -79,9 +79,13 @@ All items listed here are initial observations — more may surface during the w
   Inner panel now uses Anchor + resize handler to fill the right panel.
   Section labels and separator also use Anchor = "Top, Left, Right" to stretch.
 - **Form width**: Increased from 700→800 for more comfortable layout
+- **Layout reorg**: CREATORS section now shows only the 2 generators
+  (Character Generator, LoRA Tester). Added "CREATORS FOLDERS" sub-section
+  (indented, smaller font) under CREATORS with Workflows, Output, Input —
+  all using brown (#463728) folder color. COMFYUI section simplified to
+  just Scripts (the only unique ComfyUI item). Added `Add-SubSection` function.
 
 ### Remaining
-- Font sizes/colors need a style pass
-- Button alignment could be cleaner
-- Missing functionality and architectural improvements TBD
+- Font sizes/colors need a style pass (button text, section headers)
 - Tree usefulness still in question (user suggested buttons might replace it)
+- Missing functionality and architectural improvements TBD
