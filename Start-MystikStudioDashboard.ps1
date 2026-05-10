@@ -170,38 +170,55 @@ $rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width - 4 })
 $script:y = 16  # top margin to prevent header cutoff
 
 # -------------------------------------------------------------------
-# Header
+# Header — Character Suite Hub (centered)
 # -------------------------------------------------------------------
 $hdr = New-Object System.Windows.Forms.Panel
-$hdr.Height = 72; $hdr.Left = 0; $hdr.Top = $script:y
+$hdr.Height = 60; $hdr.Left = 0; $hdr.Top = $script:y
 $hdr.Anchor = "Top, Left, Right"
 $hdr.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
 
+# Icon on left
 if (Test-Path $iconPath) {
     $logo = New-Object System.Windows.Forms.PictureBox
     $logo.Image = [System.Drawing.Icon]::new($iconPath).ToBitmap()
-    $logo.Size = New-Object System.Drawing.Size(32, 32)
+    $logo.Size = New-Object System.Drawing.Size(28, 28)
     $logo.SizeMode = "StretchImage"
-    $logo.Left = 8; $logo.Top = 8
+    $logo.Left = 8; $logo.Top = 16
     $hdr.Controls.Add($logo)
 }
 
-$titleLbl = New-Object System.Windows.Forms.Label
-$titleLbl.Text = "MystikStudio"
-$titleLbl.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$titleLbl.ForeColor = [System.Drawing.Color]::FromArgb(220,180,100)
-$titleLbl.AutoSize = $true
-$titleLbl.Left = 44; $titleLbl.Top = 4
-$hdr.Controls.Add($titleLbl)
+# Centered hub items: Studio, forge, fusion, lab
+$hubData = @(
+    @{Text="Studio"; Color="#DC143C"}  # Crimson Red
+    @{Text="forge";  Color="#FF69B4"}  # Pink
+    @{Text="fusion"; Color="#8B00FF"}  # Purple
+    @{Text="lab";    Color="#4169E1"}  # Blue
+)
 
-$subLbl = New-Object System.Windows.Forms.Label
-$subLbl.Text = "Modular Creative Toolkit"
-$subLbl.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
-$subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 38
-$hdr.Controls.Add($subLbl)
+$hubGap = 14
+$hubLabels = @()
+foreach ($h in $hubData) {
+    $lbl = New-Object System.Windows.Forms.Label
+    $lbl.Text = $h.Text
+    $lbl.Font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
+    $lbl.ForeColor = ColorFromHex $h.Color
+    $lbl.AutoSize = $true
+    $lbl.Top = 18
+    $hdr.Controls.Add($lbl)
+    $hubLabels += $lbl
+}
+
+function Center-HubItems {
+    $tw = 0; foreach ($l in $hubLabels) { $tw += $l.Width }
+    $tw += $hubGap * ($hubLabels.Count - 1)
+    $lx = [math]::Max(44, ($hdr.Width - $tw) / 2)
+    foreach ($l in $hubLabels) { $l.Left = $lx; $lx += $l.Width + $hubGap }
+}
+Center-HubItems
+$hdr.Add_Resize({ Center-HubItems })
 
 $rp.Controls.Add($hdr)
-$script:y += 80
+$script:y += 68
 
 # -------------------------------------------------------------------
 # 3-column panel layout
