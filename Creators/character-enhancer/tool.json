@@ -1,0 +1,6 @@
+{
+    "name": "Character Enhancer",
+    "description": "Dual-LoRA character generation — chain character LoRA + enhancement LoRA (e.g. breast size) for consistent results",
+    "color": "#5A328C",
+    "launcher": "Open Character Enhancer.vbs"
+}

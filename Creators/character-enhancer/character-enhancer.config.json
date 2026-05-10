@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "comfyUrl": "http://127.0.0.1:8000",
+  "comfyInputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\input",
+  "comfyOutputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\output",
+  "workflowPath": "Creators\\comfyui\\workflows\\sdxl-basic-book-image.api.json",
+  "defaults": {
+    "width": 1024,
+    "height": 1024,
+    "batchSize": 1,
+    "steps": 30,
+    "cfg": 6,
+    "sampler": "dpmpp_2m",
+    "scheduler": "karras",
+    "lora1Strength": 0.75,
+    "lora2Strength": 0.65,
+    "prefix": "char_enhance"
+  },
+  "prompt": "full body original character, dark mythic fantasy realism, natural skin texture, cinematic lighting, detailed clothing, centered square composition",
+  "negativePrompt": "low quality, blurry, bad anatomy, deformed body, extra limbs, bad hands, bad feet, duplicate person, cropped head, cropped feet, text, watermark, logo, cartoon, anime, cgi, plastic skin"
+}
