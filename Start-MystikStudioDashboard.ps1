@@ -119,7 +119,7 @@ function Add-ButtonGrid([object[]]$Items, [string]$Mode) {
         
         if ($Mode -eq 'tool') {
             $btn.BackColor = ColorFromHex ([string]$item.Color)
-            $target = if ($item.Folder) { $item.Folder } else { $item.Launcher }
+            $target = if ($item.Folder) { $item.Folder } elseif ($item.Launcher) { $item.Launcher } else { $item.Path }
         }
         elseif ($Mode -eq 'path') {
             $btn.BackColor = ColorFromHex ([string]$item.Color)
