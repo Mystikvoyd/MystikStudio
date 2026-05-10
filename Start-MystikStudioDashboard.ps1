@@ -1,6 +1,5 @@
 # MystikStudio Modular Dashboard
 # Auto-discovers tools by scanning Creators/ and webpage/ for tool.json
-# Drop a new folder with tool.json + launcher -> auto button
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Windows.Forms
@@ -13,232 +12,237 @@ $StudioRoot = $PSScriptRoot
 # Discovery
 # -------------------------------------------------------------------
 function Find-Tools {
-    param([string]$ScanPath, [string]$SectionId)
+    param([string]$ScanPath)
     $tools = @()
     if (-not (Test-Path $ScanPath)) { return $tools }
     Get-ChildItem $ScanPath -Directory | Where-Object { $_.Name -notlike '_*' } | ForEach-Object {
-        $configPath = Join-Path $_.FullName "tool.json"
-        if (-not (Test-Path $configPath)) { return }
-        try { $cfg = Get-Content $configPath -Raw | ConvertFrom-Json } catch { return }
-        $launcher = if ($cfg.launcher) { Join-Path $_.FullName ([string]$cfg.launcher) } else { $null }
-        $folder   = if ($cfg.folder)   { Join-Path $_.FullName ([string]$cfg.folder) }     else { $null }
+        $cfgPath = Join-Path $_.FullName "tool.json"
+        if (-not (Test-Path $cfgPath)) { return }
+        try { $cfg = Get-Content $cfgPath -Raw | ConvertFrom-Json } catch { return }
         $tools += [pscustomobject]@{
-            Id          = $_.Name
             Name        = if ($cfg.name) { [string]$cfg.name } else { $_.Name }
             Description = if ($cfg.description) { [string]$cfg.description } else { "" }
-            Color       = if ($cfg.color) { [string]$cfg.color } else { "#444444" }
-            Launcher    = $launcher
-            Folder      = $folder
-            Section     = $SectionId
+            Color       = if ($cfg.color) { [string]$cfg.color } else { "#444" }
+            Launcher    = if ($cfg.launcher) { Join-Path $_.FullName ([string]$cfg.launcher) } else { $null }
+            Folder      = if ($cfg.folder)   { Join-Path $_.FullName ([string]$cfg.folder) }     else { $null }
         }
     }
     return $tools
 }
 
-$allTools = @()
-$allTools += Find-Tools -ScanPath (Join-Path $StudioRoot "Creators") -SectionId "creators"
-$allTools += Find-Tools -ScanPath (Join-Path $StudioRoot "webpage")  -SectionId "webpage"
+$creatorTools = Find-Tools -ScanPath (Join-Path $StudioRoot "Creators")
+$webTools     = Find-Tools -ScanPath (Join-Path $StudioRoot "webpage")
 
 # -------------------------------------------------------------------
-# Fixed items
+# Color helper
 # -------------------------------------------------------------------
-$fixedCreators = @(
-    @{Name="ComfyUI Output"; Desc="Generated images";    Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\output"},
-    @{Name="ComfyUI Input";  Desc="ControlNet images";   Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\input"}
-)
-
-$fixedComfy = @(
-    @{Name="Workflows Folder"; Desc="SDXL workflow JSONs"; Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\workflows")},
-    @{Name="Scripts Folder";   Desc="ComfyUI scripts";     Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
-)
-
-$fixedProject = @(
-    @{Name="Book Design";     Desc="Assets, manuscript";  Color="#373746"; Path=(Join-Path $StudioRoot "book-design")},
-    @{Name="Shared Modules";  Desc="Session, Sizes";      Color="#373746"; Path=(Join-Path $StudioRoot "shared")},
-    @{Name="Reports";         Desc="Session HTML";        Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\Reports"},
-    @{Name="LoRA Models";     Desc="Browse LoRA files";   Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\loras"},
-    @{Name="Checkpoints";     Desc="Checkpoint files";   Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
-)
-
-$webLinks = @(
-    @{Name="GitHub Repo";     Desc="MystikStudio on GitHub"; Color="#24292E"; Url="https://github.com/Mystikvoyd/MystikStudio"}
-)
+function ColorFromHex([string]$Hex) {
+    if ($Hex -match '^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$') {
+        return [System.Drawing.Color]::FromArgb([int]::Parse($Matches[1],'HexNumber'),
+                                                 [int]::Parse($Matches[2],'HexNumber'),
+                                                 [int]::Parse($Matches[3],'HexNumber'))
+    }
+    return [System.Drawing.Color]::FromArgb(60,60,70)
+}
 
 # -------------------------------------------------------------------
 # Form
 # -------------------------------------------------------------------
-$form               = New-Object System.Windows.Forms.Form
-$form.Text          = "MystikStudio Dashboard"
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "MystikStudio Dashboard"
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
-$form.MaximizeBox    = $false
-$form.Font           = New-Object System.Drawing.Font("Segoe UI", 9)
-$form.BackColor      = [System.Drawing.Color]::FromArgb(24, 24, 32)
+$form.MaximizeBox = $false
+$form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$form.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$form.AutoScroll = $true
+$form.ClientSize = New-Object System.Drawing.Size(400, 600)
 
-function Parse-Color {
-    param([string]$Hex)
-    if ($Hex -match '^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$') {
-        return [System.Drawing.Color]::FromArgb([convert]::ToInt32($Matches[1], 16),
-                                                 [convert]::ToInt32($Matches[2], 16),
-                                                 [convert]::ToInt32($Matches[3], 16))
-    }
-    return [System.Drawing.Color]::FromArgb(60, 60, 70)
+$panel = New-Object System.Windows.Forms.Panel
+$panel.AutoSize = $true
+$panel.AutoSizeMode = "GrowAndShrink"
+$panel.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$panel.Left = 0; $panel.Top = 0
+$panel.MinimumSize = New-Object System.Drawing.Size(400, 0)
+$form.Controls.Add($panel)
+
+# ----- Header -----
+function Add-Header {
+    $p = New-Object System.Windows.Forms.Panel
+    $p.Width = 390; $p.Height = 56; $p.Left = 5; $p.Top = $y
+    $p.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+    
+    $t = New-Object System.Windows.Forms.Label
+    $t.Text = "MystikStudio"; $t.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+    $t.ForeColor = [System.Drawing.Color]::FromArgb(220,180,100); $t.AutoSize = $true
+    $t.Left = 8; $t.Top = 4; $p.Controls.Add($t)
+    
+    $s = New-Object System.Windows.Forms.Label
+    $s.Text = "Modular Creative Toolkit"; $s.ForeColor = [System.Drawing.Color]::FromArgb(130,130,150)
+    $s.AutoSize = $true; $s.Left = 10; $s.Top = 30; $p.Controls.Add($s)
+    
+    $panel.Controls.Add($p)
+    $script:y += 60
 }
 
-function Add-SectionLabel {
-    param([string]$Text, [int]$Y)
-    $lbl = New-Object System.Windows.Forms.Label
-    $lbl.Text = $Text
-    $lbl.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-    $lbl.ForeColor = [System.Drawing.Color]::FromArgb(140, 160, 200)
-    $lbl.AutoSize = $true; $lbl.Left = 20; $lbl.Top = $Y
-    $form.Controls.Add($lbl)
+# ----- Section label -----
+function Add-Section([string]$Text) {
+    $p = New-Object System.Windows.Forms.Panel
+    $p.Width = 390; $p.Height = 22; $p.Left = 5; $p.Top = $script:y
+    
+    $l = New-Object System.Windows.Forms.Label
+    $l.Text = $Text; $l.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+    $l.ForeColor = [System.Drawing.Color]::FromArgb(140,160,200); $l.AutoSize = $true
+    $l.Left = 8; $l.Top = 0; $p.Controls.Add($l)
+    
+    $panel.Controls.Add($p)
+    $script:y += 26
 }
 
-function New-Button {
-    param([int]$X, [int]$Y, [int]$W, [int]$H, [string]$Text, [string]$Tip, [string]$ColorHex,
-          [string]$OpenFolder, [string]$OpenFile, [string]$OpenUrl)
+# ----- Button grid: 2 columns, 175px each, 40px row height -----
+function Add-ButtonGrid([object[]]$Items, [string]$Mode) {
+    $cx = 5; $startY = $script:y
     
-    $btn = New-Object System.Windows.Forms.Button
-    $btn.Text = $Text; $btn.Left = $X; $btn.Top = $Y; $btn.Width = $W; $btn.Height = $H
-    $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
-    $btn.BackColor = Parse-Color -Hex $ColorHex
-    $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
-    $btn.FlatAppearance.BorderSize = 0
-    
-    if ($Tip) { (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $Tip) }
-    
-    # CRITICAL: Resolve paths to strings before creating closure
-    if ($OpenFile -and (Test-Path -LiteralPath $OpenFile)) {
-        $target = $OpenFile
-        $btn.Add_Click({ Start-Process -FilePath $target }.GetNewClosure())
-    }
-    elseif ($OpenFolder -and (Test-Path -LiteralPath $OpenFolder)) {
-        $target = $OpenFolder
-        $btn.Add_Click({ Start-Process -FilePath $target }.GetNewClosure())
-    }
-    elseif ($OpenUrl) {
-        $target = $OpenUrl
-        $btn.Add_Click({ Start-Process $target }.GetNewClosure())
-    }
-    else {
-        $btn.Enabled = $false
-        $btn.Text += " (missing)"
-    }
-    
-    $form.Controls.Add($btn)
-    return $btn
-}
-
-# ----- Layout -----
-$y = 14
-
-$title = New-Object System.Windows.Forms.Label
-$title.Text = "MystikStudio"; $title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$title.ForeColor = [System.Drawing.Color]::FromArgb(220, 180, 100)
-$title.AutoSize = $true; $title.Left = 20; $title.Top = $y
-$form.Controls.Add($title); $y += 28
-
-$sub = New-Object System.Windows.Forms.Label
-$sub.Text = "Modular Creative Toolkit"; $sub.ForeColor = [System.Drawing.Color]::FromArgb(130, 130, 150)
-$sub.AutoSize = $true; $sub.Left = 22; $sub.Top = $y
-$form.Controls.Add($sub); $y += 24
-
-$sep = New-Object System.Windows.Forms.Label
-$sep.BorderStyle = "Fixed3D"; $sep.Left = 16; $sep.Top = $y; $sep.Width = 374; $sep.Height = 2
-$form.Controls.Add($sep); $y += 10
-
-# ----- Helper to lay out 2-column button rows -----
-function Layout-Buttons {
-    param([object[]]$Items, [string]$Type)
-    $cx = 20
-    foreach ($item in $Items) {
-        switch ($Type) {
-            'tool' {
-                if ($item.Folder) {
-                    New-Button -X $cx -Y $y -W 175 -H 34 -Text $item.Name -Tip $item.Description `
-                        -ColorHex $item.Color -OpenFolder $item.Folder
-                } else {
-                    New-Button -X $cx -Y $y -W 175 -H 34 -Text $item.Name -Tip $item.Description `
-                        -ColorHex $item.Color -OpenFile $item.Launcher
-                }
-            }
-            'path' {
-                New-Button -X $cx -Y $y -W 175 -H 34 -Text $item.Name -Tip $item.Desc `
-                    -ColorHex $item.Color -OpenFolder $item.Path
-            }
-            'url' {
-                New-Button -X $cx -Y $y -W 175 -H 34 -Text $item.Name -Tip $item.Desc `
-                    -ColorHex $item.Color -OpenUrl $item.Url
-            }
+    for ($i = 0; $i -lt $Items.Count; $i++) {
+        $item = $Items[$i]
+        $col = $i % 2
+        $row = [Math]::Floor($i / 2)
+        $bx = 5 + $col * 192
+        $by = $startY + $row * 42
+        
+        $btn = New-Object System.Windows.Forms.Button
+        $btn.Text = [string]$item.Name
+        $btn.Left = $bx; $btn.Top = $by; $btn.Width = 184; $btn.Height = 36
+        $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
+        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
+        $btn.FlatAppearance.BorderSize = 0
+        
+        if ($Mode -eq 'tool') {
+            $btn.BackColor = ColorFromHex ([string]$item.Color)
+            $target = if ($item.Folder) { $item.Folder } else { $item.Launcher }
         }
-        if ($cx -eq 20) { $cx = 208 } else { $cx = 20; $y += 40 }
+        elseif ($Mode -eq 'path') {
+            $btn.BackColor = ColorFromHex ([string]$item.Color)
+            $target = [string]$item.Path
+        }
+        elseif ($Mode -eq 'url') {
+            $btn.BackColor = ColorFromHex ([string]$item.Color)
+            $target = [string]$item.Url
+        }
+        
+        if ($target) {
+            $finalTarget = $target
+            if ($Mode -eq 'url') {
+                $btn.Add_Click({ Start-Process $finalTarget }.GetNewClosure())
+            } else {
+                $btn.Add_Click({ Start-Process -FilePath $finalTarget }.GetNewClosure())
+            }
+        } else {
+            $btn.Enabled = $false
+        }
+        
+        if ($item.Description) {
+            (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, [string]$item.Description)
+        }
+        
+        $panel.Controls.Add($btn)
     }
-    if ($cx -eq 208) { $y += 40 }
+    
+    $totalRows = [Math]::Ceiling($Items.Count / 2.0)
+    if ($totalRows -eq 0) { $totalRows = 0 }
+    $script:y += [int]($totalRows * 42) + 10
 }
 
-# ----- CREATORS section -----
-Add-SectionLabel -Text "CREATORS" -Y $y; $y += 22
-Layout-Buttons -Items ($allTools | Where-Object { $_.Section -eq "creators" }) -Type "tool"
-Layout-Buttons -Items $fixedCreators -Type "path"
-$y += 8
-
-# ----- COMFYUI section -----
-Add-SectionLabel -Text "COMFYUI" -Y $y; $y += 22
-Layout-Buttons -Items $fixedComfy -Type "path"
-$y += 8
-
-# ----- WEB APPS section -----
-$webTools = $allTools | Where-Object { $_.Section -eq "webpage" }
-if ($webTools) {
-    Add-SectionLabel -Text "WEB APPS" -Y $y; $y += 22
-    Layout-Buttons -Items $webTools -Type "tool"
-    $y += 8
+# ----- Thin 3-column row for small buttons -----
+function Add-SmallRow([object[]]$Items) {
+    $startY = $script:y
+    for ($i = 0; $i -lt $Items.Count; $i++) {
+        $item = $Items[$i]
+        $bx = 5 + $i * 128
+        $btn = New-Object System.Windows.Forms.Button
+        $btn.Text = [string]$item.Name
+        $btn.Left = $bx; $btn.Top = $startY; $btn.Width = 120; $btn.Height = 36
+        $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
+        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
+        $btn.FlatAppearance.BorderSize = 0
+        $btn.BackColor = ColorFromHex ([string]$item.Color)
+        
+        $finalPath = [string]$item.Path
+        $btn.Add_Click({ Start-Process -FilePath $finalPath }.GetNewClosure())
+        
+        if ($item.Desc) {
+            (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, [string]$item.Desc)
+        }
+        $panel.Controls.Add($btn)
+    }
+    $script:y += 46
 }
 
-# ----- WEB LINKS section -----
-Add-SectionLabel -Text "LINKS" -Y $y; $y += 22
-Layout-Buttons -Items $webLinks -Type "url"
-$y += 8
-
-# ----- PROJECT FILES section -----
-Add-SectionLabel -Text "PROJECT FILES" -Y $y; $y += 22
-$cx = 20; $count = 0
-foreach ($item in $fixedProject) {
-    $w = if ($count -ge 3) { 175 } else { 113 }
-    if ($count -eq 3) { $cx = 20; $y += 40 }
-    New-Button -X $cx -Y $y -W $w -H 34 -Text $item.Name -Tip $item.Desc `
-        -ColorHex $item.Color -OpenFolder $item.Path
-    $cx += ($w + 7)
-    if ($cx -gt 300) { $cx = 20; $y += 40 }
-    $count++
+# ----- Separator -----
+function Add-Separator {
+    $s = New-Object System.Windows.Forms.Label
+    $s.BorderStyle = "Fixed3D"; $s.Left = 5; $s.Top = $script:y; $s.Width = 384; $s.Height = 2
+    $panel.Controls.Add($s); $script:y += 8
 }
-if ($cx -ne 20) { $y += 40 }
-$y += 10
 
-# ----- Footer -----
-$sep2 = New-Object System.Windows.Forms.Label
-$sep2.BorderStyle = "Fixed3D"; $sep2.Left = 16; $sep2.Top = $y; $sep2.Width = 374; $sep2.Height = 2
-$form.Controls.Add($sep2); $y += 12
+# ===================================================================
+# Build the dashboard
+# ===================================================================
+$script:y = 4
 
-$ver = New-Object System.Windows.Forms.Label
-$ver.Text = "MystikStudio  |  H:\MystikStudio  |  $(@($allTools).Count) tool(s)"
-$ver.ForeColor = [System.Drawing.Color]::FromArgb(80, 80, 90)
-$ver.Font = New-Object System.Drawing.Font("Segoe UI", 7)
-$ver.AutoSize = $true; $ver.Left = 20; $ver.Top = $y
-$form.Controls.Add($ver)
+Add-Header
+Add-Separator
 
-$btnClose = New-Object System.Windows.Forms.Button
-$btnClose.Text = "Close"; $btnClose.Left = 318; $btnClose.Top = $y - 2
-$btnClose.Width = 56; $btnClose.Height = 24; $btnClose.FlatStyle = "Flat"
-$btnClose.BackColor = [System.Drawing.Color]::FromArgb(60, 60, 70)
-$btnClose.ForeColor = [System.Drawing.Color]::FromArgb(160, 160, 170)
-$btnClose.Font = New-Object System.Drawing.Font("Segoe UI", 8)
-$btnClose.FlatAppearance.BorderSize = 0
-$btnClose.Add_Click({ $form.Close() })
-$form.Controls.Add($btnClose)
+# --- CREATORS ---
+Add-Section "CREATORS"
+$creatorItems = @($creatorTools) + @(
+    [pscustomobject]@{Name="ComfyUI Output"; Description="Generated images";    Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\output"}
+    [pscustomobject]@{Name="ComfyUI Input";  Description="ControlNet images";   Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\input"}
+)
+Add-ButtonGrid -Items $creatorItems -Mode "tool"
 
-$form.Height = $y + 60
-$form.Width = 420
+# --- COMFYUI ---
+Add-Section "COMFYUI"
+Add-ButtonGrid -Items @(
+    [pscustomobject]@{Name="Workflows"; Description="SDXL workflow JSONs"; Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\workflows")}
+    [pscustomobject]@{Name="Scripts";   Description="ComfyUI invoke scripts"; Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
+) -Mode "path"
+
+# --- WEB APPS ---
+if ($webTools.Count -gt 0) {
+    Add-Section "WEB APPS"
+    Add-ButtonGrid -Items @($webTools) -Mode "tool"
+}
+
+# --- LINKS ---
+Add-Section "LINKS"
+Add-ButtonGrid -Items @(
+    [pscustomobject]@{Name="GitHub Repo"; Description="MystikStudio on GitHub"; Color="#24292E"; Url="https://github.com/Mystikvoyd/MystikStudio"}
+) -Mode "url"
+
+# --- PROJECT FILES ---
+Add-Section "PROJECT FILES"
+Add-SmallRow -Items @(
+    [pscustomobject]@{Name="Book Design";    Desc="Assets, manuscript"; Color="#373746"; Path=(Join-Path $StudioRoot "book-design")}
+    [pscustomobject]@{Name="Shared";         Desc="Session, Sizes";     Color="#373746"; Path=(Join-Path $StudioRoot "shared")}
+    [pscustomobject]@{Name="Reports";        Desc="Session HTML";       Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\Reports"}
+)
+Add-SmallRow -Items @(
+    [pscustomobject]@{Name="LoRA Models";    Desc="Browse LoRA files";    Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\loras"}
+    [pscustomobject]@{Name="Checkpoints";    Desc="Checkpoint files";     Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
+)
+
+# --- Footer ---
+Add-Separator
+$footer = New-Object System.Windows.Forms.Label
+$footer.Text = "MystikStudio  |  H:\MystikStudio  |  $(@($creatorTools).Count + @($webTools).Count) tools"
+$footer.ForeColor = [System.Drawing.Color]::FromArgb(80,80,90)
+$footer.Font = New-Object System.Drawing.Font("Segoe UI", 7)
+$footer.AutoSize = $true; $footer.Left = 10; $footer.Top = $script:y
+$panel.Controls.Add($footer)
+$script:y += 30
+
+# Auto-size form to content
+$form.ClientSize = New-Object System.Drawing.Size(400, [Math]::Min($script:y + 10, 900))
 $form.Add_Shown({ $form.Activate() })
 [void]$form.ShowDialog()
