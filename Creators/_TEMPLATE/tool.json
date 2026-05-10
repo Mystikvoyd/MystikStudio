@@ -1,0 +1,6 @@
+﻿{
+    "name": "My New Tool",
+    "description": "What this tool does",
+    "color": "#444444",
+    "launcher": "launcher.vbs"
+}

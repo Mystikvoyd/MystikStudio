@@ -1,0 +1,6 @@
+{
+    "name": "Story Dashboard App",
+    "description": "Desktop app variant for book manuscript management",
+    "color": "#784628",
+    "launcher": "Open Story Dashboard App.cmd"
+}

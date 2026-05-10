@@ -1,53 +1,81 @@
+# MystikStudio Modular Dashboard
+# Auto-discovers tools by scanning Creators/ and webpage/ for tool.json
+# Drop a new folder in Creators/ with a tool.json + launcher and it appears
+
 $ErrorActionPreference = "Stop"
-
-$StudioRoot  = $PSScriptRoot
-$Creators    = Join-Path $StudioRoot "Creators"
-$Webpage     = Join-Path $StudioRoot "webpage"
-$BookDesign  = Join-Path $StudioRoot "book-design"
-$Shared      = Join-Path $StudioRoot "shared"
-$ComfyOutput = "C:\Users\Michael\Documents\ComfyUI\output"
-$ComfyInput  = "C:\Users\Michael\Documents\ComfyUI\input"
-
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
+$StudioRoot = $PSScriptRoot
+
+# -------------------------------------------------------------------
+# Discovery: scan for tool folders
+# -------------------------------------------------------------------
+function Find-Tools {
+    param([string]$ScanPath, [string]$SectionId)
+    $tools = @()
+    if (-not (Test-Path $ScanPath)) { return $tools }
+    Get-ChildItem $ScanPath -Directory | ForEach-Object {
+        $configPath = Join-Path $_.FullName "tool.json"
+        if (Test-Path $configPath) {
+            try { $cfg = Get-Content $configPath -Raw | ConvertFrom-Json } catch { return }
+            $tool = [pscustomobject]@{
+                Id          = $_.Name
+                Name        = if ($cfg.name) { [string]$cfg.name } else { $_.Name }
+                Description = if ($cfg.description) { [string]$cfg.description } else { "" }
+                Color       = if ($cfg.color) { [string]$cfg.color } else { "#444444" }
+                Launcher    = if ($cfg.launcher) { Join-Path $_.FullName ([string]$cfg.launcher) } else { $null }
+                Folder      = if ($cfg.folder) { Join-Path $_.FullName ([string]$cfg.folder) } else { $null }
+                Section     = $SectionId
+                Path        = $_.FullName
+            }
+            $tools += $tool
+        }
+    }
+    return $tools
+}
+
+# Scan Creators and webpage
+$allTools = @()
+$allTools += Find-Tools -ScanPath (Join-Path $StudioRoot "Creators") -SectionId "creators"
+$allTools += Find-Tools -ScanPath (Join-Path $StudioRoot "webpage") -SectionId "webpage"
+
+# -------------------------------------------------------------------
+# Fixed items (not folder-based)
+# -------------------------------------------------------------------
+$fixedCreators = @(
+    @{Name="ComfyUI Output"; Desc="Generated images"; Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\output"},
+    @{Name="ComfyUI Input";  Desc="ControlNet images";  Color="#463728"; Path="C:\Users\Michael\Documents\ComfyUI\input"}
+)
+
+$fixedWorkflows = @(
+    @{Name="Workflows Folder"; Desc="SDXL workflow JSONs"; Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\workflows")},
+    @{Name="Scripts Folder";   Desc="ComfyUI scripts";    Color="#325032"; Path=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
+)
+
+$fixedProject = @(
+    @{Name="Book Design";          Desc="Assets, manuscript, reference"; Color="#373746"; Path=(Join-Path $StudioRoot "book-design")},
+    @{Name="Shared Modules";       Desc="SessionModule, Sizes";         Color="#373746"; Path=(Join-Path $StudioRoot "shared")},
+    @{Name="Reports";              Desc="Session HTML reports";         Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\Reports"},
+    @{Name="LoRA Models";          Desc="Browse LoRA files";            Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\loras"},
+    @{Name="Checkpoints";          Desc="Browse checkpoint files";      Color="#373746"; Path="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
+)
+
+# -------------------------------------------------------------------
+# Form
+# -------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
 $form.Text          = "MystikStudio Dashboard"
 $form.Width         = 420
-$form.Height        = 620
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox    = $false
 $form.Font           = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor      = [System.Drawing.Color]::FromArgb(24, 24, 32)
 
-# Title
-$title = New-Object System.Windows.Forms.Label
-$title.Text = "MystikStudio"
-$title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
-$title.ForeColor = [System.Drawing.Color]::FromArgb(220, 180, 100)
-$title.AutoSize = $true
-$title.Left = 20; $title.Top = 14
-$form.Controls.Add($title)
-
-$subtitle = New-Object System.Windows.Forms.Label
-$subtitle.Text = "Creative Toolkit Dashboard"
-$subtitle.Font = New-Object System.Drawing.Font("Segoe UI", 9)
-$subtitle.ForeColor = [System.Drawing.Color]::FromArgb(130, 130, 150)
-$subtitle.AutoSize = $true
-$subtitle.Left = 22; $subtitle.Top = 42
-$form.Controls.Add($subtitle)
-
-# Separator
-$sep = New-Object System.Windows.Forms.Label
-$sep.BorderStyle = "Fixed3D"
-$sep.Left = 16; $sep.Top = 68; $sep.Width = 374; $sep.Height = 2
-$form.Controls.Add($sep)
-
-$y = 78
-
-function Add-SectionHeader {
+# ----- helpers -----
+function Add-SectionLabel {
     param([string]$Text, [int]$Y)
     $lbl = New-Object System.Windows.Forms.Label
     $lbl.Text = $Text
@@ -59,152 +87,161 @@ function Add-SectionHeader {
     return $lbl
 }
 
-function Add-Button {
-    param([string]$Text, [int]$X, [int]$Y, [int]$W, [int]$H, [scriptblock]$Action, [System.Drawing.Color]$BgColor, [string]$Tooltip)
+function Parse-Color {
+    param([string]$Hex)
+    if ($Hex -match '^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$') {
+        return [System.Drawing.Color]::FromArgb([convert]::ToInt32($Matches[1], 16),
+                                                 [convert]::ToInt32($Matches[2], 16),
+                                                 [convert]::ToInt32($Matches[3], 16))
+    }
+    return [System.Drawing.Color]::FromArgb(60, 60, 70)
+}
+
+function Add-ToolButton {
+    param([int]$X, [int]$Y, [int]$W, [int]$H, [string]$Text, [string]$Desc, [string]$LaunchPath,
+          [string]$FolderPath, [string]$ColorHex, [string]$Tooltip)
+    
     $btn = New-Object System.Windows.Forms.Button
     $btn.Text = $Text
     $btn.Left = $X; $btn.Top = $Y; $btn.Width = $W; $btn.Height = $H
     $btn.FlatStyle = "Flat"
-    $btn.BackColor = $BgColor
+    $btn.BackColor = Parse-Color -Hex $ColorHex
     $btn.ForeColor = [System.Drawing.Color]::White
     $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
     $btn.FlatAppearance.BorderSize = 0
+    
     if ($Tooltip) {
         $tip = New-Object System.Windows.Forms.ToolTip
         $tip.SetToolTip($btn, $Tooltip)
     }
-    $btn.Add_Click($Action)
+    
+    if ($LaunchPath -and (Test-Path $LaunchPath)) {
+        $btn.Add_Click({ Start-Process $LaunchPath })
+    } elseif ($FolderPath -and (Test-Path $FolderPath)) {
+        $btn.Add_Click({ Start-Process $FolderPath })
+    } elseif ($LaunchPath) {
+        $btn.Enabled = $false
+        $btn.Text += " (missing)"
+    }
+    
     $form.Controls.Add($btn)
     return $btn
 }
 
-# ------ Creators Section ------
-$y += 2
-Add-SectionHeader -Text "CREATORS" -Y $y; $y += 22
+# ----- Layout -----
+$y = 14
 
-Add-Button -Text "LoRA Tester" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(50, 90, 140)) `
-    -Tooltip "Test LoRAs with ComfyUI"
+# Title
+$title = New-Object System.Windows.Forms.Label
+$title.Text = "MystikStudio"
+$title.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Bold)
+$title.ForeColor = [System.Drawing.Color]::FromArgb(220, 180, 100)
+$title.AutoSize = $true; $title.Left = 20; $title.Top = $y
+$form.Controls.Add($title); $y += 28
 
-Add-Button -Text "Character Generator" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(80, 60, 130)) `
-    -Tooltip "Generate book characters with pose and identity locking"
+$sub = New-Object System.Windows.Forms.Label
+$sub.Text = "Modular Creative Toolkit"
+$sub.ForeColor = [System.Drawing.Color]::FromArgb(130, 130, 150)
+$sub.AutoSize = $true; $sub.Left = 22; $sub.Top = $y
+$form.Controls.Add($sub); $y += 26
 
-$y += 40
+# Separator
+$sep = New-Object System.Windows.Forms.Label
+$sep.BorderStyle = "Fixed3D"; $sep.Left = 16; $sep.Top = $y; $sep.Width = 374; $sep.Height = 2
+$form.Controls.Add($sep); $y += 10
 
-Add-Button -Text "Debug LoRA Workflow" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -File `"$StudioRoot\Creators\lora-tester\Debug-LoraWorkflow.ps1`"" } `
-    -BgColor ([System.Drawing.Color]::FromArgb(60, 60, 70)) `
-    -Tooltip "Inspect JSON sent to ComfyUI"
+# ----- CREATORS -----
+Add-SectionLabel -Text "CREATORS" -Y $y; $y += 22
+$cx = 20
+foreach ($tool in ($allTools | Where-Object { $_.Section -eq "creators" })) {
+    if ($tool.Folder) {
+        Add-ToolButton -X $cx -Y $y -W 175 -H 34 -Text $tool.Name `
+            -Desc $tool.Description -FolderPath $tool.Folder -ColorHex $tool.Color `
+            -Tooltip $tool.Description
+    } else {
+        Add-ToolButton -X $cx -Y $y -W 175 -H 34 -Text $tool.Name `
+            -Desc $tool.Description -LaunchPath $tool.Launcher -ColorHex $tool.Color `
+            -Tooltip $tool.Description
+    }
+    if ($cx -eq 20) { $cx = 208 } else { $cx = 20; $y += 40 }
+}
+if ($cx -eq 208) { $y += 40 }  # finish row if odd count
 
-Add-Button -Text "Test Session Report" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -File `"$StudioRoot\Creators\lora-tester\Test-SessionReport.ps1`"" } `
-    -BgColor ([System.Drawing.Color]::FromArgb(60, 60, 70)) `
-    -Tooltip "Generate session report HTML"
+# Fixed creator items (ComfyUI paths)
+$cx = 20
+foreach ($item in $fixedCreators) {
+    Add-ToolButton -X $cx -Y $y -W 175 -H 34 -Text $item.Name `
+        -Desc $item.Desc -FolderPath $item.Path -ColorHex $item.Color -Tooltip $item.Desc
+    if ($cx -eq 20) { $cx = 208 } else { $cx = 20; $y += 40 }
+}
+if ($cx -eq 208) { $y += 40 }
+$y += 8
 
-$y += 48
+# ----- COMFYUI WORKFLOWS -----
+Add-SectionLabel -Text "COMFYUI" -Y $y; $y += 22
+$cx = 20
+foreach ($item in $fixedWorkflows) {
+    Add-ToolButton -X $cx -Y $y -W 175 -H 34 -Text $item.Name `
+        -Desc $item.Desc -FolderPath $item.Path -ColorHex $item.Color -Tooltip $item.Desc
+    if ($cx -eq 20) { $cx = 208 } else { $cx = 20; $y += 40 }
+}
+if ($cx -eq 208) { $y += 40 }
+$y += 8
 
-# ------ ComfyUI Section ------
-Add-SectionHeader -Text "COMFYUI" -Y $y; $y += 22
+# ----- WEB APPS -----
+$webTools = $allTools | Where-Object { $_.Section -eq "webpage" }
+if ($webTools) {
+    Add-SectionLabel -Text "WEB APPS" -Y $y; $y += 22
+    $cx = 20
+    foreach ($tool in $webTools) {
+        Add-ToolButton -X $cx -Y $y -W 175 -H 34 -Text $tool.Name `
+            -Desc $tool.Description -LaunchPath $tool.Launcher -ColorHex $tool.Color `
+            -Tooltip $tool.Description
+        if ($cx -eq 20) { $cx = 208 } else { $cx = 20; $y += 40 }
+    }
+    if ($cx -eq 208) { $y += 40 }
+    $y += 8
+}
 
-Add-Button -Text "Open Workflows Folder" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "Creators\comfyui\workflows") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(50, 80, 50)) `
-    -Tooltip "SDXL workflow JSON files"
+# ----- PROJECT FILES -----
+Add-SectionLabel -Text "PROJECT FILES" -Y $y; $y += 22
+$cx = 20; $count = 0
+foreach ($item in $fixedProject) {
+    $w = if ($count -ge 3) { 175 } else { 113 }
+    if ($count -eq 3) { $cx = 20; $y += 40 }
+    Add-ToolButton -X $cx -Y $y -W $w -H 34 -Text $item.Name `
+        -Desc $item.Desc -FolderPath $item.Path -ColorHex $item.Color -Tooltip $item.Desc
+    $cx += ($w + 7)
+    if ($cx -gt 300) { $cx = 20; $y += 40 }
+    $count++
+}
+if ($cx -ne 20) { $y += 40 }
+$y += 10
 
-Add-Button -Text "Open Scripts Folder" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "Creators\comfyui\scripts") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(50, 80, 50)) `
-    -Tooltip "ComfyUI invoke and import scripts"
-
-$y += 40
-
-Add-Button -Text "ComfyUI Output" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process $ComfyOutput } `
-    -BgColor ([System.Drawing.Color]::FromArgb(70, 55, 40)) `
-    -Tooltip "Generated images"
-
-Add-Button -Text "ComfyUI Input" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process $ComfyInput } `
-    -BgColor ([System.Drawing.Color]::FromArgb(70, 55, 40)) `
-    -Tooltip "ControlNet and input images"
-
-$y += 48
-
-# ------ Webpage Section ------
-Add-SectionHeader -Text "WEB APPS" -Y $y; $y += 22
-
-Add-Button -Text "Story Dashboard" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "webpage\story-dashboard\Open Story Dashboard.cmd") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(120, 70, 40)) `
-    -Tooltip "Local web dashboard for book tracking"
-
-Add-Button -Text "Story Dashboard App" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process (Join-Path $StudioRoot "webpage\story-dashboard-app\Open Story Dashboard App.cmd") } `
-    -BgColor ([System.Drawing.Color]::FromArgb(120, 70, 40)) `
-    -Tooltip "Desktop app variant"
-
-$y += 48
-
-# ------ Project Section ------
-Add-SectionHeader -Text "PROJECT FILES" -Y $y; $y += 22
-
-Add-Button -Text "Book Design" -X 20 -Y $y -W 113 -H 34 `
-    -Action { Start-Process $BookDesign } `
-    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
-    -Tooltip "Assets, manuscript, notes, reference"
-
-Add-Button -Text "Shared Modules" -X 140 -Y $y -W 113 -H 34 `
-    -Action { Start-Process $Shared } `
-    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
-    -Tooltip "SessionModule.ps1, Sizes.ps1"
-
-Add-Button -Text "Reports" -X 260 -Y $y -W 113 -H 34 `
-    -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\Reports" } `
-    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
-    -Tooltip "Session report HTML files"
-
-$y += 40
-
-Add-Button -Text "ComfyUI Models/LoRAs" -X 20 -Y $y -W 175 -H 34 `
-    -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\models\loras" } `
-    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
-    -Tooltip "Browse LoRA files"
-
-Add-Button -Text "ComfyUI Checkpoints" -X 208 -Y $y -W 175 -H 34 `
-    -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\models\checkpoints" } `
-    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
-    -Tooltip "Browse checkpoint files"
-
-$y += 48
-
-# ------ Footer ------
+# ----- Footer -----
 $sep2 = New-Object System.Windows.Forms.Label
-$sep2.BorderStyle = "Fixed3D"
-$sep2.Left = 16; $sep2.Top = $y + 4; $sep2.Width = 374; $sep2.Height = 2
-$form.Controls.Add($sep2)
+$sep2.BorderStyle = "Fixed3D"; $sep2.Left = 16; $sep2.Top = $y; $sep2.Width = 374; $sep2.Height = 2
+$form.Controls.Add($sep2); $y += 12
 
-$version = New-Object System.Windows.Forms.Label
-$version.Text = "MystikStudio  |  $StudioRoot"
-$version.ForeColor = [System.Drawing.Color]::FromArgb(80, 80, 90)
-$version.Font = New-Object System.Drawing.Font("Segoe UI", 7)
-$version.AutoSize = $true
-$version.Left = 20; $version.Top = $y + 14
-$form.Controls.Add($version)
+$ver = New-Object System.Windows.Forms.Label
+$ver.Text = "MystikStudio  |  H:\MystikStudio  |  $(@($allTools).Count) tool(s)"
+$ver.ForeColor = [System.Drawing.Color]::FromArgb(80, 80, 90)
+$ver.Font = New-Object System.Drawing.Font("Segoe UI", 7)
+$ver.AutoSize = $true; $ver.Left = 20; $ver.Top = $y
+$form.Controls.Add($ver)
 
-# ------ Close/Dismiss ------
 $btnClose = New-Object System.Windows.Forms.Button
-$btnClose.Text = "Close"
-$btnClose.Left = 318; $btnClose.Top = $y + 10; $btnClose.Width = 56; $btnClose.Height = 24
+$btnClose.Text = "Close"; $btnClose.Left = 318; $btnClose.Top = $y - 2; $btnClose.Width = 56; $btnClose.Height = 24
 $btnClose.FlatStyle = "Flat"
 $btnClose.BackColor = [System.Drawing.Color]::FromArgb(60, 60, 70)
 $btnClose.ForeColor = [System.Drawing.Color]::FromArgb(160, 160, 170)
-$btnClose.FlatAppearance.BorderSize = 0
 $btnClose.Font = New-Object System.Drawing.Font("Segoe UI", 8)
+$btnClose.FlatAppearance.BorderSize = 0
 $btnClose.Add_Click({ $form.Close() })
 $form.Controls.Add($btnClose)
+
+# Auto-size height
+$form.Height = $y + 60
 
 $form.Add_Shown({ $form.Activate() })
 [void]$form.ShowDialog()

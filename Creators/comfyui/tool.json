@@ -1,0 +1,6 @@
+{
+    "name": "ComfyUI Workflows",
+    "description": "SDXL workflow JSON files for image generation",
+    "color": "#325032",
+    "folder": "workflows"
+}

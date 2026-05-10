@@ -1,0 +1,6 @@
+{
+    "name": "Character Generator",
+    "description": "Generate book characters with pose and identity locking",
+    "color": "#503C82",
+    "launcher": "Open Character Generator.vbs"
+}

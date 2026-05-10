@@ -1,0 +1,6 @@
+{
+    "name": "Story Dashboard",
+    "description": "Local web dashboard for book tracking and management",
+    "color": "#784628",
+    "launcher": "Open Story Dashboard.cmd"
+}
