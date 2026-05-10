@@ -84,24 +84,24 @@ Add-SectionHeader -Text "CREATORS" -Y $y; $y += 22
 
 Add-Button -Text "LoRA Tester" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs") } `
-    -BgColor [System.Drawing.Color]::FromArgb(50, 90, 140) `
+    -BgColor ([System.Drawing.Color]::FromArgb(50, 90, 140)) `
     -Tooltip "Test LoRAs with ComfyUI"
 
 Add-Button -Text "Character Generator" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs") } `
-    -BgColor [System.Drawing.Color]::FromArgb(80, 60, 130) `
+    -BgColor ([System.Drawing.Color]::FromArgb(80, 60, 130)) `
     -Tooltip "Generate book characters with pose and identity locking"
 
 $y += 40
 
 Add-Button -Text "Debug LoRA Workflow" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -File `"$StudioRoot\Creators\lora-tester\Debug-LoraWorkflow.ps1`"" } `
-    -BgColor [System.Drawing.Color]::FromArgb(60, 60, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(60, 60, 70)) `
     -Tooltip "Inspect JSON sent to ComfyUI"
 
 Add-Button -Text "Test Session Report" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -File `"$StudioRoot\Creators\lora-tester\Test-SessionReport.ps1`"" } `
-    -BgColor [System.Drawing.Color]::FromArgb(60, 60, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(60, 60, 70)) `
     -Tooltip "Generate session report HTML"
 
 $y += 48
@@ -111,24 +111,24 @@ Add-SectionHeader -Text "COMFYUI" -Y $y; $y += 22
 
 Add-Button -Text "Open Workflows Folder" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "Creators\comfyui\workflows") } `
-    -BgColor [System.Drawing.Color]::FromArgb(50, 80, 50) `
+    -BgColor ([System.Drawing.Color]::FromArgb(50, 80, 50)) `
     -Tooltip "SDXL workflow JSON files"
 
 Add-Button -Text "Open Scripts Folder" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "Creators\comfyui\scripts") } `
-    -BgColor [System.Drawing.Color]::FromArgb(50, 80, 50) `
+    -BgColor ([System.Drawing.Color]::FromArgb(50, 80, 50)) `
     -Tooltip "ComfyUI invoke and import scripts"
 
 $y += 40
 
 Add-Button -Text "ComfyUI Output" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process $ComfyOutput } `
-    -BgColor [System.Drawing.Color]::FromArgb(70, 55, 40) `
+    -BgColor ([System.Drawing.Color]::FromArgb(70, 55, 40)) `
     -Tooltip "Generated images"
 
 Add-Button -Text "ComfyUI Input" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process $ComfyInput } `
-    -BgColor [System.Drawing.Color]::FromArgb(70, 55, 40) `
+    -BgColor ([System.Drawing.Color]::FromArgb(70, 55, 40)) `
     -Tooltip "ControlNet and input images"
 
 $y += 48
@@ -138,12 +138,12 @@ Add-SectionHeader -Text "WEB APPS" -Y $y; $y += 22
 
 Add-Button -Text "Story Dashboard" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "webpage\story-dashboard\Open Story Dashboard.cmd") } `
-    -BgColor [System.Drawing.Color]::FromArgb(120, 70, 40) `
+    -BgColor ([System.Drawing.Color]::FromArgb(120, 70, 40)) `
     -Tooltip "Local web dashboard for book tracking"
 
 Add-Button -Text "Story Dashboard App" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process (Join-Path $StudioRoot "webpage\story-dashboard-app\Open Story Dashboard App.cmd") } `
-    -BgColor [System.Drawing.Color]::FromArgb(120, 70, 40) `
+    -BgColor ([System.Drawing.Color]::FromArgb(120, 70, 40)) `
     -Tooltip "Desktop app variant"
 
 $y += 48
@@ -153,29 +153,29 @@ Add-SectionHeader -Text "PROJECT FILES" -Y $y; $y += 22
 
 Add-Button -Text "Book Design" -X 20 -Y $y -W 113 -H 34 `
     -Action { Start-Process $BookDesign } `
-    -BgColor [System.Drawing.Color]::FromArgb(55, 55, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
     -Tooltip "Assets, manuscript, notes, reference"
 
 Add-Button -Text "Shared Modules" -X 140 -Y $y -W 113 -H 34 `
     -Action { Start-Process $Shared } `
-    -BgColor [System.Drawing.Color]::FromArgb(55, 55, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
     -Tooltip "SessionModule.ps1, Sizes.ps1"
 
 Add-Button -Text "Reports" -X 260 -Y $y -W 113 -H 34 `
     -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\Reports" } `
-    -BgColor [System.Drawing.Color]::FromArgb(55, 55, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
     -Tooltip "Session report HTML files"
 
 $y += 40
 
 Add-Button -Text "ComfyUI Models/LoRAs" -X 20 -Y $y -W 175 -H 34 `
     -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\models\loras" } `
-    -BgColor [System.Drawing.Color]::FromArgb(55, 55, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
     -Tooltip "Browse LoRA files"
 
 Add-Button -Text "ComfyUI Checkpoints" -X 208 -Y $y -W 175 -H 34 `
     -Action { Start-Process "C:\Users\Michael\Documents\ComfyUI\models\checkpoints" } `
-    -BgColor [System.Drawing.Color]::FromArgb(55, 55, 70) `
+    -BgColor ([System.Drawing.Color]::FromArgb(55, 55, 70)) `
     -Tooltip "Browse checkpoint files"
 
 $y += 48
