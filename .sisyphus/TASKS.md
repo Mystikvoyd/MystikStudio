@@ -11,9 +11,8 @@
 | # | Task | Status | Ticket |
 |---|------|--------|--------|
 | 1 | Verify dashboard split-panel changes work correctly | pending | — |
-| 2 | Commit uncommitted dashboard changes | pending | — |
-| 3 | Add/commit the new untracked files (`Write-LoraReport.py`, `public/`, etc.) | pending | — |
-| 4 | Push to GitHub | pending | — |
+| 2 | Stage and commit the pending files (dashboard PS1, untracked files) | pending | — |
+| 3 | Push pending commits to GitHub | pending | — |
 
 ## Task Details
 
@@ -23,20 +22,16 @@
 - Confirm tool buttons display and are clickable
 - Check that the right panel has `Panel2MinSize` working (was broken before)
 
-### Task 2: Commit dashboard changes
-- Stage the modified `Start-MystikStudioDashboard.ps1`
-- Write a clear commit message referencing what was fixed
-
-### Task 3: Add untracked files
-- `webpage/story-dashboard/Write-LoraReport.py` — Python report generator
-- `webpage/story-dashboard/public/` — web dashboard files
-- `webpage/story-dashboard-app/README.md` — documentation
-
-### Task 4: Push
-- Push `master` to origin
+### Task 2: Commit pending files
+- Stage `Start-MystikStudioDashboard.ps1` (modified split-panel layout fixes)
+- Stage new files: `Write-LoraReport.py`, `story-dashboard/public/`, `story-dashboard-app/README.md`
+- Write clear commit messages
 
 ---
 
 ## Completed Tasks
 
-(none yet)
+| # | Task | Ticket | Date |
+|---|------|--------|------|
+| — | Create .sisyphus context system (initial structure) | TICKET-001 | 2026-05-10 |
+| — | Upgrade ticket system to full IT-style format | TICKET-001 | 2026-05-10 |
