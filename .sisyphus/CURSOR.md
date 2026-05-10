@@ -1,22 +1,28 @@
 # CURSOR — Current State
 
-**Last updated:** 2026-05-10 06:30
-**Session focus:** 2-column panel layout — 8 GroupBox panels in 2 columns
+**Last updated:** 2026-05-10 07:50
+**Session focus:** 3rd column added — 12 panels in 3 columns
 
 ---
 
 ## Active Context
 
-Working on TICKET-002 dashboard polish. Right panel completely restructured
-into 2-column panel layout:
+Dashboard now has 3 columns with 12 panels total.
 
-**Column 1 (4 panels):** CREATORS, CREATORS FOLDERS, COMFYUI, LINKS
-**Column 2 (4 panels):** WEB APPS, PROJECT·DESIGN, PROJECT·DATA, PROJECT·MODELS
+**Column 1:** CREATORS, CREATORS FOLDERS, COMFYUI, LINKS
+**Column 2:** WEB APPS, PROJECT·DESIGN, PROJECT·DATA, PROJECT·MODELS
+**Column 3:** COMFYUI TOOLS, REPORTS & SESSION, DEVELOPMENT, BOOK RESOURCES
 
-Each panel is a GroupBox with a titled border containing stacked full-width
-buttons. Header Y offset bumped to 12 to prevent title bar cutoff.
+Form width expanded to 1000. Add-PanelBox now supports optional `Arguments`
+field for launching with args (VS Code, Terminal).
 
-Remaining: fine-tuning panel sizing/spacing, fonts/colors refinement.
+### Completed (TICKET-004)
+- 3rd column with 4 utility panels added
+- Arguments support for panel buttons
+- Form widened from 800→1000
+
+### Remaining
+- TICKET-002: fine-tuning panel sizing/spacing if needed
 
 ## Decisions Made
 

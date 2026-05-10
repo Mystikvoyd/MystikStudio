@@ -4,9 +4,11 @@ title:              Add 3rd column to dashboard — 4 new utility panels
 type:               feature
 priority:           medium
 severity:           enhancement
-status:             open
+status:             closed
 created:            2026-05-10 07:30
-updated:            2026-05-10 07:30
+updated:            2026-05-10 07:50
+resolved:           2026-05-10 07:50
+closed:             2026-05-10 07:50
 reporter:           user
 assignee:           unassigned
 component:          dashboard
@@ -63,3 +65,13 @@ Add an optional `Arguments` field to the button data hashtable.
    `if ($a) { Start-Process -FilePath $t -ArgumentList $a }`
 5. Define 4 new panels with button data
 6. Push footer y past the tallest of all 3 columns
+
+## Resolution
+
+- Form widened to 1000, column count 2→3
+- Added `Arguments` to `Add-PanelBox` for `Start-Process -ArgumentList` support
+- Created 4 new panels in col 3: COMFYUI TOOLS, REPORTS & SESSION, DEVELOPMENT, BOOK RESOURCES
+- Updated column height calculation for 3 columns
+
+**Commit:** `b1e716a`  
+**Repo:** https://github.com/Mystikvoyd/MystikStudio/commit/b1e716a
