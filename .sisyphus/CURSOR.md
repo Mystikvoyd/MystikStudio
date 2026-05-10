@@ -1,19 +1,17 @@
 # CURSOR — Current State
 
-**Last updated:** 2026-05-10 04:45
-**Session focus:** IT-style ticket system overhaul
+**Last updated:** 2026-05-10 05:00
+**Session focus:** Committed all pending changes — repo is clean
 
 ---
 
 ## Active Context
 
-The project was mid-way through refining the **MystikStudio Dashboard** split-panel
-layout. Local changes exist in `Start-MystikStudioDashboard.ps1` that adjust the
-splitter distance timing and panel sizing — not yet committed.
+All pending changes have been committed and pushed (`cbf6a07`).
+The working tree is clean — nothing staged, nothing modified, no untracked files.
 
-A **Python session report generator** (`Write-LoraReport.py`) was added to the
-`story-dashboard` area, and a `public/` web dashboard folder was added. These are
-also uncommitted.
+- Dashboard split-panel layout fixes (splitter timing, min sizes, anchor binding) committed
+- `Write-LoraReport.py`, `public/` web dashboard, and dashboard-app README committed
 
 ## Decisions Made
 
@@ -30,15 +28,13 @@ also uncommitted.
 
 ## Known Issues
 
-- Dashboard PS1 has unstaged changes — need to verify they work, then commit
-- `Write-LoraReport.py`, `public/`, and `README.md` are untracked
+- Dashboard split-panel changes are committed but **not yet tested** — should verify they launch correctly
 - No open tickets or issues on GitHub
 
 ## Next Likely Steps
 
-1. Verify the dashboard changes work correctly
-2. Commit pending changes
-3. Continue with whatever feature/bug work was in progress
+1. Test the dashboard still launches and renders correctly
+2. Continue with whatever feature/bug work was in progress
 
 ## Pinned Tickets
 
