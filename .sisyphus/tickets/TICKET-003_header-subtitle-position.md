@@ -4,9 +4,11 @@ title:              Header subtitle "Modular Creative Toolkit" too close to titl
 type:               bug
 priority:           low
 severity:           cosmetic
-status:             open
+status:             closed
 created:            2026-05-10 07:00
-updated:            2026-05-10 07:00
+updated:            2026-05-10 07:15
+resolved:           2026-05-10 07:15
+closed:             2026-05-10 07:15
 reporter:           user
 assignee:           unassigned
 component:          dashboard
@@ -49,8 +51,17 @@ between title bottom and subtitle top is insufficient visual separation.
 
 ## Resolution
 
-**Commit:** (pending)  
-**Repo:** (pending)
+Increased vertical spacing between the title and subtitle:
+
+- `$subLbl.Top`: 30 → 38 (12px gap below title text instead of 4px)
+- `$hdr.Height`: 64 → 72 (taller header panel to fit)
+- `$script:y` post-header increment: 72 → 80 (consistent gap to columns)
+
+This gives the subtitle clear visual breathing room below the title
+instead of appearing cramped under the top banner.
+
+**Commit:** `a472ff0`  
+**Repo:** https://github.com/Mystikvoyd/MystikStudio/commit/a472ff0
 
 ## Files Affected
 
