@@ -210,10 +210,8 @@ $innerSplit = New-Object System.Windows.Forms.SplitContainer
 $innerSplit.Dock = "Fill"
 $innerSplit.SplitterWidth = 4
 $innerSplit.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
-$innerSplit.Panel1MinSize = 400
-$innerSplit.Panel2MinSize = 180
-$innerSplit.SplitterDistance = [math]::Max(400, $rp.Width - 220)
 $rp.Controls.Add($innerSplit)
+# SplitterDistance + min sizes set after layout is ready (in Shown event below)
 
 # --- Main panel: header + 5 columns ---
 $mainPanel = $innerSplit.Panel1
@@ -225,7 +223,7 @@ $hdr.Top = 16
 $mainPanel.Controls.Add($hdr)
 
 $gap = 6
-$colW = [math]::Max(80, [math]::Floor(($innerSplit.SplitterDistance - $gap * 5 - 8) / 5))
+$colW = [math]::Max(80, [math]::Floor(($innerSplit.SplitterDistance - $gap * 5 - 8) / 5))  # $innerSplit.SplitterDistance calculated above
 $cols = @()
 for ($i = 0; $i -lt 5; $i++) {
     $c = New-Object System.Windows.Forms.Panel
@@ -239,9 +237,11 @@ for ($i = 0; $i -lt 5; $i++) {
 }
 
 # --- Ticket panel (right side of nested split) ---
-$tixPanel = $innerSplit.Panel2
-$tixPanel.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
-$tixPanel.AutoScroll = $true
+$tixWrap = New-Object System.Windows.Forms.Panel
+$tixWrap.Dock = "Fill"
+$tixWrap.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
+$tixWrap.AutoScroll = $true
+$innerSplit.Panel2.Controls.Add($tixWrap)
 
 # Panel box helper: creates a GroupBox with stacked buttons
 function Add-PanelBox {
@@ -350,15 +350,15 @@ Add-PanelBox -Parent $cols[4] -Title "REPORTS & SESSION" -Buttons @(
 # ===================================================================
 # TICKET PANEL: Static ticket info in right split panel
 # ===================================================================
-Add-PanelBox -Parent $tixPanel -Title "TICKETS  ·  OPEN" -Buttons @(
+Add-PanelBox -Parent $tixWrap -Title "TICKETS  ·  OPEN" -Buttons @(
     @{Text="MVS-000000002"; Color="#FF8C00"; Desc="Dashboard polish - in progress"}
 )
-Add-PanelBox -Parent $tixPanel -Title "TICKETS  ·  CLOSED" -Buttons @(
+Add-PanelBox -Parent $tixWrap -Title "TICKETS  ·  CLOSED" -Buttons @(
     @{Text="MVS-000000001"; Color="#2E8B57"; Desc=".sisyphus system setup"}
     @{Text="MVS-000000003"; Color="#2E8B57"; Desc="Header subtitle spacing"}
     @{Text="MVS-000000004"; Color="#2E8B57"; Desc="3rd column + utilities"}
 )
-Add-PanelBox -Parent $tixPanel -Title "STATS" -Buttons @(
+Add-PanelBox -Parent $tixWrap -Title "STATS" -Buttons @(
     @{Text="4 Total"; Color="#555"}
     @{Text="3 Closed"; Color="#2E8B57"}
     @{Text="1 Open"; Color="#FF8C00"}
@@ -367,5 +367,11 @@ Add-PanelBox -Parent $tixPanel -Title "STATS" -Buttons @(
 # Set column heights to tallest
 foreach ($c in $cols) { $c.Height = [math]::Max(1, $c.Height) }
 
-$form.Add_Shown({ $form.Activate() })
+$form.Add_Shown({
+    $form.Activate()
+    # Set inner split layout now that form is laid out
+    $innerSplit.SplitterDistance = [math]::Max(401, $innerSplit.Width - 220)
+    $innerSplit.Panel1MinSize = 400
+    $innerSplit.Panel2MinSize = 180
+})
 [void]$form.ShowDialog()
