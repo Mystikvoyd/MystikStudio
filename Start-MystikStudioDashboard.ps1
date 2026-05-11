@@ -223,7 +223,7 @@ $hdr.Top = 16
 $mainPanel.Controls.Add($hdr)
 
 $gap = 6
-$colW = [math]::Max(100, [math]::Floor(($form.ClientSize.Width - $split.SplitterDistance - $split.SplitterWidth - 230 - $gap * 5 - 8) / 5))
+$colW = [math]::Max(80, [math]::Floor(($innerSplit.SplitterDistance - $gap * 5 - 8) / 5))  # $innerSplit.SplitterDistance calculated above
 $cols = @()
 for ($i = 0; $i -lt 5; $i++) {
     $c = New-Object System.Windows.Forms.Panel
