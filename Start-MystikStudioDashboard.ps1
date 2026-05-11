@@ -211,16 +211,18 @@ $innerSplit.Dock = "Fill"
 $innerSplit.SplitterWidth = 4
 $innerSplit.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
 $rp.Controls.Add($innerSplit)
-# SplitterDistance + min sizes set after layout is ready (in Shown event below)
+# SplitterDistance + min sizes set in Shown event after layout
 
-# --- Main panel: header + 5 columns ---
-$mainPanel = $innerSplit.Panel1
-$mainPanel.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$mainPanel.AutoScroll = $true
+# Wrap BOTH SplitterPanels with regular Panels (SplitterPanel can't have Height set)
+$mainWrap = New-Object System.Windows.Forms.Panel
+$mainWrap.Dock = "Fill"
+$mainWrap.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$mainWrap.AutoScroll = $true
+$innerSplit.Panel1.Controls.Add($mainWrap)
 
-# Move header into main panel
+# Move header into main wrapper
 $hdr.Top = 16
-$mainPanel.Controls.Add($hdr)
+$mainWrap.Controls.Add($hdr)
 
 $gap = 6
 $colW = [math]::Max(100, [math]::Floor(($form.ClientSize.Width - $split.SplitterDistance - $split.SplitterWidth - 230 - $gap * 5 - 8) / 5))
@@ -232,11 +234,11 @@ for ($i = 0; $i -lt 5; $i++) {
     $c.Top = 80
     $c.Width = $colW
     $c.Anchor = "Top, Left"
-    $mainPanel.Controls.Add($c)
+    $mainWrap.Controls.Add($c)
     $cols += $c
 }
 
-# --- Ticket panel (right side of nested split) ---
+# --- Ticket panel (right side) ---
 $tixWrap = New-Object System.Windows.Forms.Panel
 $tixWrap.Dock = "Fill"
 $tixWrap.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
@@ -369,9 +371,9 @@ foreach ($c in $cols) { $c.Height = [math]::Max(1, $c.Height) }
 
 $form.Add_Shown({
     $form.Activate()
-    # Set inner split layout now that form is laid out
-    $innerSplit.SplitterDistance = [math]::Max(401, $innerSplit.Width - 220)
-    $innerSplit.Panel1MinSize = 400
-    $innerSplit.Panel2MinSize = 180
+    # Configure inner split now that layout is ready
+    $innerSplit.Panel1MinSize = 500
+    $innerSplit.Panel2MinSize = 200
+    $innerSplit.SplitterDistance = [math]::Max(501, $innerSplit.Width - 250)
 })
 [void]$form.ShowDialog()
