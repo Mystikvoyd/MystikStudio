@@ -204,33 +204,43 @@ $rp.Controls.Add($hdr)
 $script:y += 80
 
 # -------------------------------------------------------------------
-# 5-column panel layout + ticket column
+# Nested split: 5 columns (left) | tickets (right)
 # -------------------------------------------------------------------
-$gap = 6
-$ticketColW = 200
-$mainW = $rp.Width - $ticketColW - $gap * 6 - 8
-$colW = [math]::Floor(($mainW - $gap * 4) / 5)
+$innerSplit = New-Object System.Windows.Forms.SplitContainer
+$innerSplit.Dock = "Fill"
+$innerSplit.SplitterWidth = 4
+$innerSplit.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
+$innerSplit.Panel1MinSize = 400
+$innerSplit.Panel2MinSize = 180
+$rp.Controls.Add($innerSplit)
 
+# --- Main panel: header + 5 columns ---
+$mainPanel = $innerSplit.Panel1
+$mainPanel.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+$mainPanel.AutoScroll = $true
+
+# Move header into main panel
+$hdr.Top = 16
+$mainPanel.Controls.Add($hdr)
+
+$gap = 6
+$colW = [math]::Floor(($mainPanel.Width - $gap * 5 - 8) / 5)
 $cols = @()
 for ($i = 0; $i -lt 5; $i++) {
     $c = New-Object System.Windows.Forms.Panel
     $c.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
     $c.Left = 4 + $i * ($colW + $gap)
-    $c.Top = $script:y
+    $c.Top = 80
     $c.Width = $colW
     $c.Anchor = "Top, Left"
-    $rp.Controls.Add($c)
+    $mainPanel.Controls.Add($c)
     $cols += $c
 }
 
-# Ticket info column (6th column, right side)
-$colTix = New-Object System.Windows.Forms.Panel
-$colTix.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
-$colTix.Left = 4 + 5 * ($colW + $gap) + $gap
-$colTix.Top = $script:y
-$colTix.Width = $ticketColW
-$colTix.Anchor = "Top, Left, Right"
-$rp.Controls.Add($colTix)
+# --- Ticket panel (right side of nested split) ---
+$tixPanel = $innerSplit.Panel2
+$tixPanel.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
+$tixPanel.AutoScroll = $true
 
 # Panel box helper: creates a GroupBox with stacked buttons
 function Add-PanelBox {
@@ -305,20 +315,20 @@ Add-PanelBox -Parent $cols[1] -Title "LINKS" -Buttons @(
     @{Text="GitHub Repo"; Color="#24292E"; Desc="MystikStudio on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio"; Mode="url"}
 )
 
-# -- Column 3: CHARACTER SUITE centered at top --
+# -- Column 3: CHARACTER SUITE alone (centered) --
 Add-PanelBox -Parent $cols[2] -Title "CHARACTER SUITE" -Buttons @(
     @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
     @{Text="forge";  Color="#FF69B4"; Desc="Character Forge - final composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
     @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
     @{Text="lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
 )
-Add-PanelBox -Parent $cols[2] -Title "BOOK RESOURCES" -Buttons @(
+
+# -- Column 4 --
+Add-PanelBox -Parent $cols[3] -Title "BOOK RESOURCES" -Buttons @(
     @{Text="Manuscript";        Color="#463728"; Desc="Book manuscript files"; Target=(Join-Path $StudioRoot "book-design\manuscript")}
     @{Text="Reference";         Color="#463728"; Desc="Book reference materials"; Target=(Join-Path $StudioRoot "book-design\reference")}
     @{Text="Assets";            Color="#463728"; Desc="Book design assets"; Target=(Join-Path $StudioRoot "book-design\assets")}
 )
-
-# -- Column 4 --
 Add-PanelBox -Parent $cols[3] -Title "WEB APPS" -Buttons $webBtnList
 Add-PanelBox -Parent $cols[3] -Title "PROJECT  ·  DESIGN" -Buttons @(
     @{Text="Book Design"; Color="#373746"; Desc="Assets, manuscript"; Target=(Join-Path $StudioRoot "book-design")}
@@ -337,17 +347,17 @@ Add-PanelBox -Parent $cols[4] -Title "REPORTS & SESSION" -Buttons @(
 )
 
 # ===================================================================
-# COLUMN 6: Ticket system info (static)
+# TICKET PANEL: Static ticket info in right split panel
 # ===================================================================
-Add-PanelBox -Parent $colTix -Title "TICKETS  ·  OPEN" -Buttons @(
+Add-PanelBox -Parent $tixPanel -Title "TICKETS  ·  OPEN" -Buttons @(
     @{Text="MVS-000000002"; Color="#FF8C00"; Desc="Dashboard polish - in progress"}
 )
-Add-PanelBox -Parent $colTix -Title "TICKETS  ·  CLOSED" -Buttons @(
+Add-PanelBox -Parent $tixPanel -Title "TICKETS  ·  CLOSED" -Buttons @(
     @{Text="MVS-000000001"; Color="#2E8B57"; Desc=".sisyphus system setup"}
     @{Text="MVS-000000003"; Color="#2E8B57"; Desc="Header subtitle spacing"}
     @{Text="MVS-000000004"; Color="#2E8B57"; Desc="3rd column + utilities"}
 )
-Add-PanelBox -Parent $colTix -Title "STATS" -Buttons @(
+Add-PanelBox -Parent $tixPanel -Title "STATS" -Buttons @(
     @{Text="4 Total"; Color="#555"}
     @{Text="3 Closed"; Color="#2E8B57"}
     @{Text="1 Open"; Color="#FF8C00"}
@@ -355,13 +365,6 @@ Add-PanelBox -Parent $colTix -Title "STATS" -Buttons @(
 
 # Set column heights to tallest
 foreach ($c in $cols) { $c.Height = [math]::Max(1, $c.Height) }
-$colTix.Height = [math]::Max(1, $colTix.Height)
-$maxY = 0
-foreach ($c in $cols) { $maxY = [math]::Max($maxY, $c.Top + $c.Height) }
-$maxY = [math]::Max($maxY, $colTix.Top + $colTix.Height)
-$script:y = $maxY + 8
-
-$rp.Height = $script:y + 4
 
 $form.Add_Shown({ $form.Activate() })
 [void]$form.ShowDialog()
