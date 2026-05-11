@@ -201,7 +201,7 @@ $subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 38
 $hdr.Controls.Add($subLbl)
 
 $rp.Controls.Add($hdr)
-$script:y += 72
+$script:y += 12
 
 # -------------------------------------------------------------------
 # Full-width Character Suite bar (centered, above columns)
@@ -220,8 +220,9 @@ $csBtns = @(
 $csBtnW = 120; $csGap = 10
 $csTotal = $csBtnW * $csBtns.Count + $csGap * ($csBtns.Count - 1)
 
-$xx = [math]::Max(8, ($csBar.Width - $csTotal) / 2)
-$csBtnList = @()
+# Use form width for initial centering (csBar.Width is 0 before layout)
+$csBarWidth = $form.ClientSize.Width - $split.SplitterDistance - $split.SplitterWidth - 8
+$xx = [math]::Max(8, [math]::Floor(($csBarWidth - $csTotal) / 2))
 foreach ($c in $csBtns) {
     $btn = New-Object System.Windows.Forms.Button
     $btn.Text = $c.Text; $btn.Left = $xx; $btn.Top = 7
@@ -233,49 +234,39 @@ foreach ($c in $csBtns) {
     $btn.TextAlign = "MiddleCenter"
     $t = $c.Target; $btn.Add_Click({ Start-Process -FilePath $t }.GetNewClosure())
     (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $c.Desc)
-    $csBar.Controls.Add($btn); $csBtnList += $btn; $xx += $csBtnW + $csGap
+    $csBar.Controls.Add($btn); $xx += $csBtnW + $csGap
 }
 $csBar.Add_Resize({
-    $sx = [math]::Max(8, ($csBar.Width - $csTotal) / 2)
+    $sx = [math]::Max(8, [math]::Floor(($csBar.Width - $csTotal) / 2))
     foreach ($b in $csBar.Controls) { $b.Left = $sx; $sx += $csBtnW + $csGap }
 })
 $rp.Controls.Add($csBar)
 $script:y += 48
 
 # -------------------------------------------------------------------
-# 3-column panel layout
+# 5-column panel layout
 # -------------------------------------------------------------------
-$colW = [math]::Floor(($rp.Width - 20) / 3)
-$gap = 8
+$colW = [math]::Floor(($rp.Width - 24) / 5)
+$gap = 6
 
-$col1 = New-Object System.Windows.Forms.Panel
-$col1.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$col1.Left = 4; $col1.Top = $script:y
-$col1.Width = $colW
-$col1.Anchor = "Top, Left"
-$rp.Controls.Add($col1)
-
-$col2 = New-Object System.Windows.Forms.Panel
-$col2.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$col2.Left = $colW + $gap + 4; $col2.Top = $script:y
-$col2.Width = $colW
-$col2.Anchor = "Top, Left"
-$rp.Controls.Add($col2)
-
-$col3 = New-Object System.Windows.Forms.Panel
-$col3.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$col3.Left = ($colW + $gap) * 2 + 4; $col3.Top = $script:y
-$col3.Width = $rp.Width - ($colW + $gap) * 2 - 8
-$col3.Anchor = "Top, Left, Right"
-$rp.Controls.Add($col3)
+$cols = @()
+for ($i = 0; $i -lt 5; $i++) {
+    $c = New-Object System.Windows.Forms.Panel
+    $c.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
+    $c.Left = 4 + $i * ($colW + $gap)
+    $c.Top = $script:y
+    $c.Width = $colW
+    $c.Anchor = "Top, Left"
+    $rp.Controls.Add($c)
+    $cols += $c
+}
 
 # Panel box helper: creates a GroupBox with stacked buttons
 function Add-PanelBox {
     param(
         [System.Windows.Forms.Panel]$Parent,
         [string]$Title,
-        [object[]]$Buttons,
-        [switch]$BrandStyle
+        [object[]]$Buttons
     )
     $box = New-Object System.Windows.Forms.GroupBox
     $box.Text = "  $Title"
@@ -293,17 +284,10 @@ function Add-PanelBox {
         $btn.Width = $bw; $btn.Height = 30
         $btn.FlatStyle = "Flat"; $btn.FlatAppearance.BorderSize = 0
         $btn.BackColor = ColorFromHex $b.Color
-        if ($BrandStyle) {
-            $btn.ForeColor = [System.Drawing.Color]::Black
-            $btn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-            $btn.TextAlign = "MiddleCenter"
-            $btn.Padding = New-Object System.Windows.Forms.Padding(0)
-        } else {
-            $btn.ForeColor = [System.Drawing.Color]::White
-            $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
-            $btn.TextAlign = "MiddleLeft"
-            $btn.Padding = New-Object System.Windows.Forms.Padding(6,0,0,0)
-        }
+        $btn.ForeColor = [System.Drawing.Color]::Black
+        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+        $btn.TextAlign = "MiddleCenter"
+        $btn.Padding = New-Object System.Windows.Forms.Padding(0)
         
         if ($b.Target) {
             $t = $b.Target
@@ -325,91 +309,78 @@ function Add-PanelBox {
 }
 
 # ===================================================================
-# COLUMN 1 — Character Suite + folders + ComfyUI + Links
+# COLUMNS 1-5 — Panel distribution (no CHARACTER SUITE here)
 # ===================================================================
-$folderTools   = @($creatorTools | Where-Object { $_.Folder })
-
-Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -BrandStyle -Buttons @(
-    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters with pose locking"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
-    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge - final character composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
-    @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA combination testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
-    @{Text="lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA consistency testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
-)
-
-Add-PanelBox -Parent $col1 -Title "CREATORS FOLDERS" -Buttons @(
-    @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
-    @{Text="ComfyUI Output"; Color="#463728"; Desc="Generated images"; Target="C:\Users\Michael\Documents\ComfyUI\output"}
-    @{Text="ComfyUI Input";  Color="#463728"; Desc="ControlNet images"; Target="C:\Users\Michael\Documents\ComfyUI\input"}
-)
-
-Add-PanelBox -Parent $col1 -Title "COMFYUI" -Buttons @(
-    @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
-)
-
-Add-PanelBox -Parent $col1 -Title "LINKS" -Buttons @(
-    @{Text="GitHub Repo"; Color="#24292E"; Desc="MystikStudio on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio"; Mode="url"}
-)
-
-# ===================================================================
-# COLUMN 2 — 4 panels
-# ===================================================================
+$folderTools = @($creatorTools | Where-Object { $_.Folder })
 $webBtnList = @()
 foreach ($t in $webTools) {
     $target = if ($t.Folder) { $t.Folder } else { $t.Launcher }
     $webBtnList += @{Text=$t.Name; Color=$t.Color; Desc=$t.Description; Target=$target}
 }
-Add-PanelBox -Parent $col2 -Title "WEB APPS" -Buttons $webBtnList
+$comfyRootPath = "C:\Users\Michael\Documents\ComfyUI"
 
-Add-PanelBox -Parent $col2 -Title "PROJECT  ·  DESIGN" -Buttons @(
-    @{Text="Book Design"; Color="#373746"; Desc="Assets, manuscript"; Target=(Join-Path $StudioRoot "book-design")}
+# -- Column 1 --
+Add-PanelBox -Parent $cols[0] -Title "CREATORS FOLDERS" -Buttons @(
+    @{Text=$folderTools[0].Name; Color="#463728"; Desc=$folderTools[0].Description; Target=$folderTools[0].Folder}
+    @{Text="ComfyUI Output"; Color="#463728"; Desc="Generated images"; Target="C:\Users\Michael\Documents\ComfyUI\output"}
+    @{Text="ComfyUI Input";  Color="#463728"; Desc="ControlNet images"; Target="C:\Users\Michael\Documents\ComfyUI\input"}
+)
+Add-PanelBox -Parent $cols[0] -Title "COMFYUI" -Buttons @(
+    @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
+)
+Add-PanelBox -Parent $cols[0] -Title "LINKS" -Buttons @(
+    @{Text="GitHub Repo"; Color="#24292E"; Desc="MystikStudio on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio"; Mode="url"}
 )
 
-Add-PanelBox -Parent $col2 -Title "PROJECT  ·  DATA" -Buttons @(
+# -- Column 2 --
+Add-PanelBox -Parent $cols[1] -Title "WEB APPS" -Buttons $webBtnList
+Add-PanelBox -Parent $cols[1] -Title "PROJECT  ·  DESIGN" -Buttons @(
+    @{Text="Book Design"; Color="#373746"; Desc="Assets, manuscript"; Target=(Join-Path $StudioRoot "book-design")}
+)
+Add-PanelBox -Parent $cols[1] -Title "PROJECT  ·  DATA" -Buttons @(
     @{Text="Shared"; Color="#373746"; Desc="Session module, sizes"; Target=(Join-Path $StudioRoot "shared")}
     @{Text="Reports"; Color="#373746"; Desc="Session HTML reports"; Target="C:\Users\Michael\Documents\ComfyUI\Reports"}
 )
 
-Add-PanelBox -Parent $col2 -Title "PROJECT  ·  MODELS" -Buttons @(
-    @{Text="LoRA Models"; Color="#373746"; Desc="Browse LoRA files"; Target="C:\Users\Michael\Documents\ComfyUI\models\loras"}
-    @{Text="Checkpoints"; Color="#373746"; Desc="Checkpoint files"; Target="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
-    @{Text="ControlNet"; Color="#373746"; Desc="ControlNet models"; Target="C:\Users\Michael\Documents\ComfyUI\models\controlnet"}
-    @{Text="VAE"; Color="#373746"; Desc="VAE models"; Target="C:\Users\Michael\Documents\ComfyUI\models\vae"}
+# -- Column 3 --
+Add-PanelBox -Parent $cols[2] -Title "COMFYUI TOOLS" -Buttons @(
+    @{Text="Open ComfyUI";   Color="#325032"; Desc="Launch ComfyUI web UI"; Target="http://127.0.0.1:8000"; Mode="url"}
+    @{Text="ComfyUI Manager"; Color="#325032"; Desc="Open ComfyUI Manager tab"; Target="http://127.0.0.1:8000/manager"; Mode="url"}
+    @{Text="ComfyUI Folder";  Color="#463728"; Desc="Browse ComfyUI root"; Target=$comfyRootPath}
 )
 
-# ===================================================================
-# COLUMN 3 — 4 panels
-# ===================================================================
-$comfyRootPath = "C:\Users\Michael\Documents\ComfyUI"
-
-Add-PanelBox -Parent $col3 -Title "COMFYUI TOOLS" -Buttons @(
-    @{Text="Open ComfyUI";     Color="#325032"; Desc="Launch ComfyUI web UI"; Target="http://127.0.0.1:8000"; Mode="url"}
-    @{Text="ComfyUI Manager";   Color="#325032"; Desc="Open ComfyUI Manager tab"; Target="http://127.0.0.1:8000/manager"; Mode="url"}
-    @{Text="ComfyUI Folder";    Color="#463728"; Desc="Browse ComfyUI root"; Target=$comfyRootPath}
+# -- Column 4 --
+Add-PanelBox -Parent $cols[3] -Title "REPORTS & SESSION" -Buttons @(
+    @{Text="Reports Folder";  Color="#463728"; Desc="Browse session reports"; Target="C:\Users\Michael\Documents\ComfyUI\Reports"}
+    @{Text="Session Module";  Color="#463728"; Desc="Shared session report module"; Target=(Join-Path $StudioRoot "shared")}
+    @{Text="LoRA Config";     Color="#463728"; Desc="LoRA tester configuration"; Target=(Join-Path $StudioRoot "Creators\lora-tester\lora-tester.config.json")}
+)
+Add-PanelBox -Parent $cols[3] -Title "DEVELOPMENT" -Buttons @(
+    @{Text="Open in VS Code"; Color="#2C2C32"; Desc="Open project in VS Code"; Target="code"; Arguments=$StudioRoot}
+    @{Text="Open Terminal";   Color="#2C2C32"; Desc="PowerShell at project root"; Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
+    @{Text="GitHub Issues";   Color="#24292E"; Desc="Open repo issues"; Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
 )
 
-Add-PanelBox -Parent $col3 -Title "REPORTS & SESSION" -Buttons @(
-    @{Text="Reports Folder";    Color="#463728"; Desc="Browse all session reports"; Target="C:\Users\Michael\Documents\ComfyUI\Reports"}
-    @{Text="Session Module";    Color="#463728"; Desc="Shared session report module"; Target=(Join-Path $StudioRoot "shared")}
-    @{Text="LoRA Config";       Color="#463728"; Desc="LoRA tester configuration"; Target=(Join-Path $StudioRoot "Creators\lora-tester\lora-tester.config.json")}
+# -- Column 5 --
+Add-PanelBox -Parent $cols[4] -Title "PROJECT  ·  MODELS" -Buttons @(
+    @{Text="LoRA Models";  Color="#373746"; Desc="Browse LoRA files"; Target="C:\Users\Michael\Documents\ComfyUI\models\loras"}
+    @{Text="Checkpoints";  Color="#373746"; Desc="Checkpoint files"; Target="C:\Users\Michael\Documents\ComfyUI\models\checkpoints"}
+    @{Text="ControlNet";   Color="#373746"; Desc="ControlNet models"; Target="C:\Users\Michael\Documents\ComfyUI\models\controlnet"}
+    @{Text="VAE";          Color="#373746"; Desc="VAE models"; Target="C:\Users\Michael\Documents\ComfyUI\models\vae"}
 )
-
-Add-PanelBox -Parent $col3 -Title "DEVELOPMENT" -Buttons @(
-    @{Text="Open in VS Code";   Color="#2C2C32"; Desc="Open project in Visual Studio Code"; Target="code"; Arguments=$StudioRoot}
-    @{Text="Open Terminal";     Color="#2C2C32"; Desc="PowerShell at project root"; Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
-    @{Text="GitHub Issues";     Color="#24292E"; Desc="Open repo issues on GitHub"; Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
-)
-
-Add-PanelBox -Parent $col3 -Title "BOOK RESOURCES" -Buttons @(
-    @{Text="Manuscript";        Color="#463728"; Desc="Book manuscript files"; Target=(Join-Path $StudioRoot "book-design\manuscript")}
-    @{Text="Reference";         Color="#463728"; Desc="Book reference materials"; Target=(Join-Path $StudioRoot "book-design\reference")}
-    @{Text="Assets";            Color="#463728"; Desc="Book design assets"; Target=(Join-Path $StudioRoot "book-design\assets")}
+Add-PanelBox -Parent $cols[4] -Title "BOOK RESOURCES" -Buttons @(
+    @{Text="Manuscript";  Color="#463728"; Desc="Book manuscript files"; Target=(Join-Path $StudioRoot "book-design\manuscript")}
+    @{Text="Reference";   Color="#463728"; Desc="Book reference materials"; Target=(Join-Path $StudioRoot "book-design\reference")}
+    @{Text="Assets";      Color="#463728"; Desc="Book design assets"; Target=(Join-Path $StudioRoot "book-design\assets")}
 )
 
 # Set column heights to tallest panel bottom
-$col1.Height = [math]::Max(1, $col1.Height)
-$col2.Height = [math]::Max(1, $col2.Height)
-$col3.Height = [math]::Max(1, $col3.Height)
-$script:y = [math]::Max($col1.Top + $col1.Height, [math]::Max($col2.Top + $col2.Height, $col3.Top + $col3.Height)) + 8
+$maxBottom = 0
+foreach ($c in $cols) {
+    $c.Height = [math]::Max(1, $c.Height)
+    $maxBottom = [math]::Max($maxBottom, $c.Top + $c.Height)
+}
+$script:y = $maxBottom + 8
 
 $rp.Height = $script:y + 4
 
