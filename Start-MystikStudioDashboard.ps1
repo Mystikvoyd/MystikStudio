@@ -201,7 +201,7 @@ $subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 38
 $hdr.Controls.Add($subLbl)
 
 $rp.Controls.Add($hdr)
-$script:y += 12
+$script:y += $hdr.Height + 4
 
 # -------------------------------------------------------------------
 # Full-width Character Suite bar (centered, above columns)
