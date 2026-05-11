@@ -212,7 +212,6 @@ $innerSplit.SplitterWidth = 4
 $innerSplit.BackColor = [System.Drawing.Color]::FromArgb(40,40,48)
 $innerSplit.Panel1MinSize = 400
 $innerSplit.Panel2MinSize = 180
-$innerSplit.SplitterDistance = [math]::Max(400, $rp.Width - 220)
 $rp.Controls.Add($innerSplit)
 
 # --- Main panel: header + 5 columns ---
@@ -225,7 +224,7 @@ $hdr.Top = 16
 $mainPanel.Controls.Add($hdr)
 
 $gap = 6
-$colW = [math]::Max(80, [math]::Floor(($innerSplit.SplitterDistance - $gap * 5 - 8) / 5))
+$colW = [math]::Floor(($mainPanel.Width - $gap * 5 - 8) / 5)
 $cols = @()
 for ($i = 0; $i -lt 5; $i++) {
     $c = New-Object System.Windows.Forms.Panel
