@@ -162,7 +162,7 @@ $rightPanel.AutoScroll = $true
 
 $rp = New-Object System.Windows.Forms.Panel
 $rp.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-$rp.Anchor = "Top, Bottom, Left, Right"
+$rp.Anchor = "Top, Left, Right"
 $rp.Width = $rightPanel.ClientSize.Width - 4
 $rightPanel.Controls.Add($rp)
 $rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width - 4 })
