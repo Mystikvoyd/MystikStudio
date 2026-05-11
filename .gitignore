@@ -7,3 +7,4 @@
 *.runlog.json
 *-err.log
 *-out.log
+/.git-cache/
