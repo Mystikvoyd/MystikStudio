@@ -235,7 +235,8 @@ function Add-PanelBox {
     param(
         [System.Windows.Forms.Panel]$Parent,
         [string]$Title,
-        [object[]]$Buttons
+        [object[]]$Buttons,
+        [switch]$BrandStyle
     )
     $box = New-Object System.Windows.Forms.GroupBox
     $box.Text = "  $Title"
@@ -251,12 +252,19 @@ function Add-PanelBox {
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text = $b.Text; $btn.Left = 8; $btn.Top = $yy
         $btn.Width = $bw; $btn.Height = 30
-        $btn.FlatStyle = "Flat"; $btn.ForeColor = [System.Drawing.Color]::White
-        $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
-        $btn.FlatAppearance.BorderSize = 0
+        $btn.FlatStyle = "Flat"; $btn.FlatAppearance.BorderSize = 0
         $btn.BackColor = ColorFromHex $b.Color
-        $btn.TextAlign = "MiddleLeft"
-        $btn.Padding = New-Object System.Windows.Forms.Padding(6,0,0,0)
+        if ($BrandStyle) {
+            $btn.ForeColor = [System.Drawing.Color]::Black
+            $btn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+            $btn.TextAlign = "MiddleCenter"
+            $btn.Padding = New-Object System.Windows.Forms.Padding(0)
+        } else {
+            $btn.ForeColor = [System.Drawing.Color]::White
+            $btn.Font = New-Object System.Drawing.Font("Segoe UI", 8.5)
+            $btn.TextAlign = "MiddleLeft"
+            $btn.Padding = New-Object System.Windows.Forms.Padding(6,0,0,0)
+        }
         
         if ($b.Target) {
             $t = $b.Target
@@ -282,7 +290,7 @@ function Add-PanelBox {
 # ===================================================================
 $folderTools   = @($creatorTools | Where-Object { $_.Folder })
 
-Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -Buttons @(
+Add-PanelBox -Parent $col1 -Title "CHARACTER SUITE" -BrandStyle -Buttons @(
     @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters with pose locking"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
     @{Text="forge";  Color="#FF69B4"; Desc="Character Forge - final character composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
     @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA combination testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
