@@ -201,7 +201,46 @@ $subLbl.AutoSize = $true; $subLbl.Left = 46; $subLbl.Top = 38
 $hdr.Controls.Add($subLbl)
 
 $rp.Controls.Add($hdr)
-$script:y += 80
+$script:y += 72
+
+# -------------------------------------------------------------------
+# Full-width Character Suite bar (centered, above columns)
+# -------------------------------------------------------------------
+$csBar = New-Object System.Windows.Forms.Panel
+$csBar.Height = 44; $csBar.Left = 0; $csBar.Top = $script:y
+$csBar.Anchor = "Top, Left, Right"
+$csBar.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
+
+$csBtns = @(
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters"; Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
+    @{Text="forge";  Color="#FF69B4"; Desc="Character Forge - final composition"; Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
+    @{Text="fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
+    @{Text="lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA testing"; Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
+)
+$csBtnW = 120; $csGap = 10
+$csTotal = $csBtnW * $csBtns.Count + $csGap * ($csBtns.Count - 1)
+
+$xx = [math]::Max(8, ($csBar.Width - $csTotal) / 2)
+$csBtnList = @()
+foreach ($c in $csBtns) {
+    $btn = New-Object System.Windows.Forms.Button
+    $btn.Text = $c.Text; $btn.Left = $xx; $btn.Top = 7
+    $btn.Width = $csBtnW; $btn.Height = 30
+    $btn.FlatStyle = "Flat"; $btn.FlatAppearance.BorderSize = 0
+    $btn.BackColor = ColorFromHex $c.Color
+    $btn.ForeColor = [System.Drawing.Color]::Black
+    $btn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $btn.TextAlign = "MiddleCenter"
+    $t = $c.Target; $btn.Add_Click({ Start-Process -FilePath $t }.GetNewClosure())
+    (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $c.Desc)
+    $csBar.Controls.Add($btn); $csBtnList += $btn; $xx += $csBtnW + $csGap
+}
+$csBar.Add_Resize({
+    $sx = [math]::Max(8, ($csBar.Width - $csTotal) / 2)
+    foreach ($b in $csBar.Controls) { $b.Left = $sx; $sx += $csBtnW + $csGap }
+})
+$rp.Controls.Add($csBar)
+$script:y += 48
 
 # -------------------------------------------------------------------
 # 3-column panel layout
