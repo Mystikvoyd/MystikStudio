@@ -125,7 +125,7 @@ elseif ($useLora2) {
 
 $body = [pscustomobject]@{
     prompt    = $workflow
-    client_id = "character-enhancer"
+    client_id = "fusion"
 } | ConvertTo-Json -Depth 100
 
 $response = Invoke-RestMethod -Method Post -Uri ($ComfyUrl + "/prompt") -Body $body -ContentType "application/json"

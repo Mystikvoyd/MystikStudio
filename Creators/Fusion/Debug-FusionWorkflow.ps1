@@ -1,25 +1,23 @@
-# Debug-CharacterWorkflow.ps1
-# Run this to see EXACTLY what JSON gets sent to ComfyUI when triple LoRA is enabled.
-# Usage: .\Debug-CharacterWorkflow.ps1
+# Version: 001.002.001
+# Debug-FusionWorkflow.ps1
+# Run this to see EXACTLY what JSON gets sent to ComfyUI when dual LoRA is enabled.
+# Usage: .\Debug-FusionWorkflow.ps1
 # It will NOT actually send anything to ComfyUI - just prints the JSON so you can inspect it.
 
 param(
     [string]$WorkflowPath = (Join-Path $PSScriptRoot "..\comfyui\workflows\sdxl-basic-book-image.api.json"),
-    [string]$Lora1Name     = "character_identity.safetensors",
-    [double]$Lora1Strength = 0.80,
-    [string]$Lora2Name     = "breast_size.safetensors",
+    [string]$Lora1Name     = "character_lora.safetensors",
+    [double]$Lora1Strength = 0.75,
+    [string]$Lora2Name     = "breast_size_lora.safetensors",
     [double]$Lora2Strength = 0.65,
-    [string]$Lora3Name     = "style_enhancement.safetensors",
-    [double]$Lora3Strength = 0.50,
     [string]$Checkpoint   = "SDXL\dreamshaperXL_lightningDPMSDE.safetensors"
 )
 
 Write-Host ""
-Write-Host "=== DEBUG: Triple LoRA Workflow Inspector ===" -ForegroundColor Cyan
+Write-Host "=== DEBUG: Dual LoRA Workflow Inspector ===" -ForegroundColor Cyan
 Write-Host "Workflow: $WorkflowPath"
 Write-Host "LoRA 1:   $Lora1Name @ $Lora1Strength"
 Write-Host "LoRA 2:   $Lora2Name @ $Lora2Strength"
-Write-Host "LoRA 3:   $Lora3Name @ $Lora3Strength"
 Write-Host "Ckpt:     $Checkpoint"
 Write-Host ""
 
@@ -73,47 +71,31 @@ $workflow | Add-Member -NotePropertyName "101" -NotePropertyValue ([pscustomobje
     }
 }) -Force
 
-# ---- Inject LoRA node 102 (LoRA 3, chained after LoRA 2) ----
-Write-Host "Injecting LoRA 3 node 102 (chained after LoRA 2)..." -ForegroundColor Green
-$workflow | Add-Member -NotePropertyName "102" -NotePropertyValue ([pscustomobject]@{
-    class_type = "LoraLoader"
-    inputs     = [ordered]@{
-        model          = @("101", 0)
-        clip           = @("101", 1)
-        lora_name      = $Lora3Name
-        strength_model = $Lora3Strength
-        strength_clip  = $Lora3Strength
-    }
-}) -Force
-
-# Rewire downstream to go through LoRA 3 (last in chain)
-$workflow."4".inputs.clip  = @("102", 1)
-$workflow."5".inputs.clip  = @("102", 1)
-$workflow."7".inputs.model = @("102", 0)
+# Rewire downstream to go through LoRA 2 (last in chain)
+$workflow."4".inputs.clip  = @("101", 1)
+$workflow."5".inputs.clip  = @("101", 1)
+$workflow."7".inputs.model = @("101", 0)
 
 # ---- Show what node 7 model input looks like AFTER LoRA ----
-Write-Host "--- Node 7 model input AFTER triple LoRA injection ---" -ForegroundColor Yellow
+Write-Host "--- Node 7 model input AFTER dual LoRA injection ---" -ForegroundColor Yellow
 $workflow."7".inputs.model | ConvertTo-Json
 Write-Host ""
 
-# ---- Show nodes 100, 101, 102 ----
+# ---- Show nodes 100 and 101 ----
 Write-Host "--- Node 100 (LoraLoader 1) ---" -ForegroundColor Yellow
 $workflow."100" | ConvertTo-Json -Depth 10
 Write-Host ""
 Write-Host "--- Node 101 (LoraLoader 2) ---" -ForegroundColor Yellow
 $workflow."101" | ConvertTo-Json -Depth 10
 Write-Host ""
-Write-Host "--- Node 102 (LoraLoader 3) ---" -ForegroundColor Yellow
-$workflow."102" | ConvertTo-Json -Depth 10
-Write-Host ""
 
 # ---- Full JSON ----
 $body = [pscustomobject]@{
     prompt    = $workflow
-    client_id = "character-design-debug"
+    client_id = "fusion-debug"
 } | ConvertTo-Json -Depth 100
 
-Write-Host "--- Full JSON body (check for nodes 100+101+102 and wiring) ---" -ForegroundColor Cyan
+Write-Host "--- Full JSON body (check for nodes 100+101 and wiring) ---" -ForegroundColor Cyan
 Write-Host $body
 Write-Host ""
 
@@ -132,28 +114,22 @@ if ($body -match '"101"') {
     Write-Host "[FAIL] Node 101 is MISSING from the JSON" -ForegroundColor Red
 }
 
-if ($body -match '"102"') {
-    Write-Host "[PASS] Node 102 is present in the JSON" -ForegroundColor Green
-} else {
-    Write-Host "[FAIL] Node 102 is MISSING from the JSON" -ForegroundColor Red
-}
-
 if ($body -match '"lora_name"') {
     Write-Host "[PASS] lora_name field is present" -ForegroundColor Green
 } else {
     Write-Host "[FAIL] lora_name field is missing" -ForegroundColor Red
 }
 
-if ($body -match '\["102",\s*0\]') {
-    Write-Host "[PASS] Node wiring to node 102 looks correct: [""102"", 0]" -ForegroundColor Green
+if ($body -match '\["101",\s*0\]') {
+    Write-Host "[PASS] Node wiring to node 101 looks correct: [""101"", 0]" -ForegroundColor Green
 } else {
-    Write-Host "[WARN] Node wiring to 102 may have serialization issues - check JSON above" -ForegroundColor Yellow
+    Write-Host "[WARN] Node wiring to 101 may have serialization issues - check JSON above" -ForegroundColor Yellow
 }
 
-if ($body -match '\["100",\s*0\]' -and $body -match '\["101",\s*0\]') {
-    Write-Host "[PASS] Chain wiring (100->101->102) looks correct" -ForegroundColor Green
+if ($body -match '\["100",\s*0\]') {
+    Write-Host "[PASS] Node 100->101 wiring looks correct: [""100"", 0]" -ForegroundColor Green
 } else {
-    Write-Host "[WARN] Chain wiring may have issues - check JSON above" -ForegroundColor Yellow
+    Write-Host "[WARN] Node 100->101 wiring may have issues - check JSON above" -ForegroundColor Yellow
 }
 
 Write-Host ""

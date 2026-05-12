@@ -1,3 +1,5 @@
+# Version: 001.002.001
+
 param(
     [switch]$ValidateOnly,
     [switch]$SmokeTest
@@ -5,62 +7,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-try { Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop } catch {}
-try { Add-Type -AssemblyName System.Drawing -ErrorAction SilentlyContinue } catch {}
-
-$LoraTesterRoot     = $PSScriptRoot
+$ForgeRoot          = $PSScriptRoot
 $ProjectRoot        = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-
-function Resolve-FirstExistingPath {
-    param(
-        [string[]]$Candidates,
-        [string]$Fallback
-    )
-    foreach ($candidate in $Candidates) {
-        if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
-            return $candidate
-        }
-    }
-    return $Fallback
-}
-
-$script:CrashLogPath = Join-Path $LoraTesterRoot "lora-tester-2_error.log"
-$script:DebugLogPath = Join-Path $LoraTesterRoot "lora-tester-2.debug.log"
-$script:DebugMode    = $false
-$script:LoraTesterBuild = "CURRENT_LOGFIX_2_PARSE_SAFE"
-
-$ConfigPath = Resolve-FirstExistingPath -Candidates @(
-    (Join-Path $LoraTesterRoot "lora-tester-2_config.json"),
-    (Join-Path $LoraTesterRoot "lora-tester-2.config.json")
-) -Fallback (Join-Path $LoraTesterRoot "lora-tester-2.config.json")
-
-$InvokeScriptPath   = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyDualLoraTestImage.ps1"
-
-$PrefsPath = Resolve-FirstExistingPath -Candidates @(
-    (Join-Path $LoraTesterRoot "lora-tester-2_prefs.json"),
-    (Join-Path $LoraTesterRoot "lora-tester-2.prefs.json")
-) -Fallback (Join-Path $LoraTesterRoot "lora-tester-2.prefs.json")
-
-$RunLogPath = Resolve-FirstExistingPath -Candidates @(
-    (Join-Path $LoraTesterRoot "lora-tester-2_runlog.json"),
-    (Join-Path $LoraTesterRoot "lora-tester-2.runlog.json")
-) -Fallback (Join-Path $LoraTesterRoot "lora-tester-2.runlog.json")
-
-trap {
-    $msg = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] FATAL: $($_.Exception.Message)`r`n$($_.ScriptStackTrace)`r`n"
-    try { Add-Content -LiteralPath $script:CrashLogPath -Value $msg -Encoding UTF8 } catch {}
-    try {
-        if ($script:DebugMode) {
-            Add-Content -LiteralPath $script:DebugLogPath -Value @(
-                "===== FATAL ERROR =====",
-                $msg,
-                ""
-            ) -Encoding UTF8
-        }
-    } catch {}
-    try { [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, "LoRA Fusion - Startup Error", "OK", "Error") | Out-Null } catch {}
-    break
-}
+$ConfigPath         = Join-Path $ForgeRoot "Forge.config.json"
+$InvokeScriptPath   = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyTripleLoraTestImage.ps1"
+$PrefsPath   = Join-Path $ForgeRoot "Forge.prefs.json"
+$RunLogPath  = Join-Path $ForgeRoot "Forge.runlog.json"
 
 # Session state
 $script:SessionActive    = $false
@@ -82,6 +34,9 @@ function Save-Prefs {
         lora2Name       = [string]$comboLora2.SelectedItem
         lora2Enabled    = $chkLora2.Checked
         lora2Strength   = [string]$numLora2.Value
+        lora3Name       = [string]$comboLora3.SelectedItem
+        lora3Enabled    = $chkLora3.Checked
+        lora3Strength   = [string]$numLora3.Value
         seed            = [string][int]$numSeed.Value
         randomSeed      = $chkRandomSeed.Checked
         steps           = [string][int]$numSteps.Value
@@ -103,7 +58,6 @@ function Save-Prefs {
         includePrompts  = $chkIncludePrompts.Checked
         prompt          = $txtPrompt.Text
         negativePrompt  = $txtNegative.Text
-        debugMode       = $chkDebugMode.Checked
     }
     try {
         $prefs | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $PrefsPath -Encoding UTF8
@@ -112,12 +66,7 @@ function Save-Prefs {
 
 function Load-Prefs {
     if (-not (Test-Path -LiteralPath $PrefsPath -PathType Leaf)) { return $null }
-    try {
-        $raw = [System.IO.File]::ReadAllText($PrefsPath, [System.Text.Encoding]::UTF8)
-        # Strip UTF-8 BOM if present (causes ConvertFrom-Json to fail on some PS versions)
-        if ($raw.StartsWith([char]0xFEFF)) { $raw = $raw.Substring(1) }
-        return ($raw | ConvertFrom-Json)
-    }
+    try { return (Get-Content -LiteralPath $PrefsPath -Raw | ConvertFrom-Json) }
     catch { return $null }
 }
 
@@ -144,7 +93,7 @@ function New-SessionReport {
     $sb        = New-Object System.Text.StringBuilder
 
     [void]$sb.Append('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">')
-    [void]$sb.Append('<title>Dual LoRA Test Session Report</title>')
+    [void]$sb.Append('<title>Character Design Session Report</title>')
     [void]$sb.Append('<style>')
     [void]$sb.Append('*{box-sizing:border-box;margin:0;padding:0}')
     [void]$sb.Append('body{font-family:"Segoe UI",sans-serif;background:#111116;color:#e0ddd8;padding:32px}')
@@ -193,7 +142,7 @@ function New-SessionReport {
     }
 
     [void]$sb.Append('</head><body>')
-    [void]$sb.Append('<h1>Dual LoRA Test Session Report</h1>')
+    [void]$sb.Append('<h1>Character Design Session Report</h1>')
 
     [void]$sb.Append('<div class="toolbar">')
     [void]$sb.Append('<div class="session-meta">Generated: ' + $timestamp + ' &nbsp;&middot;&nbsp; ' + $count + ' generation(s)')
@@ -229,16 +178,32 @@ function New-SessionReport {
             $imgTag = '<p class="no-img">&#9888; Path not found: ' + (HtmlEnc $imgPath) + '</p>'
         }
 
-        $loraLine = if ($e.Lora1Enabled -and $e.Lora2Enabled) {
+        $loraLine = if ($e.Lora1Enabled -and $e.Lora2Enabled -and $e.Lora3Enabled) {
+            '<span class="badge lora-on">LoRA 1+2+3 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
+            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
+            (HtmlEnc ([string]$e.Lora2Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span> + ' +
+            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
+        } elseif ($e.Lora1Enabled -and $e.Lora2Enabled) {
             '<span class="badge lora-on">LoRA 1+2 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
             ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
             (HtmlEnc ([string]$e.Lora2Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span>'
+        } elseif ($e.Lora1Enabled -and $e.Lora3Enabled) {
+            '<span class="badge lora-on">LoRA 1+3 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
+            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
+            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
+        } elseif ($e.Lora2Enabled -and $e.Lora3Enabled) {
+            '<span class="badge lora-on">LoRA 2+3 ON</span> ' + (HtmlEnc ([string]$e.Lora2Name)) +
+            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span> + ' +
+            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
         } elseif ($e.Lora1Enabled) {
             '<span class="badge lora-on">LoRA 1 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
             ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span>'
         } elseif ($e.Lora2Enabled) {
             '<span class="badge lora-on">LoRA 2 ON</span> ' + (HtmlEnc ([string]$e.Lora2Name)) +
             ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span>'
+        } elseif ($e.Lora3Enabled) {
+            '<span class="badge lora-on">LoRA 3 ON</span> ' + (HtmlEnc ([string]$e.Lora3Name)) +
+            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
         } else {
             '<span class="badge lora-off">LoRAs OFF</span>'
         }
@@ -387,227 +352,12 @@ function Get-SafeFilePart {
     return $clean
 }
 
-# ---------------------------------------------------------------------------
-# Clothing Override Catalog
-# ---------------------------------------------------------------------------
-$script:ClothingCatalog = [ordered]@{
-    "Tops" = @(
-        "fitted tank top","sleeveless tunic","crop top","halter top","off-shoulder blouse",
-        "peasant blouse","corset top","bodice","linen shirt","silk blouse","wrap top",
-        "bardot top","bustier","camisole","long-sleeve shirt","turtleneck","cowl-neck top",
-        "embroidered blouse","poet shirt","chemise top","fitted henley","lace-trim top"
-    )
-    "Dresses" = @(
-        "medieval underdress","floor-length gown","ball gown","corset dress","wrap dress",
-        "sundress","maxi dress","midi dress","slip dress","tunic dress","pinafore dress",
-        "A-line dress","empire waist dress","bodycon dress","peasant dress","shift dress",
-        "tiered ruffle dress","halter dress","off-shoulder dress","sheath dress",
-        "gothic lace gown","velvet evening gown","fantasy robe dress","enchantress gown"
-    )
-    "Skirts" = @(
-        "full circle skirt","pleated midi skirt","maxi skirt","mini skirt","wrap skirt",
-        "tiered peasant skirt","pencil skirt","asymmetric hem skirt","ruffle skirt",
-        "leather skirt","velvet skirt","linen skirt","silk skirt","layered tulle skirt",
-        "high-slit skirt","flared skirt","hobble skirt","dirndl skirt"
-    )
-    "Pants & Leggings" = @(
-        "high-waist trousers","wide-leg pants","fitted leggings","leather pants",
-        "linen trousers","palazzo pants","cropped pants","flared trousers",
-        "skinny jeans","cargo pants","harem pants","knit leggings","velvet trousers"
-    )
-    "Outerwear" = @(
-        "hooded cloak","full-length cape","duster coat","fitted blazer","fur-trim coat",
-        "leather jacket","velvet coat","trench coat","bolero jacket","shawl wrap",
-        "traveling cloak","military coat","embroidered jacket","kimono coat","poncho"
-    )
-    "Fantasy & Armor" = @(
-        "chainmail tunic","plate armor breastplate","leather armor vest","ranger armor",
-        "elven robes","mage robes","dark sorcerer robes","paladin armor","rogue leathers",
-        "barbarian fur mantle","enchanted silk robe","battle dress","war priestess vestments",
-        "druidic wrap","shadow assassin suit","noble court dress","knight surcoat",
-        "valkyrie armor","arcane battle robe","ceremonial armor"
-    )
-    "Formal & Court" = @(
-        "royal court gown","ballroom gown","evening gown","cocktail dress",
-        "formal blazer suit","tailored tuxedo","brocade coat","embroidered court robe",
-        "structured corset gown","renaissance court dress","victorian bustle gown",
-        "regency empire dress","georgian stays gown","baroque court dress"
-    )
-    "Casual & Modern" = @(
-        "fitted t-shirt","oversized hoodie","athletic wear set","yoga pants and top",
-        "casual denim jacket","knitwear sweater","jersey dress","lounge set",
-        "sports bra and shorts","bomber jacket","utility vest","denim skirt and top"
-    )
-}
-
-$script:ColorCatalog = [ordered]@{
-    "Neutrals" = @(
-        "white","off-white","ivory","cream","beige","sand","tan","stone","taupe",
-        "gray","charcoal","slate","dark gray","black","soft black"
-    )
-    "Reds & Pinks" = @(
-        "crimson","scarlet","ruby red","wine red","burgundy","maroon","rose pink",
-        "blush pink","hot pink","magenta","coral","salmon","dusty rose","deep rose"
-    )
-    "Blues" = @(
-        "sky blue","powder blue","steel blue","slate blue","cobalt blue","royal blue",
-        "navy blue","midnight blue","cerulean","teal blue","ice blue","indigo","sapphire blue"
-    )
-    "Greens" = @(
-        "sage green","mint green","forest green","emerald green","olive green",
-        "hunter green","seafoam","moss green","fern green","jade green","pine green",
-        "chartreuse","lime green","dark teal"
-    )
-    "Purples" = @(
-        "lavender","lilac","mauve","violet","purple","deep purple","plum","amethyst",
-        "orchid","periwinkle","dusty purple","mulberry","grape","midnight purple"
-    )
-    "Yellows & Oranges" = @(
-        "golden yellow","amber","honey","saffron","mustard","ochre","burnt orange",
-        "terracotta","rust","copper","peach","apricot","warm orange","bronze toned"
-    )
-    "Browns" = @(
-        "tan brown","caramel","mocha","chestnut","walnut brown","chocolate brown",
-        "espresso","mahogany","saddle brown","sienna","umber","raw sienna"
-    )
-    "Metallics & Special" = @(
-        "silver","gold","rose gold","bronze","antique gold","dark silver","pewter",
-        "iridescent","holographic","matte black with gold trim","deep crimson with silver"
-    )
-}
-
-$script:MaterialCatalog = [ordered]@{
-    "Natural Fabrics" = @(
-        "linen","cotton","silk","wool","cashmere","velvet","satin","chiffon",
-        "muslin","canvas","hemp","jute","bamboo fabric"
-    )
-    "Textured & Knit" = @(
-        "ribbed knit","cable knit","chunky knit","waffle weave","brocade","jacquard",
-        "tweed","herringbone","houndstooth","plaid","tartan","quilted","smocked"
-    )
-    "Leather & Structured" = @(
-        "smooth leather","distressed leather","suede","patent leather","faux leather",
-        "tooled leather","studded leather","buckled leather","chainmail","scale mail"
-    )
-    "Sheer & Delicate" = @(
-        "sheer chiffon","organza","tulle","lace","eyelet","embroidered lace",
-        "burnout velvet","devore","mesh","crochet","macrame"
-    )
-    "Fantasy & Special" = @(
-        "enchanted silk","dragonscale weave","moonspun cloth","starweave fabric",
-        "shadow-touched leather","runed linen","mage-warded silk","ethereal chiffon",
-        "living vine weave","crystalline thread","void-touched velvet"
-    )
-    "Patterns" = @(
-        "solid","pinstripe","floral print","damask","geometric print","abstract print",
-        "botanical print","paisley","ikat","batik","tie-dye","ombre","color-blocked"
-    )
-}
-
-function Get-ClothingCategories { return @($script:ClothingCatalog.Keys) }
-function Get-ColorCategories    { return @($script:ColorCatalog.Keys) }
-function Get-MaterialCategories { return @($script:MaterialCatalog.Keys) }
-
-function Get-ClothingItems  { param([string]$Cat) if ($script:ClothingCatalog.Contains($Cat)) { return $script:ClothingCatalog[$Cat] } return @() }
-function Get-ColorItems     { param([string]$Cat) if ($script:ColorCatalog.Contains($Cat))    { return $script:ColorCatalog[$Cat] }    return @() }
-function Get-MaterialItems  { param([string]$Cat) if ($script:MaterialCatalog.Contains($Cat)) { return $script:MaterialCatalog[$Cat] } return @() }
-
-function Get-AllClothingItems  { $all = @(); foreach ($k in $script:ClothingCatalog.Keys)  { $all += $script:ClothingCatalog[$k]  }; return $all }
-function Get-AllColorItems     { $all = @(); foreach ($k in $script:ColorCatalog.Keys)     { $all += $script:ColorCatalog[$k]     }; return $all }
-function Get-AllMaterialItems  { $all = @(); foreach ($k in $script:MaterialCatalog.Keys)  { $all += $script:MaterialCatalog[$k]  }; return $all }
-
-# Build the clothing string with emphasis weighting so it punches through strong LoRAs.
-# Color gets double-parens ((color)) = 1.21x weight to override LoRA texture bias.
-# Material gets single-parens (material) = 1.1x. Clothing item is unweighted.
-function Build-ClothingAppend {
-    param([string]$Color, [string]$Material, [string]$Clothing)
-    $parts = @()
-    if (-not [string]::IsNullOrWhiteSpace($Color))    { $parts += "(($Color))" }
-    if (-not [string]::IsNullOrWhiteSpace($Material)) { $parts += "($Material)" }
-    if (-not [string]::IsNullOrWhiteSpace($Clothing)) { $parts += $Clothing }
-    if ($parts.Count -eq 0) { return "" }
-    return ($parts -join " ")
-}
-
-# Inject clothing at the VERY START of the prompt so it has maximum token weight.
-# SDXL attends most strongly to early tokens — putting clothing first beats LoRA bias.
-function Inject-ClothingIntoPrompt {
-    param([string]$BasePrompt, [string]$ClothingStr)
-    if ([string]::IsNullOrWhiteSpace($ClothingStr)) { return $BasePrompt }
-    $base = $BasePrompt.Trim().TrimStart(',').Trim()
-    return "$ClothingStr, $base"
-}
-
-# Variation state
-$script:VarCancelRequested = $false
-$script:VarRunning         = $false
-
-function Get-DebugModeEnabled {
-    try {
-        if ($null -ne $chkDebugMode) { return [bool]$chkDebugMode.Checked }
-    } catch {}
-    return [bool]$script:DebugMode
-}
-
-function Write-DebugLog {
-    param(
-        [string]$Title = "",
-        [object[]]$Lines = @()
-    )
-    if (-not (Get-DebugModeEnabled)) { return }
-    try {
-        $entries = New-Object System.Collections.Generic.List[string]
-        $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-        if (-not [string]::IsNullOrWhiteSpace($Title)) {
-            $entries.Add("===== $Title | $stamp =====") | Out-Null
-        } else {
-            $entries.Add("===== $stamp =====") | Out-Null
-        }
-        foreach ($line in @($Lines)) {
-            if ($null -eq $line) { continue }
-            if (($line -is [System.Collections.IEnumerable]) -and ($line -isnot [string])) {
-                foreach ($sub in $line) {
-                    $entries.Add([string]$sub) | Out-Null
-                }
-            } else {
-                $entries.Add([string]$line) | Out-Null
-            }
-        }
-        $entries.Add("") | Out-Null
-        Add-Content -LiteralPath $script:DebugLogPath -Value ($entries.ToArray()) -Encoding UTF8
-    } catch {}
-}
-
-function Open-DebugLog {
-    try {
-        if (-not (Test-Path -LiteralPath $script:DebugLogPath -PathType Leaf)) {
-            Set-Content -LiteralPath $script:DebugLogPath -Value '' -Encoding UTF8
-        }
-        Start-Process notepad.exe $script:DebugLogPath
-    } catch {
-        Add-Log ("Could not open debug log: " + $_.Exception.Message)
-    }
-}
-
-function Clear-DebugLog {
-    try {
-        Set-Content -LiteralPath $script:DebugLogPath -Value '' -Encoding UTF8
-    } catch {
-        Add-Log ("Could not clear debug log: " + $_.Exception.Message)
-    }
-}
-
 function Add-Log {
     param([string]$Text)
-    $line = '[' + (Get-Date -Format 'HH:mm:ss') + '] ' + $Text
-    if ($null -ne $script:LogBox) {
-        $script:LogBox.AppendText($line + "`r`n")
-        $script:LogBox.SelectionStart = $script:LogBox.TextLength
-        $script:LogBox.ScrollToCaret()
-    }
-    if (Get-DebugModeEnabled) {
-        try { Add-Content -LiteralPath $script:DebugLogPath -Value ('[UI ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ' + $Text) -Encoding UTF8 } catch {}
-    }
+    if ($null -eq $script:LogBox) { return }
+    $script:LogBox.AppendText('[' + (Get-Date -Format 'HH:mm:ss') + '] ' + $Text + "`r`n")
+    $script:LogBox.SelectionStart = $script:LogBox.TextLength
+    $script:LogBox.ScrollToCaret()
 }
 
 function Add-OutputHistoryItem {
@@ -657,6 +407,9 @@ function Append-RunLog {
             Lora2Name   = $Entry.Lora2Name
             Lora2Enabled= $Entry.Lora2Enabled
             Lora2Strength = $Entry.Lora2Strength
+            Lora3Name   = $Entry.Lora3Name
+            Lora3Enabled= $Entry.Lora3Enabled
+            Lora3Strength = $Entry.Lora3Strength
             Seed       = $Entry.Seed
             Steps      = $Entry.Steps
             Cfg        = $Entry.Cfg
@@ -676,7 +429,7 @@ function Append-RunLog {
 
 function Load-RunHistory {
     if (-not [System.IO.File]::Exists($RunLogPath)) {
-        # No log yet — fall back to scanning output folder (no metadata)
+        # No log yet â€” fall back to scanning output folder (no metadata)
         Load-OutputFolderHistory
         return
     }
@@ -691,9 +444,11 @@ function Load-RunHistory {
             $imgPath   = [string]$e.ImagePath
         $lora1Name = if ($e.Lora1Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora1Name) } else { $null }
         $lora2Name = if ($e.Lora2Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora2Name) } else { $null }
+        $lora3Name = if ($e.Lora3Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora3Name) } else { $null }
         $loraLabel = @()
         if ($lora1Name) { $loraLabel += $lora1Name }
         if ($lora2Name) { $loraLabel += $lora2Name }
+        if ($lora3Name) { $loraLabel += $lora3Name }
         if ($loraLabel.Count -eq 0) { $loraLabel = "LoRAs off" } else { $loraLabel = $loraLabel -join " + " }
             $seed      = [string]$e.Seed
             $ckpt      = [string]$e.Checkpoint
@@ -742,18 +497,8 @@ function Set-PreviewImage {
 }
 
 function Wait-ComfyImages {
-    param(
-        [string]$PromptId,
-        [string]$ComfyUrl,
-        [string]$OutputPath,
-        [string]$RunLabel = "Generation"
-    )
+    param([string]$PromptId, [string]$ComfyUrl, [string]$OutputPath)
     $script:LastImagePaths = New-Object System.Collections.Generic.List[string]
-    Write-DebugLog -Title ($RunLabel + " / waiting") -Lines @(
-        "Prompt ID: $PromptId",
-        "Comfy URL: $ComfyUrl",
-        "Output path: $OutputPath"
-    )
     for ($i = 0; $i -lt 180; $i++) {
         Start-Sleep -Seconds 1
         $history = Invoke-RestMethod -Method Get -Uri ($ComfyUrl + "/history/" + $PromptId) -TimeoutSec 10
@@ -768,18 +513,8 @@ function Wait-ComfyImages {
                 }
             }
         }
-        if ($script:LastImagePaths.Count -gt 0) {
-            $lines = New-Object System.Collections.Generic.List[string]
-            $lines.Add('Image count: ' + $script:LastImagePaths.Count) | Out-Null
-            foreach ($path in $script:LastImagePaths) { $lines.Add([string]$path) | Out-Null }
-            Write-DebugLog -Title ($RunLabel + " / outputs") -Lines $lines
-            return
-        }
+        if ($script:LastImagePaths.Count -gt 0) { return }
     }
-    Write-DebugLog -Title ($RunLabel + " / timeout") -Lines @(
-        "Timed out waiting for ComfyUI output after 180 seconds.",
-        "Prompt ID: $PromptId"
-    )
     throw "Timed out waiting for ComfyUI output."
 }
 
@@ -814,9 +549,9 @@ Add-Type -AssemblyName System.Drawing
 # Form
 # ---------------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
-$form.Text          = "LoRA Fusion"
+$form.Text          = "Character Forge"
 $form.Width         = 1280
-$form.Height        = 980
+$form.Height        = 860
 $form.StartPosition = "CenterScreen"
 $form.Font          = New-Object System.Drawing.Font("Segoe UI", 9)
 
@@ -853,7 +588,7 @@ $tabs        = New-Object System.Windows.Forms.TabControl
 $tabs.Left   = 2
 $tabs.Top    = 2
 $tabs.Width  = 422
-$tabs.Height = 920
+$tabs.Height = 800
 $tabs.Font   = New-Object System.Drawing.Font("Segoe UI", 8.5)
 $left.Controls.Add($tabs)
 
@@ -933,6 +668,30 @@ $numLora2.Value        = [decimal]$Config.defaults.lora2Strength
 $tabMain.Controls.Add($numLora2)
 $gy += 32
 
+New-Label -Text "LoRA 3 (Style/Detail)" -Top $gy -Parent $tabMain | Out-Null
+$comboLora3               = New-Object System.Windows.Forms.ComboBox
+$comboLora3.Left          = 8; $comboLora3.Top = $gy + 18; $comboLora3.Width = 392
+$comboLora3.DropDownStyle = "DropDownList"
+foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora3.Items.Add($item) }
+$comboLora3.SelectedIndex = 0
+$tabMain.Controls.Add($comboLora3)
+$gy += 46
+
+$chkLora3         = New-Object System.Windows.Forms.CheckBox
+$chkLora3.Text    = "Use LoRA 3"; $chkLora3.Left = 8; $chkLora3.Top = $gy; $chkLora3.Width = 170; $chkLora3.Checked = $false
+$tabMain.Controls.Add($chkLora3)
+
+$lblLora3Str      = New-Object System.Windows.Forms.Label
+$lblLora3Str.Text = "Strength:"; $lblLora3Str.Left = 186; $lblLora3Str.Top = $gy + 2; $lblLora3Str.Width = 58
+$tabMain.Controls.Add($lblLora3Str)
+
+$numLora3              = New-Object System.Windows.Forms.NumericUpDown
+$numLora3.Left         = 248; $numLora3.Top = $gy; $numLora3.Width = 76
+$numLora3.DecimalPlaces= 2; $numLora3.Minimum = 0; $numLora3.Maximum = 2; $numLora3.Increment = 0.05
+$numLora3.Value        = [decimal]$Config.defaults.lora3Strength
+$tabMain.Controls.Add($numLora3)
+$gy += 32
+
 # Seed row: checkbox + spinner + Steps + CFG
 $chkRandomSeed         = New-Object System.Windows.Forms.CheckBox
 $chkRandomSeed.Text    = "Random seed"
@@ -1005,123 +764,7 @@ $comboScheduler.SelectedIndex = if ($sidx -ge 0) { $sidx } else { 0 }
 $tabMain.Controls.Add($comboScheduler)
 $gy += 46
 
-# ===========================================================================
-# Clothing Override Panel
-# ===========================================================================
-$clothingBox             = New-Object System.Windows.Forms.GroupBox
-$clothingBox.Text        = "Clothing Override"
-$clothingBox.Left        = 6; $clothingBox.Top = $gy; $clothingBox.Width = 408; $clothingBox.Height = 250
-$clothingBox.Font        = New-Object System.Drawing.Font("Segoe UI", 8.5, [System.Drawing.FontStyle]::Bold)
-$tabMain.Controls.Add($clothingBox)
-
-$chkClothingEnable        = New-Object System.Windows.Forms.CheckBox
-$chkClothingEnable.Text   = "Append clothing override to prompt"
-$chkClothingEnable.Left   = 10; $chkClothingEnable.Top = 18; $chkClothingEnable.Width = 280; $chkClothingEnable.Height = 20
-$chkClothingEnable.Font   = New-Object System.Drawing.Font("Segoe UI", 8.5)
-$clothingBox.Controls.Add($chkClothingEnable)
-
-$cy2 = 42
-$lblCatCloth = New-Object System.Windows.Forms.Label; $lblCatCloth.Text = "Clothing Cat."; $lblCatCloth.Left = 10; $lblCatCloth.Top = $cy2; $lblCatCloth.Width = 90; $lblCatCloth.Height = 16; $lblCatCloth.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblCatCloth)
-$lblCatColor = New-Object System.Windows.Forms.Label; $lblCatColor.Text = "Color Group"; $lblCatColor.Left = 144; $lblCatColor.Top = $cy2; $lblCatColor.Width = 80; $lblCatColor.Height = 16; $lblCatColor.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblCatColor)
-$lblCatMat = New-Object System.Windows.Forms.Label; $lblCatMat.Text = "Material Cat."; $lblCatMat.Left = 278; $lblCatMat.Top = $cy2; $lblCatMat.Width = 90; $lblCatMat.Height = 16; $lblCatMat.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblCatMat)
-
-$cy2 += 17
-$comboCatCloth               = New-Object System.Windows.Forms.ComboBox
-$comboCatCloth.Left          = 10; $comboCatCloth.Top = $cy2; $comboCatCloth.Width = 126; $comboCatCloth.DropDownStyle = "DropDownList"; $comboCatCloth.Font = New-Object System.Drawing.Font("Segoe UI",8)
-[void]$comboCatCloth.Items.Add("-- All --")
-foreach ($c in (Get-ClothingCategories)) { [void]$comboCatCloth.Items.Add($c) }
-$comboCatCloth.SelectedIndex = 0
-$clothingBox.Controls.Add($comboCatCloth)
-
-$comboCatColor               = New-Object System.Windows.Forms.ComboBox
-$comboCatColor.Left          = 144; $comboCatColor.Top = $cy2; $comboCatColor.Width = 126; $comboCatColor.DropDownStyle = "DropDownList"; $comboCatColor.Font = New-Object System.Drawing.Font("Segoe UI",8)
-[void]$comboCatColor.Items.Add("-- All --")
-foreach ($c in (Get-ColorCategories)) { [void]$comboCatColor.Items.Add($c) }
-$comboCatColor.SelectedIndex = 0
-$clothingBox.Controls.Add($comboCatColor)
-
-$comboCatMat               = New-Object System.Windows.Forms.ComboBox
-$comboCatMat.Left          = 278; $comboCatMat.Top = $cy2; $comboCatMat.Width = 120; $comboCatMat.DropDownStyle = "DropDownList"; $comboCatMat.Font = New-Object System.Drawing.Font("Segoe UI",8)
-[void]$comboCatMat.Items.Add("-- All --")
-foreach ($c in (Get-MaterialCategories)) { [void]$comboCatMat.Items.Add($c) }
-$comboCatMat.SelectedIndex = 0
-$clothingBox.Controls.Add($comboCatMat)
-
-$cy2 += 28
-$lblItemCloth = New-Object System.Windows.Forms.Label; $lblItemCloth.Text = "Clothing Item"; $lblItemCloth.Left = 10; $lblItemCloth.Top = $cy2; $lblItemCloth.Width = 90; $lblItemCloth.Height = 16; $lblItemCloth.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblItemCloth)
-$lblItemColor = New-Object System.Windows.Forms.Label; $lblItemColor.Text = "Color"; $lblItemColor.Left = 144; $lblItemColor.Top = $cy2; $lblItemColor.Width = 80; $lblItemColor.Height = 16; $lblItemColor.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblItemColor)
-$lblItemMat = New-Object System.Windows.Forms.Label; $lblItemMat.Text = "Material"; $lblItemMat.Left = 278; $lblItemMat.Top = $cy2; $lblItemMat.Width = 90; $lblItemMat.Height = 16; $lblItemMat.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblItemMat)
-
-$cy2 += 17
-$comboClothItem               = New-Object System.Windows.Forms.ComboBox
-$comboClothItem.Left          = 10; $comboClothItem.Top = $cy2; $comboClothItem.Width = 126; $comboClothItem.DropDownStyle = "DropDownList"; $comboClothItem.Font = New-Object System.Drawing.Font("Segoe UI",8)
-foreach ($i in (Get-AllClothingItems)) { [void]$comboClothItem.Items.Add($i) }
-if ($comboClothItem.Items.Count -gt 0) { $comboClothItem.SelectedIndex = 0 }
-$clothingBox.Controls.Add($comboClothItem)
-
-$comboColorItem               = New-Object System.Windows.Forms.ComboBox
-$comboColorItem.Left          = 144; $comboColorItem.Top = $cy2; $comboColorItem.Width = 126; $comboColorItem.DropDownStyle = "DropDownList"; $comboColorItem.Font = New-Object System.Drawing.Font("Segoe UI",8)
-foreach ($i in (Get-AllColorItems)) { [void]$comboColorItem.Items.Add($i) }
-if ($comboColorItem.Items.Count -gt 0) { $comboColorItem.SelectedIndex = 0 }
-$clothingBox.Controls.Add($comboColorItem)
-
-$comboMatItem               = New-Object System.Windows.Forms.ComboBox
-$comboMatItem.Left          = 278; $comboMatItem.Top = $cy2; $comboMatItem.Width = 120; $comboMatItem.DropDownStyle = "DropDownList"; $comboMatItem.Font = New-Object System.Drawing.Font("Segoe UI",8)
-foreach ($i in (Get-AllMaterialItems)) { [void]$comboMatItem.Items.Add($i) }
-if ($comboMatItem.Items.Count -gt 0) { $comboMatItem.SelectedIndex = 0 }
-$clothingBox.Controls.Add($comboMatItem)
-
-$cy2 += 28
-$lblClothPreview           = New-Object System.Windows.Forms.Label
-$lblClothPreview.Text      = "Preview: (enable to see)"
-$lblClothPreview.Left      = 10; $lblClothPreview.Top = $cy2; $lblClothPreview.Width = 388; $lblClothPreview.Height = 18
-$lblClothPreview.Font      = New-Object System.Drawing.Font("Segoe UI", 7.5, [System.Drawing.FontStyle]::Italic)
-$lblClothPreview.ForeColor = [System.Drawing.Color]::FromArgb(100, 180, 255)
-$clothingBox.Controls.Add($lblClothPreview)
-
-$cy2 += 24
-$chkVariations        = New-Object System.Windows.Forms.CheckBox
-$chkVariations.Text   = "Run Variations"
-$chkVariations.Left   = 10; $chkVariations.Top = $cy2; $chkVariations.Width = 110; $chkVariations.Height = 20
-$chkVariations.Font   = New-Object System.Drawing.Font("Segoe UI", 8.5)
-$clothingBox.Controls.Add($chkVariations)
-
-$lblVarScope = New-Object System.Windows.Forms.Label; $lblVarScope.Text = "Cycle:"; $lblVarScope.Left = 124; $lblVarScope.Top = $cy2+3; $lblVarScope.Width = 36; $lblVarScope.Font = New-Object System.Drawing.Font("Segoe UI",7.5)
-$clothingBox.Controls.Add($lblVarScope)
-$comboVarScope               = New-Object System.Windows.Forms.ComboBox
-$comboVarScope.Left          = 162; $comboVarScope.Top = $cy2; $comboVarScope.Width = 140; $comboVarScope.DropDownStyle = "DropDownList"; $comboVarScope.Font = New-Object System.Drawing.Font("Segoe UI",8)
-@("Clothing only","Color only","Material only","Clothing + Color","Clothing + Material","All three") | ForEach-Object { [void]$comboVarScope.Items.Add($_) }
-$comboVarScope.SelectedIndex = 0
-$clothingBox.Controls.Add($comboVarScope)
-$comboVarScope.Enabled = $false
-
-$cy2 += 26
-$chkVarTimer = New-Object System.Windows.Forms.CheckBox; $chkVarTimer.Text = "Timer (sec):"; $chkVarTimer.Left = 10; $chkVarTimer.Top = $cy2; $chkVarTimer.Width = 90; $chkVarTimer.Height = 20; $chkVarTimer.Font = New-Object System.Drawing.Font("Segoe UI",8)
-$clothingBox.Controls.Add($chkVarTimer)
-$numVarTimer = New-Object System.Windows.Forms.NumericUpDown; $numVarTimer.Left = 104; $numVarTimer.Top = $cy2; $numVarTimer.Width = 56; $numVarTimer.Minimum = 0; $numVarTimer.Maximum = 60; $numVarTimer.Value = 1; $numVarTimer.Font = New-Object System.Drawing.Font("Segoe UI",8)
-$numVarTimer.Enabled = $false
-$clothingBox.Controls.Add($numVarTimer)
-
-$lblVarCount = New-Object System.Windows.Forms.Label; $lblVarCount.Text = "0 of 0"; $lblVarCount.Left = 168; $lblVarCount.Top = $cy2+3; $lblVarCount.Width = 120; $lblVarCount.Font = New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold); $lblVarCount.ForeColor = [System.Drawing.Color]::FromArgb(100,200,140)
-$clothingBox.Controls.Add($lblVarCount)
-
-$btnVarCancel = New-Object System.Windows.Forms.Button; $btnVarCancel.Text = "CANCEL RUN"; $btnVarCancel.Left = 294; $btnVarCancel.Top = $cy2; $btnVarCancel.Width = 104; $btnVarCancel.Height = 22
-$btnVarCancel.Font = New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
-$btnVarCancel.BackColor = [System.Drawing.Color]::FromArgb(160,40,40); $btnVarCancel.ForeColor = [System.Drawing.Color]::White
-$btnVarCancel.FlatStyle = "Flat"; $btnVarCancel.Enabled = $false
-$clothingBox.Controls.Add($btnVarCancel)
-
-$gy += 258
-
-# ===========================================================================
 # Buttons row
-# ===========================================================================
 $btnGenerate        = New-Object System.Windows.Forms.Button
 $btnGenerate.Text   = "Generate"; $btnGenerate.Left = 8; $btnGenerate.Top = $gy; $btnGenerate.Width = 118; $btnGenerate.Height = 30
 $tabMain.Controls.Add($btnGenerate)
@@ -1159,29 +802,6 @@ $chkIncludePrompts.Left    = 8; $chkIncludePrompts.Top = $gy; $chkIncludePrompts
 $chkIncludePrompts.Checked = $false
 $tabMain.Controls.Add($chkIncludePrompts)
 $gy += 26
-
-# Debug row
-$chkDebugMode = New-Object System.Windows.Forms.CheckBox
-$chkDebugMode.Text = "Debug mode"
-$chkDebugMode.Left = 8; $chkDebugMode.Top = $gy; $chkDebugMode.Width = 96; $chkDebugMode.Height = 20
-$tabMain.Controls.Add($chkDebugMode)
-
-$btnOpenDebugLog = New-Object System.Windows.Forms.Button
-$btnOpenDebugLog.Text = "Open Debug Log"; $btnOpenDebugLog.Left = 110; $btnOpenDebugLog.Top = $gy - 4; $btnOpenDebugLog.Width = 120; $btnOpenDebugLog.Height = 28
-$tabMain.Controls.Add($btnOpenDebugLog)
-
-$btnClearDebugLog = New-Object System.Windows.Forms.Button
-$btnClearDebugLog.Text = "Clear Debug Log"; $btnClearDebugLog.Left = 238; $btnClearDebugLog.Top = $gy - 4; $btnClearDebugLog.Width = 120; $btnClearDebugLog.Height = 28
-$tabMain.Controls.Add($btnClearDebugLog)
-$gy += 34
-
-$lblDebugPath = New-Object System.Windows.Forms.Label
-$lblDebugPath.Text = "Debug log: lora-tester-2.debug.log"
-$lblDebugPath.Left = 8; $lblDebugPath.Top = $gy; $lblDebugPath.Width = 360; $lblDebugPath.Height = 18
-$lblDebugPath.Font = New-Object System.Drawing.Font("Segoe UI", 7.5, [System.Drawing.FontStyle]::Italic)
-$lblDebugPath.ForeColor = [System.Drawing.Color]::FromArgb(120, 120, 150)
-$tabMain.Controls.Add($lblDebugPath)
-$gy += 24
 
 # Log box
 $script:LogBox            = New-Object System.Windows.Forms.TextBox
@@ -1375,133 +995,24 @@ $chkRandomSeed.Add_CheckedChanged({
     }
 })
 
-$chkDebugMode.Add_CheckedChanged({
-    $script:DebugMode = $chkDebugMode.Checked
-    if ($chkDebugMode.Checked) {
-        Add-Log "Debug mode enabled."
-        Write-DebugLog -Title "Debug mode enabled" -Lines @(
-            "Debug log path: $script:DebugLogPath",
-            "Config path: $ConfigPath",
-            "Prefs path: $PrefsPath",
-            "Run log path: $RunLogPath"
-        )
-    } else {
-        Add-Log "Debug mode disabled."
-    }
-    Save-Prefs
-})
-
-$btnOpenDebugLog.Add_Click({ Open-DebugLog })
-$btnClearDebugLog.Add_Click({
-    Clear-DebugLog
-    Add-Log "Debug log cleared."
-})
-
-# ---------------------------------------------------------------------------
-# Clothing Override event handlers
-# ---------------------------------------------------------------------------
-function Update-ClothPreview {
-    if (-not $chkClothingEnable.Checked) { $lblClothPreview.Text = "Preview: (disabled)"; return }
-    $c = [string]$comboColorItem.SelectedItem
-    $m = [string]$comboMatItem.SelectedItem
-    $t = [string]$comboClothItem.SelectedItem
-    $append = Build-ClothingAppend -Color $c -Material $m -Clothing $t
-    $lblClothPreview.Text = "Preview: $append  [injected at START of prompt]"
-}
-
-function Update-VarCount {
-    if (-not $chkVariations.Checked) { $lblVarCount.Text = "0 of 0"; return }
-    $scope      = [string]$comboVarScope.SelectedItem
-    $catC       = [string]$comboCatCloth.SelectedItem
-    $catCo      = [string]$comboCatColor.SelectedItem
-    $catM       = [string]$comboCatMat.SelectedItem
-    $clothItems = if ($catC  -eq "-- All --") { Get-AllClothingItems  } else { Get-ClothingItems  -Cat $catC  }
-    $colorItems = if ($catCo -eq "-- All --") { Get-AllColorItems     } else { Get-ColorItems     -Cat $catCo }
-    $matItems   = if ($catM  -eq "-- All --") { Get-AllMaterialItems  } else { Get-MaterialItems  -Cat $catM  }
-    $total = switch ($scope) {
-        "Clothing only"       { $clothItems.Count }
-        "Color only"          { $colorItems.Count }
-        "Material only"       { $matItems.Count }
-        "Clothing + Color"    { $clothItems.Count * $colorItems.Count }
-        "Clothing + Material" { $clothItems.Count * $matItems.Count }
-        "All three"           { $clothItems.Count * $colorItems.Count * $matItems.Count }
-        default               { 0 }
-    }
-    $lblVarCount.Text = "0 of $total"
-}
-
-$chkClothingEnable.Add_CheckedChanged({
-    $en = $chkClothingEnable.Checked
-    $comboCatCloth.Enabled  = $en; $comboCatColor.Enabled  = $en; $comboCatMat.Enabled    = $en
-    $comboClothItem.Enabled = $en; $comboColorItem.Enabled = $en; $comboMatItem.Enabled   = $en
-    $chkVariations.Enabled  = $en
-    $comboVarScope.Enabled  = $en -and $chkVariations.Checked
-    $chkVarTimer.Enabled    = $en -and $chkVariations.Checked
-    $numVarTimer.Enabled    = $en -and $chkVariations.Checked -and $chkVarTimer.Checked
-    Update-ClothPreview; Update-VarCount
-})
-
-$comboCatCloth.Add_SelectedIndexChanged({
-    $cat = [string]$comboCatCloth.SelectedItem; $cur = [string]$comboClothItem.SelectedItem
-    $comboClothItem.Items.Clear()
-    $items = if ($cat -eq "-- All --") { Get-AllClothingItems } else { Get-ClothingItems -Cat $cat }
-    foreach ($i in $items) { [void]$comboClothItem.Items.Add($i) }
-    $idx = $comboClothItem.Items.IndexOf($cur)
-    $comboClothItem.SelectedIndex = if ($idx -ge 0) { $idx } elseif ($comboClothItem.Items.Count -gt 0) { 0 } else { -1 }
-    Update-VarCount
-})
-$comboCatColor.Add_SelectedIndexChanged({
-    $cat = [string]$comboCatColor.SelectedItem; $cur = [string]$comboColorItem.SelectedItem
-    $comboColorItem.Items.Clear()
-    $items = if ($cat -eq "-- All --") { Get-AllColorItems } else { Get-ColorItems -Cat $cat }
-    foreach ($i in $items) { [void]$comboColorItem.Items.Add($i) }
-    $idx = $comboColorItem.Items.IndexOf($cur)
-    $comboColorItem.SelectedIndex = if ($idx -ge 0) { $idx } elseif ($comboColorItem.Items.Count -gt 0) { 0 } else { -1 }
-    Update-VarCount
-})
-$comboCatMat.Add_SelectedIndexChanged({
-    $cat = [string]$comboCatMat.SelectedItem; $cur = [string]$comboMatItem.SelectedItem
-    $comboMatItem.Items.Clear()
-    $items = if ($cat -eq "-- All --") { Get-AllMaterialItems } else { Get-MaterialItems -Cat $cat }
-    foreach ($i in $items) { [void]$comboMatItem.Items.Add($i) }
-    $idx = $comboMatItem.Items.IndexOf($cur)
-    $comboMatItem.SelectedIndex = if ($idx -ge 0) { $idx } elseif ($comboMatItem.Items.Count -gt 0) { 0 } else { -1 }
-    Update-VarCount
-})
-$comboClothItem.Add_SelectedIndexChanged({ Update-ClothPreview })
-$comboColorItem.Add_SelectedIndexChanged({ Update-ClothPreview })
-$comboMatItem.Add_SelectedIndexChanged({  Update-ClothPreview })
-$comboVarScope.Add_SelectedIndexChanged({ Update-VarCount })
-$chkVariations.Add_CheckedChanged({
-    $on = $chkVariations.Checked
-    $comboVarScope.Enabled = $on; $chkVarTimer.Enabled = $on
-    $numVarTimer.Enabled   = $on -and $chkVarTimer.Checked
-    Update-VarCount
-})
-$chkVarTimer.Add_CheckedChanged({ $numVarTimer.Enabled = $chkVarTimer.Checked })
-$btnVarCancel.Add_Click({
-    $script:VarCancelRequested = $true; $btnVarCancel.Text = "Cancelling..."
-    Add-Log "Cancel requested — will stop after current image."
-})
-
-# Disable clothing controls initially
-$comboCatCloth.Enabled=$false; $comboCatColor.Enabled=$false; $comboCatMat.Enabled=$false
-$comboClothItem.Enabled=$false; $comboColorItem.Enabled=$false; $comboMatItem.Enabled=$false
-$chkVariations.Enabled=$false; $comboVarScope.Enabled=$false; $chkVarTimer.Enabled=$false; $numVarTimer.Enabled=$false
-
 $btnRefresh.Add_Click({
     $current1 = [string]$comboLora1.SelectedItem
     $current2 = [string]$comboLora2.SelectedItem
+    $current3 = [string]$comboLora3.SelectedItem
     $comboLora1.Items.Clear()
     $comboLora2.Items.Clear()
+    $comboLora3.Items.Clear()
     foreach ($item in (Get-ComfyLoraItems -Config $Config)) {
         [void]$comboLora1.Items.Add($item)
         [void]$comboLora2.Items.Add($item)
+        [void]$comboLora3.Items.Add($item)
     }
     $index1 = $comboLora1.Items.IndexOf($current1)
     $index2 = $comboLora2.Items.IndexOf($current2)
+    $index3 = $comboLora3.Items.IndexOf($current3)
     $comboLora1.SelectedIndex = if ($index1 -ge 0) { $index1 } else { 0 }
     $comboLora2.SelectedIndex = if ($index2 -ge 0) { $index2 } else { 0 }
+    $comboLora3.SelectedIndex = if ($index3 -ge 0) { $index3 } else { 0 }
     Add-Log "LoRA list refreshed."
 })
 
@@ -1544,7 +1055,7 @@ $script:btnSession.Add_Click({
         $dlg                  = New-Object System.Windows.Forms.SaveFileDialog
         $dlg.Title            = "Save Session Report"
         $dlg.Filter           = "HTML file (*.html)|*.html"
-        $dlg.FileName         = "lora2-session-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+        $dlg.FileName         = "char-design-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
         $dlg.InitialDirectory = $script:ReportsFolder
         if ($dlg.ShowDialog() -eq "OK") {
             try {
@@ -1572,310 +1083,159 @@ $script:btnOpenReport.Add_Click({
     Start-Process $folder
 })
 
-# ---------------------------------------------------------------------------
-# Core single-image generation (used by both button and variation runner)
-# ---------------------------------------------------------------------------
-function Invoke-SingleGeneration {
-    param(
-        [string]$ClothingAppend = "",
-        [string]$RunLabel = "Single generation"
-    )
-
-    $selectedLora1     = [string]$comboLora1.SelectedItem
-    $selectedLora2     = [string]$comboLora2.SelectedItem
-    $useLora1          = $chkLora1.Checked -and $selectedLora1 -ne "None"
-    $useLora2          = $chkLora2.Checked -and $selectedLora2 -ne "None"
-    $selectedCkpt      = [string]$comboCkpt.SelectedItem
-    $selectedSampler   = [string]$comboSampler.SelectedItem
-    $selectedScheduler = [string]$comboScheduler.SelectedItem
-    $selectedDiffuser  = [string]$comboDiffuser.SelectedItem
-    $useCN             = $chkCN.Checked -and [string]$comboCNModel.SelectedItem -ne "None"
-
-    # Inject clothing NEAR THE FRONT so it competes with LoRA tokens
-    $finalPrompt = Inject-ClothingIntoPrompt -BasePrompt $txtPrompt.Text -ClothingStr $ClothingAppend
-
-    $prefixParts = @([string]$Config.defaults.prefix)
-    if ($useLora1) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora1)) -Fallback "lora1" } else { $prefixParts += "no_lora1" }
-    if ($useLora2) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora2)) -Fallback "lora2" } else { $prefixParts += "no_lora2" }
-    $prefixParts += Get-Date -Format "yyyyMMdd_HHmmss"
-    $prefix = $prefixParts -join "_"
-
-    $clothLog = if (-not [string]::IsNullOrWhiteSpace($ClothingAppend)) { " | Clothing: $ClothingAppend" } else { "" }
-    Add-Log ("Sending " + $RunLabel + $clothLog)
-
-    $script:ActualSeed = if ($chkRandomSeed.Checked) {
-        Get-Random -Minimum 1 -Maximum 2147483647
-    } else {
-        [int]$numSeed.Value
-    }
-
-    $invokeParams = @{
-        Prompt            = $finalPrompt
-        NegativePrompt    = $txtNegative.Text
-        Lora1Name         = $selectedLora1
-        Lora1Strength     = [double]$numLora1.Value
-        Lora2Name         = $selectedLora2
-        Lora2Strength     = [double]$numLora2.Value
-        Width             = [int]$numWidth.Value
-        Height            = [int]$numHeight.Value
-        BatchSize         = [int]$Config.defaults.batchSize
-        Steps             = [int]$numSteps.Value
-        Cfg               = [double]$numCfg.Value
-        Sampler           = $selectedSampler
-        Scheduler         = $selectedScheduler
-        Seed              = [int]$script:ActualSeed
-        Prefix            = $prefix
-        ComfyUrl          = [string]$Config.comfyUrl
-        WorkflowPath      = (Get-WorkflowPath -Config $Config)
-        Checkpoint        = $selectedCkpt
-    }
-    if ($useLora1)                                    { $invokeParams.Lora1Enabled     = $true }
-    if ($useLora2)                                    { $invokeParams.Lora2Enabled     = $true }
-    if ($selectedDiffuser -ne "(checkpoint default)") { $invokeParams.Diffuser         = $selectedDiffuser }
-    if ($useCN) {
-        $invokeParams.ControlNetEnabled  = $true
-        $invokeParams.ControlNetModel    = [string]$comboCNModel.SelectedItem
-        $invokeParams.ControlNetImage    = [string]$comboCNImage.SelectedItem
-        $invokeParams.ControlNetFilter   = [string]$comboCNFilter.SelectedItem
-        $invokeParams.ControlNetStrength = [double]$numCNStrength.Value
-        $invokeParams.ControlNetStart    = [double]$numCNStart.Value
-        $invokeParams.ControlNetEnd      = [double]$numCNEnd.Value
-    }
-
-    $requestLines = New-Object System.Collections.Generic.List[string]
-    $requestLines.Add('Base prompt:') | Out-Null
-    $requestLines.Add([string]$txtPrompt.Text) | Out-Null
-    $requestLines.Add('') | Out-Null
-    $clothingDebugValue = if ([string]::IsNullOrWhiteSpace($ClothingAppend)) { '(none)' } else { $ClothingAppend }
-    $requestLines.Add('Clothing append: ' + $clothingDebugValue) | Out-Null
-    $requestLines.Add('Final prompt:') | Out-Null
-    $requestLines.Add($finalPrompt) | Out-Null
-    $requestLines.Add('') | Out-Null
-    $requestLines.Add('Negative prompt:') | Out-Null
-    $requestLines.Add([string]$txtNegative.Text) | Out-Null
-    $requestLines.Add('') | Out-Null
-    $requestLines.Add('Checkpoint: ' + $selectedCkpt) | Out-Null
-    $requestLines.Add('Sampler / Scheduler: ' + $selectedSampler + ' / ' + $selectedScheduler) | Out-Null
-    $requestLines.Add('Size: ' + [string][int]$numWidth.Value + ' x ' + [string][int]$numHeight.Value) | Out-Null
-    $requestLines.Add('Steps: ' + [string][int]$numSteps.Value + ' | CFG: ' + [string]$numCfg.Value) | Out-Null
-    $requestLines.Add('Seed: ' + [string]$script:ActualSeed + ' | Random seed: ' + [string]$chkRandomSeed.Checked) | Out-Null
-    $lora1DebugValue = if ($useLora1) { $selectedLora1 + ' @ ' + [string]$numLora1.Value } else { 'OFF' }
-    $requestLines.Add('LoRA 1: ' + $lora1DebugValue) | Out-Null
-    $lora2DebugValue = if ($useLora2) { $selectedLora2 + ' @ ' + [string]$numLora2.Value } else { 'OFF' }
-    $requestLines.Add('LoRA 2: ' + $lora2DebugValue) | Out-Null
-    $requestLines.Add('Diffuser: ' + $selectedDiffuser) | Out-Null
-    $requestLines.Add('ControlNet enabled: ' + [string]$useCN) | Out-Null
-    $requestLines.Add('Prefix: ' + $prefix) | Out-Null
-    $requestLines.Add('Invoke script: ' + $InvokeScriptPath) | Out-Null
-    $requestLines.Add('Workflow path: ' + (Get-WorkflowPath -Config $Config)) | Out-Null
-    Write-DebugLog -Title ($RunLabel + ' / request') -Lines $requestLines
-    try {
-        Write-DebugLog -Title ($RunLabel + ' / invokeParams JSON') -Lines @(($invokeParams | ConvertTo-Json -Depth 6))
-    } catch {}
-
-    $promptId = & $InvokeScriptPath @invokeParams
-    if ([string]::IsNullOrWhiteSpace($promptId)) {
-        throw "Invoke script returned no prompt ID. Check ComfyUI is running at $($Config.comfyUrl)."
-    }
-    Add-Log ('Queued: ' + $promptId)
-    Write-DebugLog -Title ($RunLabel + ' / queued') -Lines @('Prompt ID: ' + $promptId)
-    [System.Windows.Forms.Application]::DoEvents()
-
-    Wait-ComfyImages -PromptId $promptId -ComfyUrl ([string]$Config.comfyUrl) -OutputPath ([string]$Config.comfyOutputPath) -RunLabel $RunLabel
-
-    $numSeed.Value  = [decimal]$script:ActualSeed
-    $seedLabel      = [string]$script:ActualSeed
-    $lora1Label     = if ($useLora1) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora1) } else { $null }
-    $lora2Label     = if ($useLora2) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora2) } else { $null }
-    $loraLabels     = @(); if ($lora1Label) { $loraLabels += $lora1Label }; if ($lora2Label) { $loraLabels += $lora2Label }
-    $loraLabel      = if ($loraLabels.Count -gt 0) { $loraLabels -join " + " } else { "LoRAs off" }
-
-    $first = $true
-    foreach ($imgPath in $script:LastImagePaths) {
-        Add-OutputHistoryItem -Path $imgPath -LoraName $loraLabel -Seed $seedLabel -Select:$first
-        $first = $false
-    }
-
-    if ($script:LastImagePaths.Count -gt 0) {
-        $firstPath = $script:LastImagePaths[0]
-        Write-DebugLog -Title ($RunLabel + ' / result') -Lines @(
-            'Image count: ' + $script:LastImagePaths.Count,
-            'First image: ' + $firstPath
-        )
-        Set-PreviewImage -Path $firstPath
-        $runEntry = @{
-            Time           = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-            ImagePath      = $firstPath
-            Lora1Enabled   = $useLora1; Lora1Name = $lora1Label; Lora1Strength = if ($useLora1) { [string]$numLora1.Value } else { "" }
-            Lora2Enabled   = $useLora2; Lora2Name = $lora2Label; Lora2Strength = if ($useLora2) { [string]$numLora2.Value } else { "" }
-            Prompt         = $finalPrompt; NegativePrompt = $txtNegative.Text
-            Seed           = $seedLabel; Steps = [string][int]$numSteps.Value; Cfg = [string]$numCfg.Value
-            Width          = [string][int]$numWidth.Value; Height = [string][int]$numHeight.Value
-            Sampler        = $selectedSampler; Scheduler = $selectedScheduler; Checkpoint = $selectedCkpt
-        }
-        Append-RunLog -Entry $runEntry
-        $name      = [System.IO.Path]::GetFileName($firstPath)
-        $stamp     = Get-Date -Format "yyyy-MM-dd HH:mm"
-        $ckptShort = [System.IO.Path]::GetFileNameWithoutExtension($selectedCkpt)
-        $gridOutputs.Rows.Insert(0, $stamp, $name, $loraLabel, $seedLabel, $firstPath, $ckptShort)
-        $gridOutputs.ClearSelection(); $gridOutputs.Rows[0].Selected = $true
-        $gridOutputs.CurrentCell = $gridOutputs.Rows[0].Cells["File"]
-        if ($script:SessionActive) { $script:SessionEntries.Add($runEntry); Add-Log ('Session entry added (' + $script:SessionEntries.Count + ' total).') }
-    }
-    Add-Log "Done. $($script:LastImagePaths.Count) image(s)."
-}
-
 $btnGenerate.Add_Click({
     try {
-        $btnGenerate.Enabled = $false
+        $btnGenerate.Enabled  = $false
+        $selectedLora1        = [string]$comboLora1.SelectedItem
+        $selectedLora2        = [string]$comboLora2.SelectedItem
+        $selectedLora3        = [string]$comboLora3.SelectedItem
+        $useLora1             = $chkLora1.Checked -and $selectedLora1 -ne "None"
+        $useLora2             = $chkLora2.Checked -and $selectedLora2 -ne "None"
+        $useLora3             = $chkLora3.Checked -and $selectedLora3 -ne "None"
+        $selectedCkpt         = [string]$comboCkpt.SelectedItem
+        $selectedSampler      = [string]$comboSampler.SelectedItem
+        $selectedScheduler    = [string]$comboScheduler.SelectedItem
+        $selectedDiffuser     = [string]$comboDiffuser.SelectedItem
+        $useCN                = $chkCN.Checked -and [string]$comboCNModel.SelectedItem -ne "None"
 
-        # Single shot (no variations, or clothing override off)
-        if (-not $chkClothingEnable.Checked -or -not $chkVariations.Checked) {
-            $clothAppend = ""
-            if ($chkClothingEnable.Checked) {
-                $clothAppend = Build-ClothingAppend `
-                    -Color    ([string]$comboColorItem.SelectedItem) `
-                    -Material ([string]$comboMatItem.SelectedItem) `
-                    -Clothing ([string]$comboClothItem.SelectedItem)
-            }
-            Invoke-SingleGeneration -ClothingAppend $clothAppend -RunLabel "Single generation"
-            Save-Prefs
+        $prefixParts = @([string]$Config.defaults.prefix)
+        if ($useLora1) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora1)) -Fallback "lora1" } else { $prefixParts += "no_lora1" }
+        if ($useLora2) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora2)) -Fallback "lora2" } else { $prefixParts += "no_lora2" }
+        if ($useLora3) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora3)) -Fallback "lora3" } else { $prefixParts += "no_lora3" }
+        $prefixParts += Get-Date -Format "yyyyMMdd_HHmmss"
+        $prefix = $prefixParts -join "_"
+
+        $lora1Display = if ($useLora1) { "$selectedLora1 @ $($numLora1.Value)" } else { "off" }
+        $lora2Display = if ($useLora2) { "$selectedLora2 @ $($numLora2.Value)" } else { "off" }
+        $lora3Display = if ($useLora3) { "$selectedLora3 @ $($numLora3.Value)" } else { "off" }
+        Add-Log "Sending. LoRA1: $lora1Display | LoRA2: $lora2Display | LoRA3: $lora3Display | Ckpt: $selectedCkpt"
+        # Build a hashtable of params and dot-source the invoke script directly.
+        # This avoids all stdout/stderr capture issues from spawning a child process.
+        $invokeParams = @{
+            Prompt            = $txtPrompt.Text
+            NegativePrompt    = $txtNegative.Text
+            Lora1Name         = $selectedLora1
+            Lora1Strength     = [double]$numLora1.Value
+            Lora2Name         = $selectedLora2
+            Lora2Strength     = [double]$numLora2.Value
+            Lora3Name         = $selectedLora3
+            Lora3Strength     = [double]$numLora3.Value
+            Width             = [int]$numWidth.Value
+            Height            = [int]$numHeight.Value
+            BatchSize         = [int]$Config.defaults.batchSize
+            Steps             = [int]$numSteps.Value
+            Cfg               = [double]$numCfg.Value
+            Sampler           = $selectedSampler
+            Scheduler         = $selectedScheduler
+            Seed              = [int]$script:ActualSeed
+            Prefix            = $prefix
+            ComfyUrl          = [string]$Config.comfyUrl
+            WorkflowPath      = (Get-WorkflowPath -Config $Config)
+            Checkpoint        = $selectedCkpt
+        }
+        if ($useLora1)                                         { $invokeParams.Lora1Enabled      = $true }
+        if ($useLora2)                                         { $invokeParams.Lora2Enabled      = $true }
+        if ($useLora3)                                         { $invokeParams.Lora3Enabled      = $true }
+        if ($selectedDiffuser -ne "(checkpoint default)")      { $invokeParams.Diffuser           = $selectedDiffuser }
+        if ($useCN) {
+            $invokeParams.ControlNetEnabled  = $true
+            $invokeParams.ControlNetModel    = [string]$comboCNModel.SelectedItem
+            $invokeParams.ControlNetImage    = [string]$comboCNImage.SelectedItem
+            $invokeParams.ControlNetFilter   = [string]$comboCNFilter.SelectedItem
+            $invokeParams.ControlNetStrength = [double]$numCNStrength.Value
+            $invokeParams.ControlNetStart    = [double]$numCNStart.Value
+            $invokeParams.ControlNetEnd      = [double]$numCNEnd.Value
+        }
+
+        # Resolve seed before building args so the same value goes to ComfyUI and the report
+        $script:ActualSeed = if ($chkRandomSeed.Checked) {
+            Get-Random -Minimum 1 -Maximum 2147483647
         } else {
-            # Variation runner
-            $scope      = [string]$comboVarScope.SelectedItem
-            $catC       = [string]$comboCatCloth.SelectedItem
-            $catCo      = [string]$comboCatColor.SelectedItem
-            $catM       = [string]$comboCatMat.SelectedItem
-            $clothItems = if ($catC  -eq "-- All --") { Get-AllClothingItems  } else { Get-ClothingItems  -Cat $catC  }
-            $colorItems = if ($catCo -eq "-- All --") { Get-AllColorItems     } else { Get-ColorItems     -Cat $catCo }
-            $matItems   = if ($catM  -eq "-- All --") { Get-AllMaterialItems  } else { Get-MaterialItems  -Cat $catM  }
+            [int]$numSeed.Value
+        }
 
-            $combinations = @()
-            switch ($scope) {
-                "Clothing only" {
-                    foreach ($cl in $clothItems) {
-                        $combinations += [pscustomobject]@{
-                            Clothing = $cl
-                            Color    = ""
-                            Material = ""
-                        }
-                    }
-                }
-                "Color only" {
-                    foreach ($co in $colorItems) {
-                        $combinations += [pscustomobject]@{
-                            Clothing = ""
-                            Color    = $co
-                            Material = ""
-                        }
-                    }
-                }
-                "Material only" {
-                    foreach ($mt in $matItems) {
-                        $combinations += [pscustomobject]@{
-                            Clothing = ""
-                            Color    = ""
-                            Material = $mt
-                        }
-                    }
-                }
-                "Clothing + Color" {
-                    foreach ($cl in $clothItems) {
-                        foreach ($co in $colorItems) {
-                            $combinations += [pscustomobject]@{
-                                Clothing = $cl
-                                Color    = $co
-                                Material = ""
-                            }
-                        }
-                    }
-                }
-                "Clothing + Material" {
-                    foreach ($cl in $clothItems) {
-                        foreach ($mt in $matItems) {
-                            $combinations += [pscustomobject]@{
-                                Clothing = $cl
-                                Color    = ""
-                                Material = $mt
-                            }
-                        }
-                    }
-                }
-                "All three" {
-                    foreach ($cl in $clothItems) {
-                        foreach ($co in $colorItems) {
-                            foreach ($mt in $matItems) {
-                                $combinations += [pscustomobject]@{
-                                    Clothing = $cl
-                                    Color    = $co
-                                    Material = $mt
-                                }
-                            }
-                        }
-                    }
-                }
+        $promptId = & $InvokeScriptPath @invokeParams
+        if ([string]::IsNullOrWhiteSpace($promptId)) {
+            throw "Invoke script returned no prompt ID. Check ComfyUI is running at $($Config.comfyUrl)."
+        }
+        Add-Log ('Queued: ' + $promptId)
+        [System.Windows.Forms.Application]::DoEvents()
+
+        Wait-ComfyImages -PromptId $promptId -ComfyUrl ([string]$Config.comfyUrl) -OutputPath ([string]$Config.comfyOutputPath)
+
+        # Show the actual seed used in the spinner so it can be reused
+        $numSeed.Value = [decimal]$script:ActualSeed
+        $seedLabel     = [string]$script:ActualSeed
+        $lora1Label = if ($useLora1) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora1) } else { $null }
+        $lora2Label = if ($useLora2) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora2) } else { $null }
+        $lora3Label = if ($useLora3) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora3) } else { $null }
+        $loraLabels = @()
+        if ($lora1Label) { $loraLabels += $lora1Label }
+        if ($lora2Label) { $loraLabels += $lora2Label }
+        if ($lora3Label) { $loraLabels += $lora3Label }
+        $loraLabel = if ($loraLabels.Count -gt 0) { $loraLabels -join " + " } else { "LoRAs off" }
+
+        $first = $true
+        foreach ($imgPath in $script:LastImagePaths) {
+            Add-OutputHistoryItem -Path $imgPath -LoraName $loraLabel -Seed $seedLabel -Select:$first
+            $first = $false
+        }
+
+        if ($script:LastImagePaths.Count -gt 0) {
+            $firstPath = $script:LastImagePaths[0]
+            Set-PreviewImage -Path $firstPath
+
+            $runEntry = @{
+                Time           = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                ImagePath      = $firstPath
+                Lora1Enabled    = $useLora1
+                Lora1Name       = $lora1Label
+                Lora1Strength   = if ($useLora1) { [string]$numLora1.Value } else { "" }
+                Lora2Enabled    = $useLora2
+                Lora2Name       = $lora2Label
+                Lora2Strength   = if ($useLora2) { [string]$numLora2.Value } else { "" }
+                Lora3Enabled    = $useLora3
+                Lora3Name       = $lora3Label
+                Lora3Strength   = if ($useLora3) { [string]$numLora3.Value } else { "" }
+                Prompt         = $txtPrompt.Text
+                NegativePrompt = $txtNegative.Text
+                Seed           = $seedLabel
+                Steps          = [string][int]$numSteps.Value
+                Cfg            = [string]$numCfg.Value
+                Width          = [string][int]$numWidth.Value
+                Height         = [string][int]$numHeight.Value
+                Sampler        = $selectedSampler
+                Scheduler      = $selectedScheduler
+                Checkpoint     = $selectedCkpt
             }
 
-            $total = @($combinations).Count
-            if ($total -gt 10000) {
-                throw "Variation run is too large: $total combinations. Pick a smaller clothing, color, or material category."
-            }
-            if ($total -eq 0) {
-                Add-Log "No combinations to run."
-            } else {
-                Add-Log "Starting variation run: $total combination(s) — scope: $scope"
-                Write-DebugLog -Title "Variation run / start" -Lines @(
-                    "Scope: $scope",
-                    "Clothing category: $catC",
-                    "Color category: $catCo",
-                    "Material category: $catM",
-                    "Total combinations: $total"
-                )
-                $script:VarCancelRequested = $false; $script:VarRunning = $true
-                $btnVarCancel.Enabled = $true
-                $done = 0; $lblVarCount.Text = "0 of $total"
-                [System.Windows.Forms.Application]::DoEvents()
+            # Save to persistent run log
+            Append-RunLog -Entry $runEntry
 
-                foreach ($combo in $combinations) {
-                    if ($script:VarCancelRequested) { Add-Log "Cancelled at $done of $total."; break }
-                    $append = Build-ClothingAppend -Color $combo.Color -Material $combo.Material -Clothing $combo.Clothing
-                    $runLabel = "Variation $($done + 1) of $total"
-                    try { Invoke-SingleGeneration -ClothingAppend $append -RunLabel $runLabel }
-                    catch { Add-Log "Error on variation $($done+1): $($_.Exception.Message)" }
-                    $done++; $lblVarCount.Text = "$done of $total"
-                    [System.Windows.Forms.Application]::DoEvents()
+            # Add to grid with full metadata
+            $name      = [System.IO.Path]::GetFileName($firstPath)
+            $stamp     = Get-Date -Format "yyyy-MM-dd HH:mm"
+            $ckptShort = [System.IO.Path]::GetFileNameWithoutExtension($selectedCkpt)
+            $gridOutputs.Rows.Insert(0, $stamp, $name, $loraLabel, $seedLabel, $firstPath, $ckptShort)
+            $gridOutputs.ClearSelection()
+            $gridOutputs.Rows[0].Selected = $true
+            $gridOutputs.CurrentCell      = $gridOutputs.Rows[0].Cells["File"]
 
-                    if ($chkVarTimer.Checked -and $done -lt $total -and -not $script:VarCancelRequested) {
-                        $wait = [int]$numVarTimer.Value
-                        if ($wait -gt 0) {
-                            Add-Log "Waiting ${wait}s..."
-                            $deadline = (Get-Date).AddSeconds($wait)
-                            while ((Get-Date) -lt $deadline) {
-                                if ($script:VarCancelRequested) { break }
-                                Start-Sleep -Milliseconds 200
-                                [System.Windows.Forms.Application]::DoEvents()
-                            }
-                        }
-                    }
-                }
-
-                $script:VarRunning = $false; $btnVarCancel.Enabled = $false; $btnVarCancel.Text = "CANCEL RUN"
-                $lblVarCount.Text = "$done of $total"
-                Add-Log "Variation run complete: $done image(s) generated."
-                Save-Prefs
+            if ($script:SessionActive) {
+                $script:SessionEntries.Add($runEntry)
+                Add-Log ('Session entry added (' + $script:SessionEntries.Count + ' total).')
             }
         }
+
+        Save-Prefs
+        Add-Log "Done. $($script:LastImagePaths.Count) image(s)."
     }
     catch {
         Add-Log "Error: $($_.Exception.Message)"
-        Write-DebugLog -Title 'Generation error' -Lines @(
-            $_.Exception.Message,
-            $_.ScriptStackTrace
-        )
         [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, "LoRA test failed", "OK", "Error") | Out-Null
     }
     finally {
-        $btnGenerate.Enabled = $true; $script:VarRunning = $false; $btnVarCancel.Enabled = $false
+        $btnGenerate.Enabled = $true
     }
 })
 
@@ -1901,6 +1261,9 @@ if ($null -ne $prefs) {
     Restore-ComboValue -Combo $comboLora2     -Value ([string]$prefs.lora2Name)
     if ($null -ne $prefs.lora2Enabled)    { $chkLora2.Checked = [bool]$prefs.lora2Enabled }
     if ($null -ne $prefs.lora2Strength)   { try { $numLora2.Value  = [decimal]$prefs.lora2Strength  } catch {} }
+    Restore-ComboValue -Combo $comboLora3     -Value ([string]$prefs.lora3Name)
+    if ($null -ne $prefs.lora3Enabled)    { $chkLora3.Checked = [bool]$prefs.lora3Enabled }
+    if ($null -ne $prefs.lora3Strength)   { try { $numLora3.Value  = [decimal]$prefs.lora3Strength  } catch {} }
     if ($null -ne $prefs.randomSeed)     { $chkRandomSeed.Checked = [bool]$prefs.randomSeed }
     $numSeed.Enabled = -not $chkRandomSeed.Checked
     if ($null -ne $prefs.seed -and -not $chkRandomSeed.Checked) { try { $numSeed.Value = [decimal]$prefs.seed } catch {} }
@@ -1911,7 +1274,6 @@ if ($null -ne $prefs) {
     Restore-ComboValue -Combo $comboSampler   -Value ([string]$prefs.sampler)
     Restore-ComboValue -Combo $comboScheduler -Value ([string]$prefs.scheduler)
     if ($null -ne $prefs.includePrompts) { $chkIncludePrompts.Checked = [bool]$prefs.includePrompts }
-    if ($null -ne $prefs.debugMode)      { $chkDebugMode.Checked = [bool]$prefs.debugMode; $script:DebugMode = [bool]$prefs.debugMode }
     if (-not [string]::IsNullOrWhiteSpace([string]$prefs.prompt))         { $txtPrompt.Text   = [string]$prefs.prompt }
     if (-not [string]::IsNullOrWhiteSpace([string]$prefs.negativePrompt)) { $txtNegative.Text = [string]$prefs.negativePrompt }
     # Models tab
@@ -1940,17 +1302,7 @@ if ($null -ne $prefs) {
 }
 
 Add-Log ('Ready. ComfyUI: ' + $Config.comfyUrl)
-Add-Log ('Build: ' + $script:LoraTesterBuild)
 Add-Log ('LoRAs found: ' + ($comboLora1.Items.Count - 1))
-if (Get-DebugModeEnabled) {
-    Write-DebugLog -Title 'Startup' -Lines @(
-        'ComfyUI: ' + [string]$Config.comfyUrl,
-        'Config path: ' + $ConfigPath,
-        'Prefs path: ' + $PrefsPath,
-        'Run log path: ' + $RunLogPath,
-        'Invoke script path: ' + $InvokeScriptPath
-    )
-}
 Load-RunHistory
 
 if ($SmokeTest) { $form.Dispose(); "LoRA tester UI smoke OK"; return }

@@ -1,6 +1,7 @@
 {
-    "name": "LoRA Lab",
+    "version": "001.002.001",
+    "name": "Lab",
     "description": "Single LoRA consistency testing — validate models, tune strength, compare outputs",
     "color": "#325A8C",
-    "launcher": "Open LoRA Tester.vbs"
+    "launcher": "Open Lab.vbs"
 }

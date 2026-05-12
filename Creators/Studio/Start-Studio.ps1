@@ -1,3 +1,5 @@
+# Version: 001.002.001
+
 param(
     [switch]$ValidateOnly,
     [switch]$SelfTestGuides
@@ -5,10 +7,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$GeneratorRoot      = $PSScriptRoot
+$StudioRoot         = $PSScriptRoot
 $ProjectRoot        = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$ConfigPath         = Join-Path $GeneratorRoot "character-generator.config.json"
-$SavesPath          = Join-Path $GeneratorRoot "character-generator-saves.json"
+$ConfigPath         = Join-Path $StudioRoot "Studio.config.json"
+$SavesPath          = Join-Path $StudioRoot "Studio-saves.json"
 $WorkflowScriptPath = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyCharacterLockImage.ps1"
 $AssetsRoot         = Join-Path $ProjectRoot "book-design\assets"
 

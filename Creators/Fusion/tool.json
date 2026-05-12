@@ -1,6 +1,7 @@
 {
-    "name": "LoRA Fusion",
+    "version": "001.002.001",
+    "name": "Fusion",
     "description": "Dual LoRA combination testing — see how two LoRAs interact before committing to final design",
     "color": "#5A328C",
-    "launcher": "Open LoRA Tester 2.vbs"
+    "launcher": "Open Fusion.vbs"
 }

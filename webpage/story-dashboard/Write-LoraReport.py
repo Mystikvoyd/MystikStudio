@@ -1,6 +1,6 @@
 """
 Write-LoraReport.py
-Called by Start-LoraTester.ps1 to build a self-contained HTML session report.
+Called by Start-Lab.ps1 and Start-Fusion.ps1 to build a self-contained HTML session report.
 All file I/O and base64 embedding is done here - zero PowerShell path corruption.
 
 Usage:

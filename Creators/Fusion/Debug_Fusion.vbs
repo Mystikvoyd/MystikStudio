@@ -1,12 +1,13 @@
+'' Version: 001.002.001
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 
 scriptFolder = fso.GetParentFolderName(WScript.ScriptFullName)
-scriptPath = fso.BuildPath(scriptFolder, "Start-LoraTester2.ps1")
-logPath = fso.BuildPath(scriptFolder, "lora-tester-2_vbs_debug.log")
+scriptPath = fso.BuildPath(scriptFolder, "Start-Fusion.ps1")
+logPath = fso.BuildPath(scriptFolder, "Fusion_vbs_debug.log")
 
 If Not fso.FileExists(scriptPath) Then
-    MsgBox "Cannot find Start-LoraTester2.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
+    MsgBox "Cannot find Start-Fusion.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
     WScript.Quit
 End If
 

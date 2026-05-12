@@ -1,6 +1,7 @@
-# Debug-LoraWorkflow.ps1
+# Version: 001.002.001
+# Debug-LabWorkflow.ps1
 # Run this to see EXACTLY what JSON gets sent to ComfyUI when LoRA is enabled.
-# Usage: .\Debug-LoraWorkflow.ps1
+# Usage: .\Debug-LabWorkflow.ps1
 # It will NOT actually send anything to ComfyUI - just prints the JSON so you can inspect it.
 
 param(
@@ -72,7 +73,7 @@ Write-Host ""
 # ---- Full JSON ----
 $body = [pscustomobject]@{
     prompt    = $workflow
-    client_id = "lora-tester-debug"
+    client_id = "lab-debug"
 } | ConvertTo-Json -Depth 100
 
 Write-Host "--- Full JSON body (check for node 100 and wiring) ---" -ForegroundColor Cyan

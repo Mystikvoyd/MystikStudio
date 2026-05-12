@@ -49,7 +49,7 @@ Add an optional `Arguments` field to the button data hashtable.
 | | ComfyUI Folder | Folder → ComfyUI root |
 | REPORTS & SESSION | Reports Folder | Folder → ComfyUI\Reports |
 | | Session Module | Folder → shared/ |
-| | LoRA Config | File → lora-tester.config.json |
+| | Lab Config | File → Lab.config.json |
 | DEVELOPMENT | Open in VS Code | Launch → code with studio root arg |
 | | Open Terminal | Launch → powershell at studio root |
 | | GitHub Issues | URL → repo issues page |

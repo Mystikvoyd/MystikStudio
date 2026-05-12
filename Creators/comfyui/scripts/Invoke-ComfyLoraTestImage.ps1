@@ -71,7 +71,7 @@ if ($LoraEnabled -and -not [string]::IsNullOrWhiteSpace($LoraName) -and $LoraNam
 
 $body = [pscustomobject]@{
     prompt    = $workflow
-    client_id = "lora-tester"
+    client_id = "lab"
 } | ConvertTo-Json -Depth 100
 
 $response = Invoke-RestMethod -Method Post -Uri ($ComfyUrl + "/prompt") -Body $body -ContentType "application/json"

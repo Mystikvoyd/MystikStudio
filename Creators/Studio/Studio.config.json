@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": "001.002.001",
   "comfyUrl": "http://127.0.0.1:8000",
   "comfyInputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\input",
   "comfyOutputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\output",

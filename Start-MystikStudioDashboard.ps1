@@ -1,6 +1,6 @@
 # MystikStudio Dashboard — Split Panel: folders left, tools right
 # Fixed: column widths computed after form is shown; row 0 uses placeholder panels
-# Release snapshot: 01.01.01xxx
+# Release snapshot: 01.02.01xxx
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Windows.Forms
@@ -9,7 +9,7 @@ Add-Type -AssemblyName System.Drawing
 
 $StudioRoot = $PSScriptRoot
 $ComfyRoot  = "C:\Users\Michael\Documents\ComfyUI"
-$StudioVersion = "01.01.01xxx"
+$StudioVersion = "01.02.01xxx"
 
 # -------------------------------------------------------------------
 # Discovery
@@ -245,10 +245,10 @@ $rowBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
 $rp.Controls.Add($rowBox)
 
 $launcherDefs = @(
-    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\character-generator\Open Character Generator.vbs")}
-    @{Text="Forge";  Color="#FF69B4"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\character-design\Open Character Design.vbs")}
-    @{Text="Fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA testing";         Target=(Join-Path $StudioRoot "Creators\lora-tester-2\Open LoRA Tester 2.vbs")}
-    @{Text="Lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\lora-tester\Open LoRA Tester.vbs")}
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")}
+    @{Text="Forge";  Color="#FF69B4"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
+    @{Text="Fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA testing";         Target=(Join-Path $StudioRoot "Creators\Fusion\Open Fusion.vbs")}
+    @{Text="Lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")}
 )
 
 # 4 buttons evenly distributed inside the GroupBox
@@ -357,18 +357,18 @@ foreach ($t in $webTools) {
 }
 
 $comfyRootPath  = "C:\Users\Michael\Documents\ComfyUI"
-$studioTool = Join-Path $StudioRoot "Creators\character-generator"
-$forgeTool  = Join-Path $StudioRoot "Creators\character-design"
-$fusionTool = Join-Path $StudioRoot "Creators\lora-tester-2"
-$labTool    = Join-Path $StudioRoot "Creators\lora-tester"
+$studioTool = Join-Path $StudioRoot "Creators\Studio"
+$forgeTool  = Join-Path $StudioRoot "Creators\Forge"
+$fusionTool = Join-Path $StudioRoot "Creators\Fusion"
+$labTool    = Join-Path $StudioRoot "Creators\Lab"
 
 # -------------------------------------------------------------------
 # Column 0  — STUDIO
 # -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[0] -Title "STUDIO" -Buttons @(
-    @{Text="Open Studio";       Color="#503C82"; Desc="Character Generator - pose and identity locking";    Target=(Join-Path $studioTool "Open Character Generator.vbs")}
-    @{Text="Generator Config";  Color="#3C2860"; Desc="Character generator configuration";                Target=(Join-Path $studioTool "character-generator.config.json")}
-    @{Text="Studio Folder";     Color="#3C2860"; Desc="Browse character-generator folder";                Target=$studioTool}
+    @{Text="Open Studio";       Color="#503C82"; Desc="Character Generator - pose and identity locking";    Target=(Join-Path $studioTool "Open Studio.vbs")}
+    @{Text="Studio Config";     Color="#3C2860"; Desc="Character generator configuration";                Target=(Join-Path $studioTool "Studio.config.json")}
+    @{Text="Studio Folder";     Color="#3C2860"; Desc="Browse Studio folder";                            Target=$studioTool}
 )
 Add-PanelBox -Parent $cols[0] -Title "COMFYUI" -Buttons @(
     @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
@@ -378,20 +378,20 @@ Add-PanelBox -Parent $cols[0] -Title "COMFYUI" -Buttons @(
 # Column 1  — FORGE
 # -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[1] -Title "FORGE" -Buttons @(
-    @{Text="Open Forge";      Color="#8C325A"; Desc="Character Forge - final composition";            Target=(Join-Path $forgeTool "Open Character Design.vbs")}
-    @{Text="Forge Config";    Color="#5A2840"; Desc="Character design configuration";                Target=(Join-Path $forgeTool "character-design.config.json")}
-    @{Text="Debug Forge";     Color="#5A2840"; Desc="Debug character design workflow";               Target=(Join-Path $forgeTool "Debug_Character_Design.vbs")}
-    @{Text="Forge Folder";    Color="#5A2840"; Desc="Browse character-design folder";                Target=$forgeTool}
+    @{Text="Open Forge";      Color="#8C325A"; Desc="Character Forge - final composition";            Target=(Join-Path $forgeTool "Open Forge.vbs")}
+    @{Text="Forge Config";    Color="#5A2840"; Desc="Character design configuration";                Target=(Join-Path $forgeTool "Forge.config.json")}
+    @{Text="Debug Forge";     Color="#5A2840"; Desc="Debug character design workflow";               Target=(Join-Path $forgeTool "Debug_Forge.vbs")}
+    @{Text="Forge Folder";    Color="#5A2840"; Desc="Browse Forge folder";                            Target=$forgeTool}
 )
 
 # -------------------------------------------------------------------
 # Column 2  — FUSION + WEB APPS
 # -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[2] -Title "FUSION" -Buttons @(
-    @{Text="Open Fusion";      Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";               Target=(Join-Path $fusionTool "Open LoRA Tester 2.vbs")}
-    @{Text="Fusion Config";    Color="#3C2860"; Desc="LoRA Fusion tester configuration";             Target=(Join-Path $fusionTool "lora-tester-2_config.json")}
-    @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                  Target=(Join-Path $fusionTool "Debug_LoRA_Tester_2.vbs")}
-    @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse lora-tester-2 folder";                  Target=$fusionTool}
+    @{Text="Open Fusion";      Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";               Target=(Join-Path $fusionTool "Open Fusion.vbs")}
+    @{Text="Fusion Config";    Color="#3C2860"; Desc="LoRA Fusion tester configuration";             Target=(Join-Path $fusionTool "Fusion.config.json")}
+    @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                  Target=(Join-Path $fusionTool "Debug_Fusion.vbs")}
+    @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse Fusion folder";                          Target=$fusionTool}
 )
 Add-PanelBox -Parent $cols[2] -Title "WEB APPS" -Buttons $webBtnList
 
@@ -399,15 +399,15 @@ Add-PanelBox -Parent $cols[2] -Title "WEB APPS" -Buttons $webBtnList
 # Column 3  — LAB + REPORTS
 # -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[3] -Title "LAB" -Buttons @(
-    @{Text="Open Lab";         Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";                Target=(Join-Path $labTool "Open LoRA Tester.vbs")}
-    @{Text="Lab Config";       Color="#284A70"; Desc="LoRA Lab tester configuration";                Target=(Join-Path $labTool "lora-tester.config.json")}
-    @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                      Target=(Join-Path $labTool "Debug_LoRA_Tester.vbs")}
-    @{Text="Lab Folder";       Color="#284A70"; Desc="Browse lora-tester folder";                    Target=$labTool}
+    @{Text="Open Lab";         Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";                Target=(Join-Path $labTool "Open Lab.vbs")}
+    @{Text="Lab Config";       Color="#284A70"; Desc="LoRA Lab tester configuration";                Target=(Join-Path $labTool "Lab.config.json")}
+    @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                      Target=(Join-Path $labTool "Debug_Lab.vbs")}
+    @{Text="Lab Folder";       Color="#284A70"; Desc="Browse Lab folder";                            Target=$labTool}
 )
 Add-PanelBox -Parent $cols[3] -Title "REPORTS & SESSION" -Buttons @(
     @{Text="Reports Folder";  Color="#463728"; Desc="Browse session reports";                       Target="$comfyRootPath\Reports"}
     @{Text="Session Module";  Color="#463728"; Desc="Shared session report module";                 Target=(Join-Path $StudioRoot "shared")}
-    @{Text="LoRA Config";     Color="#463728"; Desc="LoRA tester configuration";                    Target=(Join-Path $labTool "lora-tester.config.json")}
+    @{Text="Lab Config";      Color="#463728"; Desc="LoRA tester configuration";                    Target=(Join-Path $labTool "Lab.config.json")}
 )
 
 # -------------------------------------------------------------------

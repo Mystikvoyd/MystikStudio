@@ -1,6 +1,6 @@
 # ============================================================
 # LoRA Tester - Session Report Module
-# Drop-in replacement for the session functions in Start-LoraTester.ps1
+# Drop-in replacement for the session functions in Start-Lab.ps1
 #
 # HOW IT WORKS:
 #   1. Each generation appends a JSON entry to a temp file in %TEMP%
@@ -9,7 +9,7 @@
 #   3. Python handles ALL file I/O - no PowerShell path interpolation.
 #
 # INTEGRATION:
-#   Copy the SESSION FUNCTIONS block into Start-LoraTester.ps1.
+#   Copy the SESSION FUNCTIONS block into Start-Lab.ps1.
 #   Replace calls to your old session-save code with the new ones below.
 #   Keep Write-LoraReport.py in the same folder as the .ps1.
 # ============================================================

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": "001.002.001",
   "comfyUrl": "http://127.0.0.1:8000",
   "comfyInputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\input",
   "comfyOutputPath": "C:\\Users\\Michael\\Documents\\ComfyUI\\output",
@@ -12,8 +12,10 @@
     "cfg": 6,
     "sampler": "dpmpp_2m",
     "scheduler": "karras",
-    "loraStrength": 0.75,
-    "prefix": "lora_test"
+    "lora1Strength": 0.80,
+    "lora2Strength": 0.65,
+    "lora3Strength": 0.50,
+    "prefix": "char_design"
   },
   "prompt": "full body original character, dark mythic fantasy realism, natural skin texture, cinematic lighting, detailed clothing, centered square composition",
   "negativePrompt": "low quality, blurry, bad anatomy, deformed body, extra limbs, bad hands, bad feet, duplicate person, cropped head, cropped feet, text, watermark, logo, cartoon, anime, cgi, plastic skin"

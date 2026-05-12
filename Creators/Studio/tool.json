@@ -1,6 +1,7 @@
 {
-    "name": "Character Studio",
+    "version": "001.002.001",
+    "name": "Studio",
     "description": "Generate book characters with pose and identity locking for consistent storytelling",
     "color": "#503C82",
-    "launcher": "Open Character Generator.vbs"
+    "launcher": "Open Studio.vbs"
 }

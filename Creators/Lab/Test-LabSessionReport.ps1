@@ -1,8 +1,9 @@
-# Test-SessionReport.ps1
+# Version: 001.002.001
+# Test-LabSessionReport.ps1
 # Run this first to confirm Write-LoraReport.py works on your machine
-# before integrating into Start-LoraTester.ps1
+# before integrating into Start-Lab.ps1
 #
-# Usage:  .\Test-SessionReport.ps1
+# Usage:  .\Test-LabSessionReport.ps1
 # It will ask you to paste a path to any PNG in your ComfyUI output folder.
 
 $scriptDir   = $PSScriptRoot

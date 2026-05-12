@@ -63,7 +63,7 @@ Write-Host ""
 
 if (-not (Test-Path $InvokeScript)) {
     Write-Host "ERROR: Invoke script not found at: $InvokeScript" -ForegroundColor Red
-    Write-Host "Make sure this script is in the same folder as your Start-CharacterGenerator.ps1" -ForegroundColor Red
+    Write-Host "Make sure this script is in the same folder as your Start-Studio.ps1" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 1
 }

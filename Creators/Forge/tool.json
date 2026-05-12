@@ -1,6 +1,7 @@
 {
-    "name": "Character Forge",
+    "version": "001.002.001",
+    "name": "Forge",
     "description": "Final character composition — chain identity, body, and style LoRAs for production-ready characters",
     "color": "#8C325A",
-    "launcher": "Open Character Design.vbs"
+    "launcher": "Open Forge.vbs"
 }

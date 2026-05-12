@@ -39,7 +39,7 @@ reporter:           Who opened this (name / system / github-user)
 assignee:           Who is working on it
 
 # ── Context ─────────────────────────────────────────────────
-component:          Which part of the system (e.g. dashboard, lora-tester, character-gen)
+component:          Which part of the system (e.g. dashboard, Studio, Forge, Fusion, Lab)
 environment:        Any relevant environment details
 labels:
   - label-one

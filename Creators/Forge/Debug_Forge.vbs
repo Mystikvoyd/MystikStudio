@@ -1,11 +1,12 @@
+'' Version: 001.002.001
 Set shell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 
 scriptFolder = fso.GetParentFolderName(WScript.ScriptFullName)
-scriptPath = fso.BuildPath(scriptFolder, "Start-LoraTester.ps1")
+scriptPath = fso.BuildPath(scriptFolder, "Start-Forge.ps1")
 
 If Not fso.FileExists(scriptPath) Then
-    MsgBox "Cannot find Start-LoraTester.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
+    MsgBox "Cannot find Start-Forge.ps1 in:" & vbCrLf & scriptFolder, 16, "File Not Found"
     WScript.Quit
 End If
 

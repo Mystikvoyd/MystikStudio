@@ -1,3 +1,5 @@
+# Version: 001.002.001
+
 param(
     [switch]$ValidateOnly,
     [switch]$SmokeTest
@@ -5,12 +7,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$LoraTesterRoot     = $PSScriptRoot
+$LabRoot            = $PSScriptRoot
 $ProjectRoot        = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$ConfigPath         = Join-Path $LoraTesterRoot "character-design.config.json"
-$InvokeScriptPath   = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyTripleLoraTestImage.ps1"
-$PrefsPath   = Join-Path $LoraTesterRoot "character-design.prefs.json"
-$RunLogPath  = Join-Path $LoraTesterRoot "character-design.runlog.json"
+$ConfigPath         = Join-Path $LabRoot "Lab.config.json"
+$InvokeScriptPath   = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyLoraTestImage.ps1"
+$PrefsPath   = Join-Path $LabRoot "Lab.prefs.json"
+$RunLogPath  = Join-Path $LabRoot "Lab.runlog.json"
 
 # Session state
 $script:SessionActive    = $false
@@ -26,15 +28,9 @@ if (-not (Test-Path -LiteralPath $script:ReportsFolder -PathType Container)) {
 # ---------------------------------------------------------------------------
 function Save-Prefs {
     $prefs = [ordered]@{
-        lora1Name       = [string]$comboLora1.SelectedItem
-        lora1Enabled    = $chkLora1.Checked
-        lora1Strength   = [string]$numLora1.Value
-        lora2Name       = [string]$comboLora2.SelectedItem
-        lora2Enabled    = $chkLora2.Checked
-        lora2Strength   = [string]$numLora2.Value
-        lora3Name       = [string]$comboLora3.SelectedItem
-        lora3Enabled    = $chkLora3.Checked
-        lora3Strength   = [string]$numLora3.Value
+        loraName        = [string]$comboLora.SelectedItem
+        loraEnabled     = $chkLora.Checked
+        loraStrength    = [string]$numLora.Value
         seed            = [string][int]$numSeed.Value
         randomSeed      = $chkRandomSeed.Checked
         steps           = [string][int]$numSteps.Value
@@ -91,7 +87,7 @@ function New-SessionReport {
     $sb        = New-Object System.Text.StringBuilder
 
     [void]$sb.Append('<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">')
-    [void]$sb.Append('<title>Character Design Session Report</title>')
+    [void]$sb.Append('<title>LoRA Test Session Report</title>')
     [void]$sb.Append('<style>')
     [void]$sb.Append('*{box-sizing:border-box;margin:0;padding:0}')
     [void]$sb.Append('body{font-family:"Segoe UI",sans-serif;background:#111116;color:#e0ddd8;padding:32px}')
@@ -140,7 +136,7 @@ function New-SessionReport {
     }
 
     [void]$sb.Append('</head><body>')
-    [void]$sb.Append('<h1>Character Design Session Report</h1>')
+    [void]$sb.Append('<h1>LoRA Test Session Report</h1>')
 
     [void]$sb.Append('<div class="toolbar">')
     [void]$sb.Append('<div class="session-meta">Generated: ' + $timestamp + ' &nbsp;&middot;&nbsp; ' + $count + ' generation(s)')
@@ -176,34 +172,11 @@ function New-SessionReport {
             $imgTag = '<p class="no-img">&#9888; Path not found: ' + (HtmlEnc $imgPath) + '</p>'
         }
 
-        $loraLine = if ($e.Lora1Enabled -and $e.Lora2Enabled -and $e.Lora3Enabled) {
-            '<span class="badge lora-on">LoRA 1+2+3 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
-            (HtmlEnc ([string]$e.Lora2Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span> + ' +
-            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
-        } elseif ($e.Lora1Enabled -and $e.Lora2Enabled) {
-            '<span class="badge lora-on">LoRA 1+2 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
-            (HtmlEnc ([string]$e.Lora2Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span>'
-        } elseif ($e.Lora1Enabled -and $e.Lora3Enabled) {
-            '<span class="badge lora-on">LoRA 1+3 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span> + ' +
-            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
-        } elseif ($e.Lora2Enabled -and $e.Lora3Enabled) {
-            '<span class="badge lora-on">LoRA 2+3 ON</span> ' + (HtmlEnc ([string]$e.Lora2Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span> + ' +
-            (HtmlEnc ([string]$e.Lora3Name)) + ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
-        } elseif ($e.Lora1Enabled) {
-            '<span class="badge lora-on">LoRA 1 ON</span> ' + (HtmlEnc ([string]$e.Lora1Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora1Strength) + '</span>'
-        } elseif ($e.Lora2Enabled) {
-            '<span class="badge lora-on">LoRA 2 ON</span> ' + (HtmlEnc ([string]$e.Lora2Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora2Strength) + '</span>'
-        } elseif ($e.Lora3Enabled) {
-            '<span class="badge lora-on">LoRA 3 ON</span> ' + (HtmlEnc ([string]$e.Lora3Name)) +
-            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.Lora3Strength) + '</span>'
+        $loraLine = if ($e.LoraEnabled) {
+            '<span class="badge lora-on">LoRA ON</span> ' + (HtmlEnc ([string]$e.LoraName)) +
+            ' <span style="color:#777;font-size:.83rem">@ ' + ([string]$e.LoraStrength) + '</span>'
         } else {
-            '<span class="badge lora-off">LoRAs OFF</span>'
+            '<span class="badge lora-off">LoRA OFF</span>'
         }
 
         [void]$sb.Append('<div class="entry">')
@@ -399,15 +372,9 @@ function Append-RunLog {
         $existing += [pscustomobject]@{
             Time       = $Entry.Time
             ImagePath  = $Entry.ImagePath
-            Lora1Name   = $Entry.Lora1Name
-            Lora1Enabled= $Entry.Lora1Enabled
-            Lora1Strength = $Entry.Lora1Strength
-            Lora2Name   = $Entry.Lora2Name
-            Lora2Enabled= $Entry.Lora2Enabled
-            Lora2Strength = $Entry.Lora2Strength
-            Lora3Name   = $Entry.Lora3Name
-            Lora3Enabled= $Entry.Lora3Enabled
-            Lora3Strength = $Entry.Lora3Strength
+            LoraName   = $Entry.LoraName
+            LoraEnabled= $Entry.LoraEnabled
+            LoraStrength = $Entry.LoraStrength
             Seed       = $Entry.Seed
             Steps      = $Entry.Steps
             Cfg        = $Entry.Cfg
@@ -440,14 +407,8 @@ function Load-RunHistory {
         [array]::Reverse($entries)
         foreach ($e in $entries) {
             $imgPath   = [string]$e.ImagePath
-        $lora1Name = if ($e.Lora1Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora1Name) } else { $null }
-        $lora2Name = if ($e.Lora2Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora2Name) } else { $null }
-        $lora3Name = if ($e.Lora3Enabled) { [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Lora3Name) } else { $null }
-        $loraLabel = @()
-        if ($lora1Name) { $loraLabel += $lora1Name }
-        if ($lora2Name) { $loraLabel += $lora2Name }
-        if ($lora3Name) { $loraLabel += $lora3Name }
-        if ($loraLabel.Count -eq 0) { $loraLabel = "LoRAs off" } else { $loraLabel = $loraLabel -join " + " }
+        $loraName  = [System.IO.Path]::GetFileNameWithoutExtension([string]$e.LoraName)
+        if ([string]::IsNullOrWhiteSpace($loraName)) { $loraName = "LoRA off" }
             $seed      = [string]$e.Seed
             $ckpt      = [string]$e.Checkpoint
             $time      = [string]$e.Time
@@ -455,7 +416,7 @@ function Load-RunHistory {
             $name     = [System.IO.Path]::GetFileName($imgPath)
             $stamp    = if ($time.Length -ge 16) { $time.Substring(0, 16) } else { $time }
             $ckptShort = [System.IO.Path]::GetFileNameWithoutExtension([string]$e.Checkpoint)
-            $gridOutputs.Rows.Add($stamp, $name, $loraLabel, $seed, $imgPath, $ckptShort) | Out-Null
+            $gridOutputs.Rows.Add($stamp, $name, $loraName, $seed, $imgPath, $ckptShort) | Out-Null
         }
         if ($gridOutputs.Rows.Count -gt 0) {
             $gridOutputs.Rows[0].Selected = $true
@@ -547,7 +508,7 @@ Add-Type -AssemblyName System.Drawing
 # Form
 # ---------------------------------------------------------------------------
 $form               = New-Object System.Windows.Forms.Form
-$form.Text          = "Character Forge"
+$form.Text          = "LoRA Lab"
 $form.Width         = 1280
 $form.Height        = 860
 $form.StartPosition = "CenterScreen"
@@ -618,76 +579,28 @@ $txtNegative.Text       = [string]$Config.negativePrompt
 $tabMain.Controls.Add($txtNegative)
 $gy += 96
 
-New-Label -Text "LoRA 1 (Character)" -Top $gy -Parent $tabMain | Out-Null
-$comboLora1               = New-Object System.Windows.Forms.ComboBox
-$comboLora1.Left          = 8; $comboLora1.Top = $gy + 18; $comboLora1.Width = 392
-$comboLora1.DropDownStyle = "DropDownList"
-foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora1.Items.Add($item) }
-$comboLora1.SelectedIndex = 0
-$tabMain.Controls.Add($comboLora1)
+New-Label -Text "LoRA" -Top $gy -Parent $tabMain | Out-Null
+$comboLora               = New-Object System.Windows.Forms.ComboBox
+$comboLora.Left          = 8; $comboLora.Top = $gy + 18; $comboLora.Width = 392
+$comboLora.DropDownStyle = "DropDownList"
+foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora.Items.Add($item) }
+$comboLora.SelectedIndex = 0
+$tabMain.Controls.Add($comboLora)
 $gy += 46
 
-$chkLora1         = New-Object System.Windows.Forms.CheckBox
-$chkLora1.Text    = "Use LoRA 1"; $chkLora1.Left = 8; $chkLora1.Top = $gy; $chkLora1.Width = 170; $chkLora1.Checked = $true
-$tabMain.Controls.Add($chkLora1)
+$chkLora         = New-Object System.Windows.Forms.CheckBox
+$chkLora.Text    = "Use selected LoRA"; $chkLora.Left = 8; $chkLora.Top = $gy; $chkLora.Width = 170; $chkLora.Checked = $true
+$tabMain.Controls.Add($chkLora)
 
-$lblLora1Str      = New-Object System.Windows.Forms.Label
-$lblLora1Str.Text = "Strength:"; $lblLora1Str.Left = 186; $lblLora1Str.Top = $gy + 2; $lblLora1Str.Width = 58
-$tabMain.Controls.Add($lblLora1Str)
+$lblLoraStr      = New-Object System.Windows.Forms.Label
+$lblLoraStr.Text = "Strength:"; $lblLoraStr.Left = 186; $lblLoraStr.Top = $gy + 2; $lblLoraStr.Width = 58
+$tabMain.Controls.Add($lblLoraStr)
 
-$numLora1              = New-Object System.Windows.Forms.NumericUpDown
-$numLora1.Left         = 248; $numLora1.Top = $gy; $numLora1.Width = 76
-$numLora1.DecimalPlaces= 2; $numLora1.Minimum = 0; $numLora1.Maximum = 2; $numLora1.Increment = 0.05
-$numLora1.Value        = [decimal]$Config.defaults.lora1Strength
-$tabMain.Controls.Add($numLora1)
-$gy += 32
-
-New-Label -Text "LoRA 2 (Enhancement)" -Top $gy -Parent $tabMain | Out-Null
-$comboLora2               = New-Object System.Windows.Forms.ComboBox
-$comboLora2.Left          = 8; $comboLora2.Top = $gy + 18; $comboLora2.Width = 392
-$comboLora2.DropDownStyle = "DropDownList"
-foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora2.Items.Add($item) }
-$comboLora2.SelectedIndex = 0
-$tabMain.Controls.Add($comboLora2)
-$gy += 46
-
-$chkLora2         = New-Object System.Windows.Forms.CheckBox
-$chkLora2.Text    = "Use LoRA 2"; $chkLora2.Left = 8; $chkLora2.Top = $gy; $chkLora2.Width = 170; $chkLora2.Checked = $true
-$tabMain.Controls.Add($chkLora2)
-
-$lblLora2Str      = New-Object System.Windows.Forms.Label
-$lblLora2Str.Text = "Strength:"; $lblLora2Str.Left = 186; $lblLora2Str.Top = $gy + 2; $lblLora2Str.Width = 58
-$tabMain.Controls.Add($lblLora2Str)
-
-$numLora2              = New-Object System.Windows.Forms.NumericUpDown
-$numLora2.Left         = 248; $numLora2.Top = $gy; $numLora2.Width = 76
-$numLora2.DecimalPlaces= 2; $numLora2.Minimum = 0; $numLora2.Maximum = 2; $numLora2.Increment = 0.05
-$numLora2.Value        = [decimal]$Config.defaults.lora2Strength
-$tabMain.Controls.Add($numLora2)
-$gy += 32
-
-New-Label -Text "LoRA 3 (Style/Detail)" -Top $gy -Parent $tabMain | Out-Null
-$comboLora3               = New-Object System.Windows.Forms.ComboBox
-$comboLora3.Left          = 8; $comboLora3.Top = $gy + 18; $comboLora3.Width = 392
-$comboLora3.DropDownStyle = "DropDownList"
-foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora3.Items.Add($item) }
-$comboLora3.SelectedIndex = 0
-$tabMain.Controls.Add($comboLora3)
-$gy += 46
-
-$chkLora3         = New-Object System.Windows.Forms.CheckBox
-$chkLora3.Text    = "Use LoRA 3"; $chkLora3.Left = 8; $chkLora3.Top = $gy; $chkLora3.Width = 170; $chkLora3.Checked = $false
-$tabMain.Controls.Add($chkLora3)
-
-$lblLora3Str      = New-Object System.Windows.Forms.Label
-$lblLora3Str.Text = "Strength:"; $lblLora3Str.Left = 186; $lblLora3Str.Top = $gy + 2; $lblLora3Str.Width = 58
-$tabMain.Controls.Add($lblLora3Str)
-
-$numLora3              = New-Object System.Windows.Forms.NumericUpDown
-$numLora3.Left         = 248; $numLora3.Top = $gy; $numLora3.Width = 76
-$numLora3.DecimalPlaces= 2; $numLora3.Minimum = 0; $numLora3.Maximum = 2; $numLora3.Increment = 0.05
-$numLora3.Value        = [decimal]$Config.defaults.lora3Strength
-$tabMain.Controls.Add($numLora3)
+$numLora              = New-Object System.Windows.Forms.NumericUpDown
+$numLora.Left         = 248; $numLora.Top = $gy; $numLora.Width = 76
+$numLora.DecimalPlaces= 2; $numLora.Minimum = 0; $numLora.Maximum = 2; $numLora.Increment = 0.05
+$numLora.Value        = [decimal]$Config.defaults.loraStrength
+$tabMain.Controls.Add($numLora)
 $gy += 32
 
 # Seed row: checkbox + spinner + Steps + CFG
@@ -994,23 +907,11 @@ $chkRandomSeed.Add_CheckedChanged({
 })
 
 $btnRefresh.Add_Click({
-    $current1 = [string]$comboLora1.SelectedItem
-    $current2 = [string]$comboLora2.SelectedItem
-    $current3 = [string]$comboLora3.SelectedItem
-    $comboLora1.Items.Clear()
-    $comboLora2.Items.Clear()
-    $comboLora3.Items.Clear()
-    foreach ($item in (Get-ComfyLoraItems -Config $Config)) {
-        [void]$comboLora1.Items.Add($item)
-        [void]$comboLora2.Items.Add($item)
-        [void]$comboLora3.Items.Add($item)
-    }
-    $index1 = $comboLora1.Items.IndexOf($current1)
-    $index2 = $comboLora2.Items.IndexOf($current2)
-    $index3 = $comboLora3.Items.IndexOf($current3)
-    $comboLora1.SelectedIndex = if ($index1 -ge 0) { $index1 } else { 0 }
-    $comboLora2.SelectedIndex = if ($index2 -ge 0) { $index2 } else { 0 }
-    $comboLora3.SelectedIndex = if ($index3 -ge 0) { $index3 } else { 0 }
+    $current = [string]$comboLora.SelectedItem
+    $comboLora.Items.Clear()
+    foreach ($item in (Get-ComfyLoraItems -Config $Config)) { [void]$comboLora.Items.Add($item) }
+    $index = $comboLora.Items.IndexOf($current)
+    $comboLora.SelectedIndex = if ($index -ge 0) { $index } else { 0 }
     Add-Log "LoRA list refreshed."
 })
 
@@ -1053,7 +954,7 @@ $script:btnSession.Add_Click({
         $dlg                  = New-Object System.Windows.Forms.SaveFileDialog
         $dlg.Title            = "Save Session Report"
         $dlg.Filter           = "HTML file (*.html)|*.html"
-        $dlg.FileName         = "char-design-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
+        $dlg.FileName         = "lora-session-$(Get-Date -Format 'yyyyMMdd_HHmmss').html"
         $dlg.InitialDirectory = $script:ReportsFolder
         if ($dlg.ShowDialog() -eq "OK") {
             try {
@@ -1084,12 +985,8 @@ $script:btnOpenReport.Add_Click({
 $btnGenerate.Add_Click({
     try {
         $btnGenerate.Enabled  = $false
-        $selectedLora1        = [string]$comboLora1.SelectedItem
-        $selectedLora2        = [string]$comboLora2.SelectedItem
-        $selectedLora3        = [string]$comboLora3.SelectedItem
-        $useLora1             = $chkLora1.Checked -and $selectedLora1 -ne "None"
-        $useLora2             = $chkLora2.Checked -and $selectedLora2 -ne "None"
-        $useLora3             = $chkLora3.Checked -and $selectedLora3 -ne "None"
+        $selectedLora         = [string]$comboLora.SelectedItem
+        $useLora              = $chkLora.Checked -and $selectedLora -ne "None"
         $selectedCkpt         = [string]$comboCkpt.SelectedItem
         $selectedSampler      = [string]$comboSampler.SelectedItem
         $selectedScheduler    = [string]$comboScheduler.SelectedItem
@@ -1097,27 +994,26 @@ $btnGenerate.Add_Click({
         $useCN                = $chkCN.Checked -and [string]$comboCNModel.SelectedItem -ne "None"
 
         $prefixParts = @([string]$Config.defaults.prefix)
-        if ($useLora1) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora1)) -Fallback "lora1" } else { $prefixParts += "no_lora1" }
-        if ($useLora2) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora2)) -Fallback "lora2" } else { $prefixParts += "no_lora2" }
-        if ($useLora3) { $prefixParts += Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora3)) -Fallback "lora3" } else { $prefixParts += "no_lora3" }
+        $prefixParts += if ($useLora) { Get-SafeFilePart -Text ([System.IO.Path]::GetFileNameWithoutExtension($selectedLora)) -Fallback "lora" } else { "no_lora" }
         $prefixParts += Get-Date -Format "yyyyMMdd_HHmmss"
         $prefix = $prefixParts -join "_"
 
-        $lora1Display = if ($useLora1) { "$selectedLora1 @ $($numLora1.Value)" } else { "off" }
-        $lora2Display = if ($useLora2) { "$selectedLora2 @ $($numLora2.Value)" } else { "off" }
-        $lora3Display = if ($useLora3) { "$selectedLora3 @ $($numLora3.Value)" } else { "off" }
-        Add-Log "Sending. LoRA1: $lora1Display | LoRA2: $lora2Display | LoRA3: $lora3Display | Ckpt: $selectedCkpt"
+        Add-Log "Sending. LoRA: $(if ($useLora) { "$selectedLora @ $($numLora.Value)" } else { 'off' }) | Ckpt: $selectedCkpt"
+
+        # Resolve seed before building args so the same value goes to ComfyUI and the report
+        $script:ActualSeed = if ($chkRandomSeed.Checked) {
+            Get-Random -Minimum 1 -Maximum 2147483647
+        } else {
+            [int]$numSeed.Value
+        }
+
         # Build a hashtable of params and dot-source the invoke script directly.
         # This avoids all stdout/stderr capture issues from spawning a child process.
         $invokeParams = @{
             Prompt            = $txtPrompt.Text
             NegativePrompt    = $txtNegative.Text
-            Lora1Name         = $selectedLora1
-            Lora1Strength     = [double]$numLora1.Value
-            Lora2Name         = $selectedLora2
-            Lora2Strength     = [double]$numLora2.Value
-            Lora3Name         = $selectedLora3
-            Lora3Strength     = [double]$numLora3.Value
+            LoraName          = $selectedLora
+            LoraStrength      = [double]$numLora.Value
             Width             = [int]$numWidth.Value
             Height            = [int]$numHeight.Value
             BatchSize         = [int]$Config.defaults.batchSize
@@ -1131,9 +1027,7 @@ $btnGenerate.Add_Click({
             WorkflowPath      = (Get-WorkflowPath -Config $Config)
             Checkpoint        = $selectedCkpt
         }
-        if ($useLora1)                                         { $invokeParams.Lora1Enabled      = $true }
-        if ($useLora2)                                         { $invokeParams.Lora2Enabled      = $true }
-        if ($useLora3)                                         { $invokeParams.Lora3Enabled      = $true }
+        if ($useLora)                                          { $invokeParams.LoraEnabled       = $true }
         if ($selectedDiffuser -ne "(checkpoint default)")      { $invokeParams.Diffuser           = $selectedDiffuser }
         if ($useCN) {
             $invokeParams.ControlNetEnabled  = $true
@@ -1143,13 +1037,6 @@ $btnGenerate.Add_Click({
             $invokeParams.ControlNetStrength = [double]$numCNStrength.Value
             $invokeParams.ControlNetStart    = [double]$numCNStart.Value
             $invokeParams.ControlNetEnd      = [double]$numCNEnd.Value
-        }
-
-        # Resolve seed before building args so the same value goes to ComfyUI and the report
-        $script:ActualSeed = if ($chkRandomSeed.Checked) {
-            Get-Random -Minimum 1 -Maximum 2147483647
-        } else {
-            [int]$numSeed.Value
         }
 
         $promptId = & $InvokeScriptPath @invokeParams
@@ -1164,14 +1051,7 @@ $btnGenerate.Add_Click({
         # Show the actual seed used in the spinner so it can be reused
         $numSeed.Value = [decimal]$script:ActualSeed
         $seedLabel     = [string]$script:ActualSeed
-        $lora1Label = if ($useLora1) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora1) } else { $null }
-        $lora2Label = if ($useLora2) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora2) } else { $null }
-        $lora3Label = if ($useLora3) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora3) } else { $null }
-        $loraLabels = @()
-        if ($lora1Label) { $loraLabels += $lora1Label }
-        if ($lora2Label) { $loraLabels += $lora2Label }
-        if ($lora3Label) { $loraLabels += $lora3Label }
-        $loraLabel = if ($loraLabels.Count -gt 0) { $loraLabels -join " + " } else { "LoRAs off" }
+        $loraLabel     = if ($useLora) { [System.IO.Path]::GetFileNameWithoutExtension($selectedLora) } else { "LoRA off" }
 
         $first = $true
         foreach ($imgPath in $script:LastImagePaths) {
@@ -1186,15 +1066,9 @@ $btnGenerate.Add_Click({
             $runEntry = @{
                 Time           = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
                 ImagePath      = $firstPath
-                Lora1Enabled    = $useLora1
-                Lora1Name       = $lora1Label
-                Lora1Strength   = if ($useLora1) { [string]$numLora1.Value } else { "" }
-                Lora2Enabled    = $useLora2
-                Lora2Name       = $lora2Label
-                Lora2Strength   = if ($useLora2) { [string]$numLora2.Value } else { "" }
-                Lora3Enabled    = $useLora3
-                Lora3Name       = $lora3Label
-                Lora3Strength   = if ($useLora3) { [string]$numLora3.Value } else { "" }
+                LoraEnabled    = $useLora
+                LoraName       = $loraLabel
+                LoraStrength   = if ($useLora) { [string]$numLora.Value } else { "" }
                 Prompt         = $txtPrompt.Text
                 NegativePrompt = $txtNegative.Text
                 Seed           = $seedLabel
@@ -1253,15 +1127,9 @@ $gridOutputs.Add_CellDoubleClick({
 $prefs = Load-Prefs
 if ($null -ne $prefs) {
     # Generation tab
-    Restore-ComboValue -Combo $comboLora1     -Value ([string]$prefs.lora1Name)
-    if ($null -ne $prefs.lora1Enabled)    { $chkLora1.Checked = [bool]$prefs.lora1Enabled }
-    if ($null -ne $prefs.lora1Strength)   { try { $numLora1.Value  = [decimal]$prefs.lora1Strength  } catch {} }
-    Restore-ComboValue -Combo $comboLora2     -Value ([string]$prefs.lora2Name)
-    if ($null -ne $prefs.lora2Enabled)    { $chkLora2.Checked = [bool]$prefs.lora2Enabled }
-    if ($null -ne $prefs.lora2Strength)   { try { $numLora2.Value  = [decimal]$prefs.lora2Strength  } catch {} }
-    Restore-ComboValue -Combo $comboLora3     -Value ([string]$prefs.lora3Name)
-    if ($null -ne $prefs.lora3Enabled)    { $chkLora3.Checked = [bool]$prefs.lora3Enabled }
-    if ($null -ne $prefs.lora3Strength)   { try { $numLora3.Value  = [decimal]$prefs.lora3Strength  } catch {} }
+    Restore-ComboValue -Combo $comboLora     -Value ([string]$prefs.loraName)
+    if ($null -ne $prefs.loraEnabled)    { $chkLora.Checked = [bool]$prefs.loraEnabled }
+    if ($null -ne $prefs.loraStrength)   { try { $numLora.Value  = [decimal]$prefs.loraStrength  } catch {} }
     if ($null -ne $prefs.randomSeed)     { $chkRandomSeed.Checked = [bool]$prefs.randomSeed }
     $numSeed.Enabled = -not $chkRandomSeed.Checked
     if ($null -ne $prefs.seed -and -not $chkRandomSeed.Checked) { try { $numSeed.Value = [decimal]$prefs.seed } catch {} }
@@ -1300,7 +1168,7 @@ if ($null -ne $prefs) {
 }
 
 Add-Log ('Ready. ComfyUI: ' + $Config.comfyUrl)
-Add-Log ('LoRAs found: ' + ($comboLora1.Items.Count - 1))
+Add-Log ('LoRAs found: ' + ($comboLora.Items.Count - 1))
 Load-RunHistory
 
 if ($SmokeTest) { $form.Dispose(); "LoRA tester UI smoke OK"; return }
