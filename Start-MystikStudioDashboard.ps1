@@ -11,6 +11,49 @@ $StudioRoot = $PSScriptRoot
 $ComfyRoot  = "C:\Users\Michael\Documents\ComfyUI"
 $StudioVersion = "01.02.01xxx"
 
+function Show-ExistingDashboardWindow {
+    param([string]$WindowTitle = "MystikStudio Dashboard*")
+
+    try { Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop } catch {}
+    Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class MystikDashboardWindow {
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+}
+"@
+
+    $proc = Get-Process | Where-Object { $_.MainWindowTitle -like $WindowTitle } | Select-Object -First 1
+    if ($null -eq $proc) { return $false }
+    $handle = $proc.MainWindowHandle
+    if ($handle -eq [IntPtr]::Zero) { return $false }
+
+    [void][MystikDashboardWindow]::ShowWindowAsync($handle, 9)
+    $screen = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+    $width = 1100
+    $height = 1000
+    $x = [Math]::Max($screen.Left, [Math]::Floor($screen.Left + (($screen.Width - $width) / 2)))
+    $y = [Math]::Max($screen.Top, [Math]::Floor($screen.Top + (($screen.Height - $height) / 2)))
+    [void][MystikDashboardWindow]::MoveWindow($handle, $x, $y, $width, $height, $true)
+    [void][MystikDashboardWindow]::SetForegroundWindow($handle)
+    return $true
+}
+
+$mutexCreated = $false
+$mutex = New-Object System.Threading.Mutex($true, "Local\MystikStudioDashboard", [ref]$mutexCreated)
+if (-not $mutexCreated) {
+    [void](Show-ExistingDashboardWindow)
+    return
+}
+
 # -------------------------------------------------------------------
 # Discovery
 # -------------------------------------------------------------------
@@ -49,6 +92,14 @@ function ColorFromHex([string]$Hex) {
     return [System.Drawing.Color]::FromArgb(60,60,70)
 }
 
+# Icon helper — loads an .ico from Icons folder and returns a resized bitmap
+function Get-ToolImage([string]$Name, [int]$Size=18) {
+    $path = Join-Path $StudioRoot "Icons\$Name.ico"
+    if (-not (Test-Path $path)) { return $null }
+    $icon = [System.Drawing.Icon]::new($path, $Size, $Size)
+    return $icon.ToBitmap()
+}
+
 # -------------------------------------------------------------------
 # Form
 # -------------------------------------------------------------------
@@ -57,8 +108,8 @@ $form.Text          = "MystikStudio Dashboard v$StudioVersion"
 $form.StartPosition = "CenterScreen"
 $form.Font          = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor     = [System.Drawing.Color]::FromArgb(24,24,32)
-$form.ClientSize    = New-Object System.Drawing.Size(1100, 760)
-$form.MinimumSize   = New-Object System.Drawing.Size(900, 600)
+$form.ClientSize    = New-Object System.Drawing.Size(1100, 1000)
+$form.MinimumSize   = New-Object System.Drawing.Size(900, 800)
 
 $iconPath = Join-Path $PSScriptRoot "Icons\Mytikvoyd Studios.ico"
 if (Test-Path $iconPath) { $form.Icon = [System.Drawing.Icon]::new($iconPath) }
@@ -139,19 +190,19 @@ function Add-FolderNode {
 }
 
 $root = Add-FolderNode -Parent $tree -Label "MystikStudio" -Path $StudioRoot -Color "#DCB464"
-Add-FolderNode -Parent $root -Label "Creators"     -Path (Join-Path $StudioRoot "Creators")     -Color "#888"
-Add-FolderNode -Parent $root -Label "book-design"  -Path (Join-Path $StudioRoot "book-design")  -Color "#888"
-Add-FolderNode -Parent $root -Label "webpage"      -Path (Join-Path $StudioRoot "webpage")      -Color "#888"
-Add-FolderNode -Parent $root -Label "shared"       -Path (Join-Path $StudioRoot "shared")       -Color "#888"
-Add-FolderNode -Parent $root -Label "Icons"        -Path (Join-Path $StudioRoot "Icons")        -Color "#888"
+$null = Add-FolderNode -Parent $root -Label "Creators"     -Path (Join-Path $StudioRoot "Creators")     -Color "#888"
+$null = Add-FolderNode -Parent $root -Label "book-design"  -Path (Join-Path $StudioRoot "book-design")  -Color "#888"
+$null = Add-FolderNode -Parent $root -Label "webpage"      -Path (Join-Path $StudioRoot "webpage")      -Color "#888"
+$null = Add-FolderNode -Parent $root -Label "shared"       -Path (Join-Path $StudioRoot "shared")       -Color "#888"
+$null = Add-FolderNode -Parent $root -Label "Icons"        -Path (Join-Path $StudioRoot "Icons")        -Color "#888"
 
 $comfyNode = Add-FolderNode -Parent $tree -Label "ComfyUI" -Path $ComfyRoot -Color "#7CAB7C"
-Add-FolderNode -Parent $comfyNode -Label "output"              -Path (Join-Path $ComfyRoot "output")                -Color "#888"
-Add-FolderNode -Parent $comfyNode -Label "input"               -Path (Join-Path $ComfyRoot "input")                 -Color "#888"
-Add-FolderNode -Parent $comfyNode -Label "models/loras"        -Path (Join-Path $ComfyRoot "models\loras")          -Color "#888"
-Add-FolderNode -Parent $comfyNode -Label "models/checkpoints"  -Path (Join-Path $ComfyRoot "models\checkpoints")    -Color "#888"
-Add-FolderNode -Parent $comfyNode -Label "models/controlnet"   -Path (Join-Path $ComfyRoot "models\controlnet")     -Color "#888"
-Add-FolderNode -Parent $comfyNode -Label "models/vae"          -Path (Join-Path $ComfyRoot "models\vae")            -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "output"              -Path (Join-Path $ComfyRoot "output")                -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "input"               -Path (Join-Path $ComfyRoot "input")                 -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "models/loras"        -Path (Join-Path $ComfyRoot "models\loras")          -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "models/checkpoints"  -Path (Join-Path $ComfyRoot "models\checkpoints")    -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "models/controlnet"   -Path (Join-Path $ComfyRoot "models\controlnet")     -Color "#888"
+$null = Add-FolderNode -Parent $comfyNode -Label "models/vae"          -Path (Join-Path $ComfyRoot "models\vae")            -Color "#888"
 
 $root.Expand(); $comfyNode.Expand()
 
@@ -173,7 +224,6 @@ $rp.Left      = 0; $rp.Top = 0
 $rp.Width     = $rightPanel.ClientSize.Width
 # Height will be set after all controls are placed
 $rightPanel.Controls.Add($rp)
-$rightPanel.Add_Resize({ $rp.Width = $rightPanel.ClientSize.Width })
 
 # -------------------------------------------------------------------
 # Header
@@ -183,7 +233,7 @@ $hdr = New-Object System.Windows.Forms.Panel
 $hdr.Height    = 60
 $hdr.Left      = 0; $hdr.Top = $hdrTop
 $hdr.Width     = $rp.Width
-$hdr.Anchor    = "Top, Left, Right"
+$hdr.Anchor    = "Top, Left"
 $hdr.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
 
 if (Test-Path $iconPath) {
@@ -212,22 +262,15 @@ $hdr.Controls.Add($subLbl)
 $rp.Controls.Add($hdr)
 
 # -------------------------------------------------------------------
-# Layout constants  (resolved once; colW is safe after form is shown)
+# Layout constants
 # -------------------------------------------------------------------
 $margin     = 8       # outer left/right margin
-$gap        = 6       # gap between columns
-$numCols    = 5
 $contentTop = $hdrTop + $hdr.Height + 8   # y where row 0 starts
 
-# Helper: compute column width from current $rp.Width
-function Get-ColW {
-    return [math]::Floor(($rp.Width - ($margin * 2) - ($gap * ($numCols - 1))) / $numCols)
-}
-
-# Helper: x-left of column index
-function Get-ColX([int]$i) {
-    return $margin + $i * ((Get-ColW) + $gap)
-}
+# Column and button sizing — 5 equal columns matching Character Suite buttons
+$colGap     = 8
+$colW       = [math]::Floor(($rp.Width - ($margin * 2) - ($colGap * 4)) / 5)
+$btnW       = $colW
 
 # -------------------------------------------------------------------
 # ROW 0 — Character suite launcher GroupBox
@@ -237,8 +280,8 @@ $rowBox.Text = "  CHARACTER SUITE"
 $rowBox.Left  = $margin
 $rowBox.Top   = $contentTop
 $rowBox.Width = $rp.Width - 2 * $margin
-$rowBox.Height = 68
-$rowBox.Anchor = "Top, Left, Right"
+$rowBox.Height = 240
+$rowBox.Anchor = "Top, Left"
 $rowBox.ForeColor = [System.Drawing.Color]::FromArgb(200,180,120)
 $rowBox.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $rowBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
@@ -246,15 +289,13 @@ $rp.Controls.Add($rowBox)
 
 $launcherDefs = @(
     @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")}
-    @{Text="Forge";  Color="#FF69B4"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
-    @{Text="Fusion"; Color="#8B00FF"; Desc="LoRA Fusion - dual LoRA testing";         Target=(Join-Path $StudioRoot "Creators\Fusion\Open Fusion.vbs")}
-    @{Text="Lab";    Color="#4169E1"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")}
+    @{Text="Forge";  Color="#8C325A"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
+    @{Text="Fusion"; Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";         Target=(Join-Path $StudioRoot "Creators\Fusion\Open Fusion.vbs")}
+    @{Text="Lab";    Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")}
 )
 
-# 4 buttons evenly distributed inside the GroupBox
-$btnGap = 8
-$btnW = [math]::Floor(($rowBox.Width - ($launcherDefs.Count + 1) * $btnGap) / $launcherDefs.Count)
-$btnH = 36
+$btnGap = ($rowBox.Width - 4 * $btnW) / 5
+$btnH = 210
 $btnY = [math]::Floor(($rowBox.Height - 20 - $btnH) / 2) + 16
 
 for ($li = 0; $li -lt $launcherDefs.Count; $li++) {
@@ -269,8 +310,12 @@ for ($li = 0; $li -lt $launcherDefs.Count; $li++) {
     $btn.FlatAppearance.BorderSize = 0
     $btn.BackColor = ColorFromHex $ld.Color
     $btn.ForeColor = [System.Drawing.Color]::White
-    $btn.Font      = New-Object System.Drawing.Font("Segoe UI", 10.5, [System.Drawing.FontStyle]::Bold)
+    $btn.Font      = New-Object System.Drawing.Font("Segoe UI", 21, [System.Drawing.FontStyle]::Bold)
     $btn.TextAlign = "MiddleCenter"
+    $btn.TextImageRelation = "ImageAboveText"
+    $btn.ImageAlign = "MiddleCenter"
+    $img = Get-ToolImage $ld.Text 170
+    if ($img) { $btn.Image = $img; $btn.Padding = New-Object System.Windows.Forms.Padding(4,0,0,0) }
     $t = $ld.Target
     $btn.Add_Click({ if ($t -and (Test-Path $t)) { Start-Process -FilePath $t } }.GetNewClosure())
     (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $ld.Desc)
@@ -299,17 +344,26 @@ function Add-PanelBox {
     $yy = 20
     $bw = $box.Width - 16
     foreach ($b in $Buttons) {
+        $isMain = $b.ContainsKey('Icon') -and $b.Icon
+        $btnHeight = if ($isMain) { 52 } else { 30 }
+
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text      = $b.Text
         $btn.Left      = 8; $btn.Top = $yy
-        $btn.Width     = $bw; $btn.Height = 30
+        $btn.Width     = $bw; $btn.Height = $btnHeight
         $btn.FlatStyle = "Flat"
         $btn.FlatAppearance.BorderSize = 0
         $btn.BackColor = ColorFromHex $b.Color
         $btn.ForeColor = [System.Drawing.Color]::White
         $btn.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-        $btn.TextAlign = "MiddleLeft"
-        $btn.Padding   = New-Object System.Windows.Forms.Padding(6,0,0,0)
+
+        if ($isMain) {
+            $img = Get-ToolImage $b.Icon 32
+            if ($img) { $btn.Image = $img; $btn.TextImageRelation = "ImageAboveText"; $btn.ImageAlign = "MiddleCenter"; $btn.TextAlign = "MiddleCenter" }
+        } else {
+            $btn.TextAlign = "MiddleLeft"
+            $btn.Padding   = New-Object System.Windows.Forms.Padding(6,0,0,0)
+        }
 
         if ($b.Target) {
             $t = $b.Target
@@ -321,7 +375,7 @@ function Add-PanelBox {
 
         if ($b.Desc) { (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $b.Desc) }
         $box.Controls.Add($btn)
-        $yy += 34
+        $yy += $btnHeight + 4
     }
 
     $box.Height    = $yy + 6
@@ -330,18 +384,19 @@ function Add-PanelBox {
 }
 
 # -------------------------------------------------------------------
-# ROW 1+ — 5 column panels for the content panels
+# ROW 1+ — 5 column panels matching Character Suite buttons
 # -------------------------------------------------------------------
 $panelRowTop = $rowBox.Top + $rowBox.Height + 6
 
+$numCols = 5
 $cols = @()
 for ($i = 0; $i -lt $numCols; $i++) {
     $c = New-Object System.Windows.Forms.Panel
     $c.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-    $c.Left      = Get-ColX $i
+    $c.Left      = $margin + $i * ($colW + $colGap)
     $c.Top       = $panelRowTop
-    $c.Width     = Get-ColW
-    $c.Height    = 0      # will grow as panels are added
+    $c.Width     = $colW
+    $c.Height    = 0
     $c.Anchor    = "Top, Left"
     $rp.Controls.Add($c)
     $cols += $c
@@ -362,47 +417,43 @@ $forgeTool  = Join-Path $StudioRoot "Creators\Forge"
 $fusionTool = Join-Path $StudioRoot "Creators\Fusion"
 $labTool    = Join-Path $StudioRoot "Creators\Lab"
 
-# -------------------------------------------------------------------
-# Column 0  — STUDIO
-# -------------------------------------------------------------------
+# ===================================================================
+# Tool and utility panels (original order)
+# ===================================================================
+# Column 0  — STUDIO + COMFYUI
 Add-PanelBox -Parent $cols[0] -Title "STUDIO" -Buttons @(
-    @{Text="Open Studio";       Color="#503C82"; Desc="Character Generator - pose and identity locking";    Target=(Join-Path $studioTool "Open Studio.vbs")}
-    @{Text="Studio Config";     Color="#3C2860"; Desc="Character generator configuration";                Target=(Join-Path $studioTool "Studio.config.json")}
-    @{Text="Studio Folder";     Color="#3C2860"; Desc="Browse Studio folder";                            Target=$studioTool}
+    @{Text="Open Studio";       Color="#DC143C"; Desc="Character Generator - pose and identity locking";    Target=(Join-Path $studioTool "Open Studio.vbs"); Icon="Studio"}
+    @{Text="Studio Config";     Color="#DC143C"; Desc="Browse Studio config folder";                        Target=$studioTool}
+    @{Text="Debug Studio";      Color="#DC143C"; Desc="Debug character generator workflow";                 Target=(Join-Path $studioTool "Start-Studio.ps1")}
+    @{Text="Studio Folder";     Color="#DC143C"; Desc="Browse Studio folder";                              Target=$studioTool}
 )
 Add-PanelBox -Parent $cols[0] -Title "COMFYUI" -Buttons @(
     @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
 )
 
-# -------------------------------------------------------------------
 # Column 1  — FORGE
-# -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[1] -Title "FORGE" -Buttons @(
-    @{Text="Open Forge";      Color="#8C325A"; Desc="Character Forge - final composition";            Target=(Join-Path $forgeTool "Open Forge.vbs")}
-    @{Text="Forge Config";    Color="#5A2840"; Desc="Character design configuration";                Target=(Join-Path $forgeTool "Forge.config.json")}
-    @{Text="Debug Forge";     Color="#5A2840"; Desc="Debug character design workflow";               Target=(Join-Path $forgeTool "Debug_Forge.vbs")}
-    @{Text="Forge Folder";    Color="#5A2840"; Desc="Browse Forge folder";                            Target=$forgeTool}
+    @{Text="Open Forge";       Color="#8C325A"; Desc="Character Forge - final composition";               Target=(Join-Path $forgeTool "Open Forge.vbs"); Icon="Forge"}
+    @{Text="Forge Config";     Color="#5A2840"; Desc="Browse Forge config folder";                         Target=$forgeTool}
+    @{Text="Debug Forge";      Color="#5A2840"; Desc="Debug character design workflow";                    Target=(Join-Path $forgeTool "Debug_Forge.vbs")}
+    @{Text="Forge Folder";     Color="#5A2840"; Desc="Browse Forge folder";                               Target=$forgeTool}
 )
 
-# -------------------------------------------------------------------
 # Column 2  — FUSION + WEB APPS
-# -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[2] -Title "FUSION" -Buttons @(
-    @{Text="Open Fusion";      Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";               Target=(Join-Path $fusionTool "Open Fusion.vbs")}
-    @{Text="Fusion Config";    Color="#3C2860"; Desc="LoRA Fusion tester configuration";             Target=(Join-Path $fusionTool "Fusion.config.json")}
-    @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                  Target=(Join-Path $fusionTool "Debug_Fusion.vbs")}
-    @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse Fusion folder";                          Target=$fusionTool}
+    @{Text="Open Fusion";      Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";                  Target=(Join-Path $fusionTool "Open Fusion.vbs"); Icon="Fusion"}
+    @{Text="Fusion Config";    Color="#3C2860"; Desc="Browse Fusion config folder";                        Target=$fusionTool}
+    @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                        Target=(Join-Path $fusionTool "Debug_Fusion.vbs")}
+    @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse Fusion folder";                               Target=$fusionTool}
 )
 Add-PanelBox -Parent $cols[2] -Title "WEB APPS" -Buttons $webBtnList
 
-# -------------------------------------------------------------------
 # Column 3  — LAB + REPORTS
-# -------------------------------------------------------------------
 Add-PanelBox -Parent $cols[3] -Title "LAB" -Buttons @(
-    @{Text="Open Lab";         Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";                Target=(Join-Path $labTool "Open Lab.vbs")}
-    @{Text="Lab Config";       Color="#284A70"; Desc="LoRA Lab tester configuration";                Target=(Join-Path $labTool "Lab.config.json")}
-    @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                      Target=(Join-Path $labTool "Debug_Lab.vbs")}
-    @{Text="Lab Folder";       Color="#284A70"; Desc="Browse Lab folder";                            Target=$labTool}
+    @{Text="Open Lab";         Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";                   Target=(Join-Path $labTool "Open Lab.vbs"); Icon="Lab"}
+    @{Text="Lab Config";       Color="#284A70"; Desc="Browse Lab config folder";                          Target=$labTool}
+    @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                           Target=(Join-Path $labTool "Debug_Lab.vbs")}
+    @{Text="Lab Folder";       Color="#284A70"; Desc="Browse Lab folder";                                 Target=$labTool}
 )
 Add-PanelBox -Parent $cols[3] -Title "REPORTS & SESSION" -Buttons @(
     @{Text="Reports Folder";  Color="#463728"; Desc="Browse session reports";                       Target="$comfyRootPath\Reports"}
@@ -410,9 +461,7 @@ Add-PanelBox -Parent $cols[3] -Title "REPORTS & SESSION" -Buttons @(
     @{Text="Lab Config";      Color="#463728"; Desc="LoRA tester configuration";                    Target=(Join-Path $labTool "Lab.config.json")}
 )
 
-# -------------------------------------------------------------------
-# Column 4  — COMFYUI + MODELS + DEVELOPMENT
-# -------------------------------------------------------------------
+# Column 4  — COMFYUI TOOLS + MODELS + DEVELOPMENT
 Add-PanelBox -Parent $cols[4] -Title "COMFYUI TOOLS" -Buttons @(
     @{Text="Open ComfyUI";    Color="#325032"; Desc="Launch ComfyUI web UI";                        Target="http://127.0.0.1:8000"; Mode="url"}
     @{Text="ComfyUI Manager"; Color="#325032"; Desc="Open ComfyUI Manager tab";                     Target="http://127.0.0.1:8000/manager"; Mode="url"}
