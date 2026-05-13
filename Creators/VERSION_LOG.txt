@@ -1,0 +1,538 @@
+VERSION LOG - MystikStudio Creators
+====================================
+
+Entry 1
+-------
+Version: 0.1.0-alpha.1
+Component: global versioning, C-Fusion
+Change Type: versioning, layout
+Summary: Added global versioning rules for all current and future creator items and reworked C-Fusion layout.
+Files Changed:
+  VERSIONING.txt (created - versioning standard)
+  VERSION_LOG.txt (created - this file)
+  version.txt (created - root product version)
+  data\version.txt (created - shared data version)
+  C-Fusion\version.txt (created - C-Fusion version)
+  MystikWorker\version.txt (created - worker version)
+  MystikWorker\profiles\fusion.version.txt (created - fusion profile version)
+  C-Fusion\CFusion.cs (updated - layout restructure, version in title)
+  C-Fusion\Build-CFusion.ps1 (updated - embed version from file)
+  MystikWorker\MystikWorker.cs (updated - version in /health endpoint)
+Notes:
+  Global versioning standard established per VERSIONING.txt rules.
+  C-Fusion layout now has grouped command panels, removed extra tabs,
+  restructured split containers for proper output history positioning.
+  All current and future components are covered by the versioning rules.
+
+Entry 2
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion launch, Dashboard
+Change Type: fix
+Summary: Replaced C-Fusion VBS launcher with direct executable launch.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - C-Fusion Target now points to C-Fusion.exe directly;
+    added safe error handling for missing executables and WorkingDirectory for .exe launches)
+Notes:
+  Windows Script Host was blocking Open C-Fusion.vbs with error code 800711C7
+  (Application Control policy). The VBS launcher is no longer called by the Dashboard.
+  The Open C-Fusion.vbs file remains on disk but is unused.
+  Old Fusion continues using its existing VBS launcher unchanged.
+
+Entry 3
+-------
+Version: 0.1.0-alpha.1 (C-Fusion: 0.1.0-alpha.1, no increment needed)
+Component: C-Fusion executable signing
+Change Type: fix
+Summary: Signed C-Fusion.exe with local dev code signing certificate so Windows Application Control does not block it.
+Files Changed:
+  tools\signing\New-MystikStudioDevSigningCert.ps1 (created - cert generation)
+  tools\signing\Sign-MystikStudioExe.ps1 (created - exe signing)
+  tools\signing\Verify-MystikStudioSignature.ps1 (created - signature verification)
+  tools\signing\Install-MystikStudioDevCert.ps1 (created - cert install to trusted stores)
+  tools\signing\MystikStudioLocalDevCodeSigning.cer (created - public cert)
+  C-Fusion\Diagnose-CFusionTrust.ps1 (created - trust diagnostic)
+  C-Fusion\C-Fusion.exe (updated - now signed with Authenticode)
+  C-Fusion\Build-CFusion.ps1 (updated - signs exe after build)
+  Start-MystikStudioDashboard.ps1 (updated - error handling for blocked exes)
+Notes:
+  Self-signed code signing cert "MystikStudio Local Dev Code Signing" created and installed
+    to CurrentUser\My, LocalMachine\TrustedPublisher, and LocalMachine\Root.
+  C-Fusion.exe SHA256 changed due to signature embedding.
+  Dashboard now shows a clear error message if Application Control blocks launch.
+  If the exe is rebuilt, Sign-MystikStudioExe.ps1 must be run again to re-sign.
+  The build script now automatically signs after a successful compile.
+  If signing cannot complete, a warning is printed but the build still succeeds.
+
+Entry 4
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion trust setup, signing, diagnostic
+Change Type: trust setup, signing, diagnostic
+Summary: Created complete trust setup flow: test diagnostic, WDAC policy installer with dry-run, rollback script, and trust README.
+Files Changed:
+  tools\signing\Test-CFusionTrust.ps1 (created - trust diagnostic)
+  tools\signing\Install-CFusionLocalTrustPolicy.ps1 (created - WDAC policy installer)
+  tools\signing\Remove-CFusionLocalTrustPolicy.ps1 (created - policy rollback)
+  tools\signing\README-CFusionTrust.txt (created - trust documentation)
+  Start-MystikStudioDashboard.ps1 (updated - blocked message points to test and install scripts)
+Notes:
+  Install script defaults to dry-run; requires -Install to apply.
+  Policy is hash + signer thumbprint based, narrow scope only for C-Fusion.
+  Admin required for install and remove.
+  Dashboard blocked message now directs users to Test-CFusionTrust.ps1 and
+  Install-CFusionLocalTrustPolicy.ps1 -Install.
+
+Entry 5
+-------
+Version: 0.1.0-alpha.1
+Component: signing, release preparation
+Change Type: signing, release preparation
+Summary: Added release signing path with SIGNING_GUIDE.txt, Sign-ReleaseBuild.ps1,
+  Verify-ReleaseSignature.ps1, and Build-CFusion.ps1 -SignMode support.
+Files Changed:
+  tools\signing\SIGNING_GUIDE.txt (created - release signing documentation)
+  tools\signing\Sign-ReleaseBuild.ps1 (created - release signing with signtool)
+  tools\signing\Verify-ReleaseSignature.ps1 (created - release signature verification)
+  C-Fusion\Build-CFusion.ps1 (updated - added -SignMode parameter: None, Dev, Release)
+Notes:
+  Sign-ReleaseBuild.ps1 accepts -FilePath, -CertificatePath, -CertificatePassword,
+    -TimestampUrl, -Description, -DescriptionUrl. Uses signtool.exe from Windows SDK.
+  Verify-ReleaseSignature.ps1 runs signtool verify /pa /v and Get-AuthenticodeSignature.
+  Build-CFusion.ps1 -SignMode Release signs both MystikWorker.exe and C-Fusion.exe,
+    verifies after signing, and fails the build if signing or verification fails.
+  -SignMode Dev signs with the local dev cert (existing behavior).
+  -SignMode None skips signing entirely.
+  No certificate passwords or PFX files are stored in source code.
+
+Entry 6
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Fixed C-Fusion maximized 3 column layout, restored main preview size, moved output history under preview only, and corrected panel sizing.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - 3-column TableLayoutPanel root; left 480px, center fills, right 340px;
+    removed SplitContainers to avoid crash; output history in center row 1; layout.log on startup)
+Notes:
+  Root layout: 3-column TableLayoutPanel (left=480px fixed, center=Percent(100), right=340px fixed).
+  Left column: gen controls (fill) + log (60px) + command panels (130px).
+  Center column: preview (fill) + output history (240px) below preview only.
+  Right column: clothing outfit panel (340px fixed).
+  Form starts maximized. MinimumSize 1280x720.
+  Layout log written to logs\layout.log on startup.
+
+Entry 7
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Expanded C-Fusion left control panels to use available space and fixed command panel wrapping.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - left column 480->560px, command row 130->260px,
+    genScroll/cmdPanel promoted to class fields for layout logging)
+Notes:
+  Left column: 560px fixed (up from 480). Two-column sub-layout gets ~275px per column.
+  Command panel row: 260px (up from 130). Six command groups wrap to 2 rows with 120px each.
+  genScroll and cmdPanel are now class fields so WriteLayoutLog can report their bounds.
+  Layout log includes window size, column widths, gen scroll bounds, log bounds,
+    command panel bounds, preview bounds, and history bounds.
+
+Entry 8
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion inner control sizing
+Change Type: layout fix
+Summary: Fixed C-Fusion inner controls so controls stretch inside widened panels instead of staying tiny.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - hardcoded cw=552 for left column controls, cw=328 for clothing panel;
+    added Anchor Left+Right+Top to all GroupBoxes and textboxes;
+    Core Generation controls now use colW/2 for proportional width;
+    Seed field width uses colW-54 (stretches with panel);
+    added WriteStartupLog() -> logs\startup.log with exe path and build time)
+Notes:
+  Root cause: cw was computed from parent.ClientSize.Width at construction time,
+    which returns a tiny value before the maximized form is laid out.
+  Fix: hardcoded cw to 552 (560px column - 8px padding) and 328 (340px - 12px).
+  Anchor = Left|Right|Top added to all GroupBoxes and textboxes for horizontal stretch.
+  Seed field width changed from fixed 110px to colW-54 (stretches with panel).
+  Steps/CFG/Width/Height/Sampler/Scheduler now use colW/2 for proportional sizing.
+  startup.log written on startup with exe path and build time for verification.
+
+Entry 9
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion inner controls layout
+Change Type: layout fix
+Summary: Fixed C-Fusion left panel overlap, command group wrapping, prompt height, negative prompt height, output log height, and control containment.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - rebuilt BuildGenControls with TableLayoutPanel nesting;
+    rebuilt BuildCommandPanels with 3x2 TableLayoutPanel;
+    removed all hardcoded pixel widths for inner controls;
+    removed CmdGroup helper; added CmdCell/CmdBtn private helpers)
+Notes:
+  All inner controls now use Dock.Fill instead of absolute Left/Top/Width.
+  All gen control GroupBoxes use Dock.Fill inside TLP rows.
+  Row heights: Prompt=110px, Negative=100px, LoRA+Model=120px, CN+CoreGen=190px.
+  Each 2-column row uses a nested TLP with 2x50% columns.
+  Command panels use 3x2 TLP: Run|Session|Files / Config|Reports|Tools.
+  Output Log: 130px (~8 lines). Command row: 200px.
+  No hardcoded pixel widths for dropdowns or textboxes remain.
+
+Entry 26
+-------
+Version: 0.2.0-alpha.1
+Component: Dashboard migration, layout
+Change Type: dashboard migration, dashboard layout fix
+Summary: Promoted C-Fusion exe to the main Fusion Dashboard button, removed the temporary C-Fusion tile, archived the old PowerShell Fusion launch path, centered Dashboard content, and removed unnecessary Tools & Resources scrolling.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Fusion now targets C-Fusion.exe;
+    C-Fusion tile removed; Character Suite now Studio/Forge/Fusion/Lab;
+    csWrap/wrkWrap with Add_Resize for centering tiles)
+  archive\Fusion-PowerShell\README.txt (created - rollback instructions)
+Notes:
+  Fusion card now launches: Creators\C-Fusion\C-Fusion.exe (was Fusion\Open Fusion.vbs).
+  C-Fusion tile removed from Character Suite. 4 tiles now: Studio, Forge, Fusion, Lab.
+  Character Suite and Workers content centered via wrapper Panel with Resize handler.
+  Old PowerShell Fusion files remain in Creators\Fusion\ untouched.
+  Archive README at archive\Fusion-PowerShell\README.txt has full rollback instructions.
+  Tools scrollbar: no changes needed - already fixed in Entry 25 (520px height, AutoScroll=false).
+-------
+Version: 0.2.0-alpha.1
+Component: Dashboard layout
+Change Type: dashboard layout fix
+Summary: Adjusted Tools & Resources card height, spacing, and container sizing so compact resource cards fit without unnecessary scrolling.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - toolsBox.Height 300->520px;
+    toolsInner.AutoScroll $true->$false; csFlow.AutoScroll=$false;
+    wrkFlow.AutoScroll=$false)
+Notes:
+  Root cause of scrollbar: toolsBox.Height=300 was too small for ~3 rows of cards.
+    FlowLayoutPanel had AutoScroll=$true, creating a nested scrollbar.
+  Fix: toolsBox.Height increased to 520px (enough for 3 rows at ~162px each + gaps).
+    AutoScroll removed from all inner FlowLayoutPanels (csFlow, wrkFlow, toolsInner)
+    to prevent nested scrollbars. Main Dashboard rightPanel retains AutoScroll=$true.
+-------
+Version: 0.2.0-alpha.1
+Component: Dashboard layout
+Change Type: dashboard layout fix
+Summary: Fixed Dashboard card containment and compact sizing so Character Suite tiles, Worker tiles, and Tools & Resources category cards stay inside their group borders without oversized backgrounds.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Character Suite: replaced full-width tiles with
+    185x195 compact cards in FlowLayoutPanel, icon 128px; Workers: replaced full-width tile
+    with 200x200 card in FlowLayoutPanel, icon 140px; Tools & Resources: CardWidth=180px;
+    removed unused $colW/$btnW layout constants)
+Notes:
+  Character Suite: 5 tiles at 185x195 each with 128px icons. FlowLayoutPanel wraps if needed.
+  Workers: 1 tile at 200x200 with 140px icon.
+  Tools & Resources: cards at 180px fixed width, same as before.
+  All tiles/cards stay inside their GroupBox borders. No oversized backgrounds.
+  GroupBox heights: Character Suite 240px, Workers 240px, Tools auto-scrolls.
+-------
+Version: 0.2.0-alpha.1
+Component: Dashboard layout
+Change Type: dashboard layout fix
+Summary: Fixed Tools & Resources category cards so they use compact fixed widths (180px) and wrap multiple cards per row instead of stretching full width.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Add-PanelBox now accepts -CardWidth parameter
+    defaulting to 180px; $box.Width uses CardWidth instead of $Parent.Width-2;
+    removed manual Top/Height adjustments for FlowLayoutPanel compatibility;
+    tools box height set to fixed 300px estimate)
+Notes:
+  Root cause: $box.Width = $Parent.Width - 2 made each card stretch full parent width.
+  Fix: Added [int]$CardWidth = 180 parameter. Cards now fixed at 180px wide.
+  Buttons inside: 180 - 16 = 164px.
+  At full width (~1100px), ~5 cards fit per row. FlowLayoutPanel wraps naturally.
+  AutoScroll on toolsBox handles overflow.
+-------
+Version: 0.2.0-alpha.1
+Component: Dashboard layout
+Change Type: dashboard layout fix
+Summary: Removed the Dashboard Explorer sidebar and removed the left/right split layout so the main Dashboard content uses the full window width.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - removed SplitContainer, removed entire
+    Explorer sidebar panel (lines 138-213), replaced with single Dock=Fill Panel;
+    $rightPanel is now the form-level content panel instead of $split.Panel2)
+Notes:
+  SplitContainer, $split, $leftPanel, tree view, foldernodes, and all Explorer
+    code removed. $rightPanel now uses Dock=Fill directly on the form.
+  Main content now fills the full window width. No empty sidebar space.
+  All existing sections (Character Suite, Workers, Tools & Resources) preserved.
+  Button behaviors untouched.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Fixed Clothing Outfit panel by rebuilding its internal layout so Apply, Refresh Lists, Run Variations, Cycle, Timer, dropdowns, and preview controls fit cleanly without clipping.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - Clothing Outfit rebuilt with 16 rows at 18-30px each;
+    row total 410px; panel height 370->440px; Apply button 70->80px wide;
+    Timer now uses row 14 label + NUD with separate Enable checkbox)
+Notes:
+  Clothing Outfit rows: 26(Enable)|18(Cat lbl)|26(Cat)|18(Item lbl)|26(Item)|
+    18(Color+Mat lbl)|26(Color+Mat)|18(Preset lbl)|26(Preset)|20(Preview lbl)|
+    30(Preview txt+Apply)|30(Refresh Lists)|26(Run Var)|28(Cycle)|26(Timer lbl)|28(Timer NUD)
+  Apply button: 80x24, Anchor=Right|Top in TLP cell.
+  Refresh Lists: 24px height, Dock=Fill, no more clipping.
+  Timer: Split across 2 rows (14=label, 15=NUD) with Enable checkbox in row 14.
+  Panel height: 440px (was 370) to fit all 16 rows at these heights.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout polish
+Summary: Fixed C-Fusion off screen buttons, squished buttons, clipped checkboxes, and added button clipping audit logging.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - command panel height 200->220px; button height 24->26px;
+    layout.log now includes BUTTON AUDIT section reporting width<90px, height<24px,
+    or exceeding parent bounds for 10 buttons and 8 checkboxes)
+Notes:
+  Command panel row height increased 200->220px (100px->110px per row).
+  Button height increased 24->26px for better readability.
+  Button audit in layout.log checks: btnGen, btnCancel, btnSession, chkCapture,
+    chkLoRA1/2, chkRandomSeed, chkClothing, chkVariations, chkVarTimer, chkCN,
+    btnApplyProfile, btnApplyOutfit, btnRefreshCN.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Fixed right column squished and off screen controls, moved CN Preview out of the main preview and placed it under ControlNet at the bottom right.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - removed CN Preview from center preview panel;
+    right column now 4 rows: Clothing(370) + ModelSettings(210) + ControlNet(280) + CN Preview(fills);
+    added BuildCNPreviewPanel method with 140x140 square and status label;
+    ControlNet row fixed at 280px instead of fill)
+Notes:
+  CN Preview removed from main preview panel (was anchored bottom-right).
+  CN Preview now in right column row 4 as its own bordered panel "CN Preview".
+  Square: 140x140, centered in panel, with status label below.
+  Right column: Clothing(370) | ModelSettings(210) | ControlNet(280) | CN Preview(fills).
+  No main preview regressions. Main preview placeholder text remains "Generated image preview".
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout polish
+Summary: Rebuilt C-Fusion right column layouts for Clothing Outfit, Model Settings, and ControlNet, fixed crowded variation controls, fixed clipped Apply button, and anchored CN Preview as a square in the bottom right of the main preview.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - Clothing Outfit rebuilt as 15-row TLP with 16-24px rows,
+    Apply button uses Anchor=Right instead of Dock.Fill to prevent clipping,
+    CN Preview: 140x140 square with centered label;
+    ControlNet: 8+1 rows with all labels and fields in clean TLP;
+    Clothing row height 360->370px)
+Notes:
+  Clothing Outfit: Apply button no longer uses Dock.Fill (was stretching and clipping on the right).
+    Now uses Anchor=Right with fixed 70px width. Preview text separated from Apply row.
+    Row heights: 24(Enable)|16(Cat lbl)|24(Cat)|16(Item lbl)|24(Item)|
+    16(Color+Mat lbl)|24(Color+Mat)|16(Preset lbl)|24(Preset)|
+    18(Preview txt)|24(Outfit txt+Apply btn)|18(Refresh Lists)|
+    22(Variations)|24(Cycle)|24(Timer).
+  ControlNet: 8-row TLP (22+16+24+16+24+16+24+24), then additional row 8 at 24px
+    for Start%+End%. Clean separation between all elements.
+  CN Preview: 140x140 square (was 130x130), label inside square at top edge.
+  All right column panels already have AutoScroll via modelOuter and cnOuter.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout polish
+Summary: Fixed C-Fusion right column spacing, Clothing Outfit variation controls, ControlNet spacing, and moved CN Preview to a clean bottom right square.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - Clothing Outfit rebuilt as 15-row TLP with clean spacing;
+    Clothing height 310->360px; ControlNet rebuilt as 9-row TLP with expanded rows;
+    CN Preview 120x120->130x130 square, label attached at top of square;
+    right column AutoScroll already present on modelOuter and cnOuter)
+Notes:
+  Clothing Outfit: complete rebuild with 2-column 15-row TLP.
+    15 rows: Enable(22)|Category label(16)|Cat combo(24)|Item label(16)|Item combo(24)|
+    Color label+Mat label(16)|Color combo+Mat combo(24)|Preset label(16)|Preset combo(24)|
+    Outfit text(22)|Apply button(22)|Preview text(22)|Refresh Lists(22)|
+    Run Var(22)|Cycle+Timer(22+22).
+  ControlNet: rebuilt from 7 to 9 rows. Input Image and Refresh now on separate rows
+    for clean spacing. Rows: Enable(22)|Model label(16)|Model combo(24)|Input Img label(16)|
+    Input combo(24)|Refresh btn(24)|Filter+Str label(16)|Filter+Str values(24)|
+    Start%+End% label+values(24).
+  CN Preview: 130x130 square (was 120x120), label sits at top of square with matching
+    dark background. Label "CN Preview" is 7pt Bold centered.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout polish
+Summary: Polished C-Fusion spacing, fixed remaining squished controls, fixed LoRA Use checkbox clipping, cleaned right panel spacing, and moved CN Preview to the bottom right as a square.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - LoRA checkbox col 50->65px, row height 155->170px,
+    row spacing increased 14/22/24->16/24/26; CoreGen row 140->150px, row spacing 22/24->24/26;
+    Clothing 300->310px, ModelSettings 200->210px;
+    MS rows 14/22->16/24; CN rows 20/14/22->22/16/24;
+    CN Preview moved to bottom-right 120x120 square with Anchor Bottom|Right;
+    CN labels: "Image:" -> "Input Image:", "Start %:" -> "Start %:", "End %:" -> "End %:";
+    previewPanel.Resize handler added for CN box repositioning)
+Notes:
+  LoRA checkbox column widened 50->65px so "Use" displays fully (was "Us").
+  LoRA row increased 155->170px for more breathing room, all row heights +2px.
+  CoreGen row increased 140->150px, all row heights +2px.
+  CN Preview: 120x120 square, anchored Bottom|Right of main preview, with resize handler.
+  ModelSettings row heights increased by 2px throughout.
+  ControlNet row heights increased by 2px throughout, "Image:" -> "Input Image:".
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Fixed all covered, clipped, hidden, and squished controls in C-Fusion by replacing fragile inner positioning with proper layout containers and corrected row heights.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - LoRA row 140->155px, Clothing row 280->300px;
+    added clipping detection to layout.log; fixed string formatting for C# 5 compat)
+Notes:
+  LoRA row increased from 140 to 155px to prevent LoRA 2 strength row clipping.
+  Clothing Outfit row increased from 280 to 300px for more breathing room.
+  layout.log now includes clipping detection: reports any control with width<40px,
+    height<15px, or extending beyond parent bounds.
+  All group boxes use TableLayoutPanel or Dock.Fill; no manual positioning remains
+    inside any inner panel.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout polish
+Summary: Cleaned up C-Fusion LoRA, Core Generation, right column panels, command groups, and added empty preview/history placeholder.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - LoRA rebuilt as 6-row TLP; CoreGen rebuilt as compact 4-row grid;
+    row heights adjusted: CoreGen 170->140, Log 130->150; added preview placeholder text)
+Notes:
+  LoRA: 6-row TLP with 4 columns. Rows: label, dropdown, Use+Strength+strength-NUD, label, dropdown, Use+Strength+strength-NUD.
+  CoreGen: 4-row TLP. Row0: Seed + Random Seed. Row1: Steps + CFG. Row2: Width + Height. Row3: Sampler + Scheduler.
+    Labels are full length ("Random Seed", "Scheduler"). Seed spans full width.
+  CoreGen row height reduced from 170px to 140px (compact).
+  Output Log increased from 130px to 150px to use saved space.
+  Preview area shows centered "Generated image preview" placeholder text when no image loaded.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Moved ControlNet under Model Settings, moved Core Generation into the old ControlNet area, fixed oversized Apply button, and corrected clipped labels.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - left column: LoRA full width, CoreGen moved down;
+    right column: Clothing + ModelSettings + ControlNet stacked;
+    labels: Rnd->Random Seed, Sched->Scheduler, Refr->Refresh;
+    Apply button: normal small size 60x22;
+    LoRA uses FlowLayoutPanel with Use checkbox + Strength label + NUD per row)
+Notes:
+  Left column rows: Prompt(110) | Negative(100) | LoRA(140) | CoreGen(170) | Log(130) | Commands(200)
+  Right column rows: Clothing(280) | ModelSettings(200) | ControlNet(fills rest)
+  ControlNet moved from left column (beside LoRA) to right column (under Model Settings).
+  Core Generation moved from left column row 3 to full left column row (was ControlNet).
+  LoRA now uses full 560px width with FlowLayoutPanel for clean vertical stacking.
+  "Rnd" → "Random Seed" fully written out. "Sched:" → "Scheduler:".
+  "Refr" → "Refresh". Apply button is 60x22 small button.
+  Both LoRA "Use" checkboxes are proper checkboxes with full text.
+-------
+Version: 0.2.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Moved Model Settings under Clothing Outfit on the right column, moved ControlNet beside LoRA on the left, moved Core Generation to full-width row below.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - right column now TLP with Clothing Outfit + Model Settings;
+    BuildModelSettingsPanel added; left vStack rows 2+3 rebuilt;
+    Core Gen uses full-width 4-column TLP layout)
+Notes:
+  Left column rows: Prompt(110) | Negative(100) | LoRA+ControlNet(190) | CoreGen(170) | Log(130) | Commands(200)
+  Right column rows: Clothing Outfit(340px fixed) | Model Settings(fills remaining)
+  Model Settings removed from left column entirely.
+  ControlNet now sits beside LoRA in a 2-column row.
+  Core Generation uses full 560px width with 4-column TLP (Seed|Steps|CFG|empty, Width|Height|Sampler|Sched).
+-------
+Version: 0.1.0-alpha.1
+Component: C-Fusion layout
+Change Type: layout fix
+Summary: Fixed C-Fusion left column row heights and panel clipping so all generation controls are visible and usable.
+Files Changed:
+  C-Fusion\CFusion.cs (updated - LoRA+Model row 120->170px, CN+CoreGen row 190->210px)
+Notes:
+  LoRA+Model row: 120px -> 170px (needs ~156px for Model Settings content: 7 TLP rows + padding + header).
+  CN+CoreGen row: 190px -> 210px (needs ~194px for CoreGen content: 8 TLP rows + padding + header).
+  Prompt row: 110px (still OK for 6 lines).
+  Negative row: 100px (still OK for 6 lines).
+  No other layout changes needed.
+  AutoScroll on genScroll panel already enabled — will activate if window is restored small.
+-------
+Version: 0.1.0-alpha.1
+Component: PowerShell Fusion layout
+Change Type: layout fix
+Summary: Fixed PowerShell Fusion configuration panel layout so LoRA, Model Settings, ControlNet, Core Generation, output log, and grouped action buttons fit cleanly.
+Files Changed:
+  Start-Fusion.ps1 (updated - Prompt 88->110px, Negative 78->100px, Log 70->130px;
+    action bar replaced with grouped bordered command panels in 2 rows;
+    action bar height 62->150px)
+Notes:
+  Prompt textbox: 62->84px height. Negative textbox: 52->74px height. (~6 lines each)
+  Output Log: 70->130px height (~8 visible lines)
+  Action bar now has 6 grouped panels: Run, Session, Files, Config, Reports, Tools
+    in a 3-column x 2-row layout using GroupBox borders.
+    Groups: Run+Session+Files (row 1), Config+Reports+Tools (row 2).
+    Capture Prompt is in the Session group area.
+  No existing generation functionality removed.
+   All buttons retain their original click handlers.
+
+Entry 27
+-------
+Version: 0.2.0-alpha.2
+Component: Dashboard layout
+Change Type: dashboard layout fix
+Summary: Fixed Character Suite regression after C-Fusion promotion so Studio, Forge, Fusion, and Lab all display while Fusion launches the C-Fusion exe.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - moved $launcherDefs/$tileW/$tileH/$imgSz before GroupBox
+    creation; set initial $csFlow.Width explicitly; moved $workerDefs/$wtileW/$wtileH/$wimgSz before
+    Workers GroupBox; set initial $wrkFlow.Width explicitly; added layout logging to Shown event)
+  logs\dashboard-layout.log (created - layout diagnostic logging)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: $launcherDefs was defined after the $csWrap.Add_Resize handler that referenced it.
+    The resize handler fired during initial layout when $launcherDefs was still $null.
+    $null.Count returned 0, so computed width was ~6px instead of ~770px.
+    $csFlow.Width was never set at creation (defaulted to 0), leaving the flow panel at ~6px.
+    Same bug existed in Workers section ($workerDefs referenced before definition).
+  Fix: Moved $launcherDefs and tile size constants before the Character Suite GroupBox creation
+    so they are defined when the resize handler first fires. Set $csFlow.Width explicitly at creation
+    as a safety net. Applied same fix to Workers section.
+  Fusion card unchanged: name "Fusion", color #5A328C, icon Fusion.ico, target C-Fusion.exe.
+  Character Suite now creates 4 tiles: Studio, Forge, Fusion, Lab. No C-Fusion tile.
+  Centering uses same wrapper+resize approach but with correct initial values.
+  Layout logging writes to logs/dashboard-layout.log on Dashboard show.
+
+Entry 28
+-------
+Version: 0.2.0-alpha.2
+Component: Dashboard layout
+Change Type: dashboard layout polish
+Summary: Added Dashboard side padding, contained main section borders inside the visible page, and adjusted Tools & Resources height so the border ends near the cards instead of extending into empty space.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - replaced fixed $margin=8 with $padLeft=20/$padRight=32;
+    section Left and Width now use padding constants; replaced fixed toolsBox.Height=520 with Sync-Layout
+    function that calculates height from actual card positions; added $rightPanel resize handler for
+    responsive layout; minimum width 900->1050; updated layout logging with padding/card/overflow info)
+  logs\dashboard-layout.log (updated - reports padding, card bounds, overflow checks)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  Side padding: left=20px, right=32px (includes ~20px scrollbar reserve).
+  Section width: rp.Width - padLeft - padRight. Sections no longer touch the scrollbar or fall off screen.
+  Sync-Layout function calculates toolsBox.Height from lowest card Top+Height + 20px padding, instead
+    of the old fixed 520px. This eliminates empty space below the cards.
+  Sync-Layout also recalculates rp.Height so the content area fits exactly, allowing the main scrollbar
+    to handle overflow naturally.
+  Minimum width increased from 900 to 1050 to prevent clipping at the right edge.
+  Layout logging now includes: padding config, Tools card bounds, empty height warning if >80px gap,
+    and section overflow detection.
+
+Entry 29
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard
+Change Type: dashboard recovery baseline, version lock
+Summary: Locked the approved Dashboard layout as V01.02.01xxA recovery baseline and marked it as the template for future Dashboard iterations.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - version 01.02.01xxx -> 01.02.01xxA)
+  Creators\DASHBOARD_TEMPLATE_BASELINE.txt (created - approved layout template)
+  Creators\VERSION_LOG.txt (updated - this entry)
+  Creators\archive\Fusion-PowerShell\README.txt (updated - added baseline version and recovery tag)
+Notes:
+  Dashboard version locked to V01.02.01xxA as the recovery baseline.
+  DASHBOARD_TEMPLATE_BASELINE.txt documents the approved layout traits and what not to regress.
+  Recovery tag: recovery/dashboard-V01.02.01xxA
+  Old PowerShell Fusion remains archived and restorable.
+  No C-Fusion, MystikWorker, Lab, Forge, or Studio versions bumped in this entry.

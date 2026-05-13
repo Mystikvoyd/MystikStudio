@@ -1,0 +1,36 @@
+MystikStudio Dashboard - Template Baseline
+============================================
+Version: V01.02.01xxA
+Date: 2026-05-13
+Purpose: Approved Dashboard layout template for future iterations.
+
+Approved layout notes:
+-----------------------
+- Explorer sidebar removed.
+- No split layout.
+- Main Dashboard content uses full window width.
+- Character Suite uses compact centered tiles:
+    Studio, Forge, Fusion, Lab
+- No visible C-Fusion tile.
+- Fusion card keeps Fusion name and Fusion icon.
+- Fusion card launches: H:\MystikStudio\Creators\C-Fusion\C-Fusion.exe
+- Workers section contains MystikWorker (centered tile).
+- Tools & Resources uses compact cards (180px fixed width, flow layout).
+- Dashboard sections are padded and contained (padLeft=20, padRight=32).
+- Tools & Resources height calculated dynamically from card positions.
+
+Do not regress:
+-----------------
+- Do not regress back to full width resource rows.
+- Do not reintroduce C-Fusion as a separate Character Suite tile.
+- Do not reintroduce Explorer sidebar unless explicitly requested.
+- Do not reintroduce split layout.
+- Do not make Character Suite tiles giant again.
+- Do not make Workers tile giant.
+- Do not use fixed oversized heights for Tools & Resources.
+
+Recovery:
+----------
+- Recovery tag: recovery/dashboard-V01.02.01xxA (or recovery-dashboard-V01.02.01xxA)
+- Old PowerShell Fusion is archived and restorable via:
+    H:\MystikStudio\Creators\archive\Fusion-PowerShell\README.txt

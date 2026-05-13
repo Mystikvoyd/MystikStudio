@@ -1,6 +1,6 @@
 # MystikStudio Dashboard — Split Panel: folders left, tools right
 # Fixed: column widths computed after form is shown; row 0 uses placeholder panels
-# Release snapshot: 01.02.01xxx
+# Release snapshot: 01.02.01xxA
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Windows.Forms
@@ -9,7 +9,7 @@ Add-Type -AssemblyName System.Drawing
 
 $StudioRoot = $PSScriptRoot
 $ComfyRoot  = "C:\Users\Michael\Documents\ComfyUI"
-$StudioVersion = "01.02.01xxx"
+$StudioVersion = "01.02.01xxA"
 
 function Show-ExistingDashboardWindow {
     param([string]$WindowTitle = "MystikStudio Dashboard*")
@@ -109,7 +109,7 @@ $form.StartPosition = "CenterScreen"
 $form.Font          = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.BackColor     = [System.Drawing.Color]::FromArgb(24,24,32)
 $form.ClientSize    = New-Object System.Drawing.Size(1100, 1000)
-$form.MinimumSize   = New-Object System.Drawing.Size(900, 800)
+$form.MinimumSize   = New-Object System.Drawing.Size(1050, 800)
 
 $iconPath = Join-Path $PSScriptRoot "Icons\Mytikvoyd Studios.ico"
 if (Test-Path $iconPath) { $form.Icon = [System.Drawing.Icon]::new($iconPath) }
@@ -132,88 +132,14 @@ $statusLbl.Padding   = New-Object System.Windows.Forms.Padding(10,0,0,0)
 $statusBar.Controls.Add($statusLbl)
 $form.Controls.Add($statusBar)
 
-# -------------------------------------------------------------------
-# Main splitter (fills remaining space above status bar)
-# -------------------------------------------------------------------
-$split = New-Object System.Windows.Forms.SplitContainer
-$split.Dock             = "Fill"
-$split.SplitterWidth    = 4
-$split.SplitterIncrement = 1
-$split.BackColor        = [System.Drawing.Color]::FromArgb(40,40,48)
-$form.Controls.Add($split)
-$split.Panel1MinSize    = 120
-$split.Panel2MinSize    = 350
-$split.SplitterDistance = 240
-
 # ===================================================================
-# LEFT PANEL — Folder browser
+# MAIN CONTENT PANEL (fills full window below status bar)
 # ===================================================================
-$leftPanel = $split.Panel1
-$leftPanel.BackColor = [System.Drawing.Color]::FromArgb(18,18,24)
-$leftPanel.Padding   = New-Object System.Windows.Forms.Padding(4)
-
-$lblFolders = New-Object System.Windows.Forms.Label
-$lblFolders.Text      = "  EXPLORER"
-$lblFolders.Font      = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-$lblFolders.ForeColor = [System.Drawing.Color]::FromArgb(140,160,200)
-$lblFolders.BackColor = [System.Drawing.Color]::FromArgb(30,30,40)
-$lblFolders.Height    = 24
-$lblFolders.Left      = 4; $lblFolders.Top = 4
-$lblFolders.TextAlign = "MiddleLeft"
-$lblFolders.Anchor    = "Top, Left, Right"
-$leftPanel.Controls.Add($lblFolders)
-
-$tree = New-Object System.Windows.Forms.TreeView
-$tree.Left        = 4; $tree.Top = 30
-$tree.Width       = $leftPanel.ClientSize.Width - 8
-$tree.Height      = $leftPanel.Height - 36
-$tree.Anchor      = "Top, Bottom, Left, Right"
-$tree.BackColor   = [System.Drawing.Color]::FromArgb(22,22,30)
-$tree.ForeColor   = [System.Drawing.Color]::FromArgb(200,200,210)
-$tree.BorderStyle = "None"
-$tree.Font        = New-Object System.Drawing.Font("Segoe UI", 8.5)
-$tree.LineColor   = [System.Drawing.Color]::FromArgb(50,50,60)
-$tree.HotTracking = $true
-$tree.FullRowSelect = $true
-$tree.ShowLines   = $true
-$tree.Indent      = 16
-$leftPanel.Controls.Add($tree)
-
-function Add-FolderNode {
-    param($Parent, [string]$Label, [string]$Path, [string]$Color = "#555")
-    $node = New-Object System.Windows.Forms.TreeNode
-    $node.Text     = $Label
-    $node.Tag      = $Path
-    $node.ForeColor = ColorFromHex $Color
-    $Parent.Nodes.Add($node) | Out-Null
-    return $node
-}
-
-$root = Add-FolderNode -Parent $tree -Label "MystikStudio" -Path $StudioRoot -Color "#DCB464"
-$null = Add-FolderNode -Parent $root -Label "Creators"     -Path (Join-Path $StudioRoot "Creators")     -Color "#888"
-$null = Add-FolderNode -Parent $root -Label "book-design"  -Path (Join-Path $StudioRoot "book-design")  -Color "#888"
-$null = Add-FolderNode -Parent $root -Label "webpage"      -Path (Join-Path $StudioRoot "webpage")      -Color "#888"
-$null = Add-FolderNode -Parent $root -Label "shared"       -Path (Join-Path $StudioRoot "shared")       -Color "#888"
-$null = Add-FolderNode -Parent $root -Label "Icons"        -Path (Join-Path $StudioRoot "Icons")        -Color "#888"
-
-$comfyNode = Add-FolderNode -Parent $tree -Label "ComfyUI" -Path $ComfyRoot -Color "#7CAB7C"
-$null = Add-FolderNode -Parent $comfyNode -Label "output"              -Path (Join-Path $ComfyRoot "output")                -Color "#888"
-$null = Add-FolderNode -Parent $comfyNode -Label "input"               -Path (Join-Path $ComfyRoot "input")                 -Color "#888"
-$null = Add-FolderNode -Parent $comfyNode -Label "models/loras"        -Path (Join-Path $ComfyRoot "models\loras")          -Color "#888"
-$null = Add-FolderNode -Parent $comfyNode -Label "models/checkpoints"  -Path (Join-Path $ComfyRoot "models\checkpoints")    -Color "#888"
-$null = Add-FolderNode -Parent $comfyNode -Label "models/controlnet"   -Path (Join-Path $ComfyRoot "models\controlnet")     -Color "#888"
-$null = Add-FolderNode -Parent $comfyNode -Label "models/vae"          -Path (Join-Path $ComfyRoot "models\vae")            -Color "#888"
-
-$root.Expand(); $comfyNode.Expand()
-
-$tree.Add_NodeMouseDoubleClick({
-    if ($_.Node.Tag) { Start-Process -FilePath ([string]$_.Node.Tag) }
-})
-
-# ===================================================================
-# RIGHT PANEL — scrollable inner canvas
-# ===================================================================
-$rightPanel = $split.Panel2
+$rightPanel = New-Object System.Windows.Forms.Panel
+$rightPanel.Dock = "Fill"
+$rightPanel.BackColor  = [System.Drawing.Color]::FromArgb(24,24,32)
+$rightPanel.AutoScroll = $true
+$form.Controls.Add($rightPanel)
 $rightPanel.BackColor  = [System.Drawing.Color]::FromArgb(24,24,32)
 $rightPanel.AutoScroll = $true
 
@@ -264,22 +190,30 @@ $rp.Controls.Add($hdr)
 # -------------------------------------------------------------------
 # Layout constants
 # -------------------------------------------------------------------
-$margin     = 8       # outer left/right margin
 $contentTop = $hdrTop + $hdr.Height + 8   # y where row 0 starts
+$padLeft = 20
+$padRight = 32
 
-# Column and button sizing — 5 equal columns matching Character Suite buttons
-$colGap     = 8
-$colW       = [math]::Floor(($rp.Width - ($margin * 2) - ($colGap * 4)) / 5)
-$btnW       = $colW
+# (No longer used - tiles and cards use fixed widths)
+
+# Character Suite tile data — defined before GroupBox so resize handler uses correct count
+$tileW = 185; $tileH = 195; $imgSz = 128
+
+$launcherDefs = @(
+    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")}
+    @{Text="Forge";  Color="#8C325A"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
+    @{Text="Fusion"; Color="#5A328C"; Desc="Fusion - dual LoRA testing (C#)";         Target=(Join-Path $StudioRoot "Creators\C-Fusion\C-Fusion.exe")}
+    @{Text="Lab";    Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")}
+)
 
 # -------------------------------------------------------------------
 # ROW 0 — Character suite launcher GroupBox
 # -------------------------------------------------------------------
 $rowBox = New-Object System.Windows.Forms.GroupBox
 $rowBox.Text = "  CHARACTER SUITE"
-$rowBox.Left  = $margin
+$rowBox.Left  = $padLeft
 $rowBox.Top   = $contentTop
-$rowBox.Width = $rp.Width - 2 * $margin
+$rowBox.Width = $rp.Width - $padLeft - $padRight
 $rowBox.Height = 240
 $rowBox.Anchor = "Top, Left"
 $rowBox.ForeColor = [System.Drawing.Color]::FromArgb(200,180,120)
@@ -287,39 +221,139 @@ $rowBox.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawin
 $rowBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
 $rp.Controls.Add($rowBox)
 
-$launcherDefs = @(
-    @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")}
-    @{Text="Forge";  Color="#8C325A"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
-    @{Text="Fusion"; Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";         Target=(Join-Path $StudioRoot "Creators\Fusion\Open Fusion.vbs")}
-    @{Text="Lab";    Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")}
+# Wrapper panel centers tiles
+$csWrap = New-Object System.Windows.Forms.Panel
+$csWrap.Dock = "Fill"
+$rowBox.Controls.Add($csWrap)
+$csFlow = New-Object System.Windows.Forms.FlowLayoutPanel
+$csFlow.Left = 0; $csFlow.Top = 6; $csFlow.Height = $rowBox.Height - 30
+$csFlow.WrapContents = $true; $csFlow.AutoScroll = $false
+# Set initial width and centering so tiles are visible immediately
+$csFlow.Width = $launcherDefs.Count * $tileW + ($launcherDefs.Count - 1) * 6 + 12
+$csFlow.Left = [Math]::Max(0, [Math]::Floor(($csWrap.ClientSize.Width - $csFlow.Width) / 2))
+$csWrap.Controls.Add($csFlow)
+# Resize handler re-centers the flow panel when window is resized
+$csWrap.Add_Resize({
+    $totalW = $launcherDefs.Count * $tileW + ($launcherDefs.Count - 1) * 6 + 12
+    $csFlow.Width = [Math]::Min($totalW, $csWrap.ClientSize.Width - 12)
+    $csFlow.Left = [Math]::Max(0, [Math]::Floor(($csWrap.ClientSize.Width - $csFlow.Width) / 2))
+})
+
+foreach ($ld in $launcherDefs) {
+    $tile = New-Object System.Windows.Forms.Button
+    $tile.Text      = $ld.Text
+    $tile.Width     = $tileW
+    $tile.Height    = $tileH
+    $tile.FlatStyle = "Flat"
+    $tile.FlatAppearance.BorderSize = 0
+    $tile.BackColor = ColorFromHex $ld.Color
+    $tile.ForeColor = [System.Drawing.Color]::Black
+    $tile.Font      = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $tile.TextAlign = "BottomCenter"
+    $tile.TextImageRelation = "ImageAboveText"
+    $tile.ImageAlign = "MiddleCenter"
+    $img = Get-ToolImage $ld.Text $imgSz
+    if ($img) { $tile.Image = $img; $tile.Padding = New-Object System.Windows.Forms.Padding(4,0,0,0) }
+    $t = $ld.Target
+    $isExe = $t -like '*.exe'
+    $tile.Add_Click({
+        if (-not $t) { return }
+        if (-not (Test-Path $t)) {
+            [System.Windows.Forms.MessageBox]::Show("File not found:`n$t", "Launch failed", "OK", "Error"); return
+        }
+        if ($isExe) {
+            $workDir = [System.IO.Path]::GetDirectoryName($t)
+            try { Start-Process -FilePath $t -WorkingDirectory $workDir -ErrorAction Stop }
+            catch {
+                $errMsg = $_.Exception.Message
+                if ($errMsg -match "blocked|policy|Application Control|Access Denied|740") {
+                    [System.Windows.Forms.MessageBox]::Show("$($ld.Text) is blocked by Windows Application Control.`n`nRun trust check:`n  .\tools\signing\Test-CFusionTrust.ps1`n`nInstall policy as Admin:`n  .\tools\signing\Install-CFusionLocalTrustPolicy.ps1 -Install`n`nIf managed, get approval first.", "Launch blocked", "OK", "Error")
+                } else {
+                    [System.Windows.Forms.MessageBox]::Show("Failed to launch $($ld.Text):`n$errMsg", "Launch failed", "OK", "Error")
+                }
+            }
+        } else {
+            try { Start-Process -FilePath $t -ErrorAction Stop } catch { [System.Windows.Forms.MessageBox]::Show("Failed to launch $($ld.Text):`n$($_.Exception.Message)", "Launch failed", "OK", "Error") }
+        }
+    }.GetNewClosure())
+    (New-Object System.Windows.Forms.ToolTip).SetToolTip($tile, $ld.Desc)
+    $csFlow.Controls.Add($tile)
+}
+
+# -------------------------------------------------------------------
+# ROW 0b — Workers launcher GroupBox
+# -------------------------------------------------------------------
+# Worker tile data — defined before GroupBox so resize handler uses correct count
+$wtileW = 200; $wtileH = 200; $wimgSz = 140
+
+$workerDefs = @(
+    @{Text="MystikWorker"; Color="#326040"; Desc="C# Generation Worker - local ComfyUI bridge"; Target=(Join-Path $StudioRoot "Creators\MystikWorker\MystikWorker.exe")}
 )
 
-$btnGap = ($rowBox.Width - 4 * $btnW) / 5
-$btnH = 210
-$btnY = [math]::Floor(($rowBox.Height - 20 - $btnH) / 2) + 16
+$workersBox = New-Object System.Windows.Forms.GroupBox
+$workersBox.Text = "  WORKERS"
+$workersBox.Left  = $padLeft
+$workersBox.Top   = $rowBox.Top + $rowBox.Height + 6
+$workersBox.Width = $rowBox.Width
+$workersBox.Height = 240
+$workersBox.Anchor = "Top, Left"
+$workersBox.ForeColor = [System.Drawing.Color]::FromArgb(180,200,180)
+$workersBox.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$workersBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
+$rp.Controls.Add($workersBox)
 
-for ($li = 0; $li -lt $launcherDefs.Count; $li++) {
-    $ld  = $launcherDefs[$li]
-    $btn = New-Object System.Windows.Forms.Button
-    $btn.Text      = $ld.Text
-    $btn.Left      = $btnGap + $li * ($btnW + $btnGap)
-    $btn.Top       = $btnY
-    $btn.Width     = $btnW
-    $btn.Height    = $btnH
-    $btn.FlatStyle = "Flat"
-    $btn.FlatAppearance.BorderSize = 0
-    $btn.BackColor = ColorFromHex $ld.Color
-    $btn.ForeColor = [System.Drawing.Color]::White
-    $btn.Font      = New-Object System.Drawing.Font("Segoe UI", 21, [System.Drawing.FontStyle]::Bold)
-    $btn.TextAlign = "MiddleCenter"
-    $btn.TextImageRelation = "ImageAboveText"
-    $btn.ImageAlign = "MiddleCenter"
-    $img = Get-ToolImage $ld.Text 170
-    if ($img) { $btn.Image = $img; $btn.Padding = New-Object System.Windows.Forms.Padding(4,0,0,0) }
-    $t = $ld.Target
-    $btn.Add_Click({ if ($t -and (Test-Path $t)) { Start-Process -FilePath $t } }.GetNewClosure())
-    (New-Object System.Windows.Forms.ToolTip).SetToolTip($btn, $ld.Desc)
-    $rowBox.Controls.Add($btn)
+$wrkWrap = New-Object System.Windows.Forms.Panel
+$wrkWrap.Dock = "Fill"
+$workersBox.Controls.Add($wrkWrap)
+$wrkFlow = New-Object System.Windows.Forms.FlowLayoutPanel
+$wrkFlow.Left = 0; $wrkFlow.Top = 6; $wrkFlow.Height = $workersBox.Height - 30
+$wrkFlow.WrapContents = $true; $wrkFlow.AutoScroll = $false
+# Set initial width and centering so tiles are visible immediately
+$wrkFlow.Width = $workerDefs.Count * $wtileW + ($workerDefs.Count - 1) * 6 + 12
+$wrkFlow.Left = [Math]::Max(0, [Math]::Floor(($wrkWrap.ClientSize.Width - $wrkFlow.Width) / 2))
+$wrkWrap.Controls.Add($wrkFlow)
+$wrkWrap.Add_Resize({
+    $tw = $workerDefs.Count * $wtileW + ($workerDefs.Count - 1) * 6 + 12
+    $wrkFlow.Width = [Math]::Min($tw, $wrkWrap.ClientSize.Width - 12)
+    $wrkFlow.Left = [Math]::Max(0, [Math]::Floor(($wrkWrap.ClientSize.Width - $wrkFlow.Width) / 2))
+})
+foreach ($wd in $workerDefs) {
+    $wbtn = New-Object System.Windows.Forms.Button
+    $wbtn.Text      = $wd.Text
+    $wbtn.Width     = $wtileW
+    $wbtn.Height    = $wtileH
+    $wbtn.FlatStyle = "Flat"
+    $wbtn.FlatAppearance.BorderSize = 0
+    $wbtn.BackColor = ColorFromHex $wd.Color
+    $wbtn.ForeColor = [System.Drawing.Color]::Black
+    $wbtn.Font      = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $wbtn.TextAlign = "BottomCenter"
+    $wbtn.TextImageRelation = "ImageAboveText"
+    $wbtn.ImageAlign = "MiddleCenter"
+    $wimg = Get-ToolImage $wd.Text $wimgSz
+    if ($wimg) { $wbtn.Image = $wimg; $wbtn.Padding = New-Object System.Windows.Forms.Padding(4,0,0,0) }
+    $wt = $wd.Target
+    $wIsExe = $wt -like '*.exe'
+    $wbtn.Add_Click({
+        if (-not $wt) { return }
+        if (-not (Test-Path $wt)) { [System.Windows.Forms.MessageBox]::Show("File not found:`n$wt", "Launch failed", "OK", "Error"); return }
+        if ($wIsExe) {
+            $workDir = [System.IO.Path]::GetDirectoryName($wt)
+            try { Start-Process -FilePath $wt -WorkingDirectory $workDir -ErrorAction Stop }
+            catch {
+                $errMsg = $_.Exception.Message
+                if ($errMsg -match "blocked|policy|Application Control|Access Denied|740") {
+                    [System.Windows.Forms.MessageBox]::Show("$($wd.Text) was blocked. Run trust check and install policy as Admin.", "Launch blocked", "OK", "Error")
+                } else {
+                    [System.Windows.Forms.MessageBox]::Show("Failed to launch $($wd.Text):`n$errMsg", "Launch failed", "OK", "Error")
+                }
+            }
+        } else {
+            try { Start-Process -FilePath $wt -ErrorAction Stop } catch { [System.Windows.Forms.MessageBox]::Show("Failed to launch $($wd.Text):`n$($_.Exception.Message)", "Launch failed", "OK", "Error") }
+        }
+    }.GetNewClosure())
+    (New-Object System.Windows.Forms.ToolTip).SetToolTip($wbtn, $wd.Desc)
+    $wrkFlow.Controls.Add($wbtn)
 }
 
 # -------------------------------------------------------------------
@@ -329,14 +363,15 @@ function Add-PanelBox {
     param(
         [System.Windows.Forms.Panel]$Parent,
         [string]$Title,
-        [object[]]$Buttons
+        [object[]]$Buttons,
+        [int]$CardWidth = 180
     )
 
     $box = New-Object System.Windows.Forms.GroupBox
     $box.Text      = "  $Title"
     $box.Left      = 1
-    $box.Top       = $Parent.Height + 2          # stack below whatever's already there
-    $box.Width     = $Parent.Width - 2
+    $box.Top       = 1
+    $box.Width     = $CardWidth
     $box.ForeColor = [System.Drawing.Color]::FromArgb(170,180,200)
     $box.Font      = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
     $box.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
@@ -380,31 +415,22 @@ function Add-PanelBox {
 
     $box.Height    = $yy + 6
     $Parent.Controls.Add($box)
-    $Parent.Height = $box.Top + $box.Height + 4  # grow column to fit
 }
 
 # -------------------------------------------------------------------
-# ROW 1+ — 5 column panels matching Character Suite buttons
+# ROW 2 — TOOLS & RESOURCES GroupBox (replaces old 5-column layout)
 # -------------------------------------------------------------------
-$panelRowTop = $rowBox.Top + $rowBox.Height + 6
+$toolsBox = New-Object System.Windows.Forms.GroupBox
+$toolsBox.Text = "  TOOLS & RESOURCES"
+$toolsBox.Left  = $padLeft
+$toolsBox.Top   = $workersBox.Top + $workersBox.Height + 6
+$toolsBox.Width = $rowBox.Width
+$toolsBox.Anchor = "Top, Left"
+$toolsBox.ForeColor = [System.Drawing.Color]::FromArgb(180,180,200)
+$toolsBox.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$toolsBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
+$rp.Controls.Add($toolsBox)
 
-$numCols = 5
-$cols = @()
-for ($i = 0; $i -lt $numCols; $i++) {
-    $c = New-Object System.Windows.Forms.Panel
-    $c.BackColor = [System.Drawing.Color]::FromArgb(24,24,32)
-    $c.Left      = $margin + $i * ($colW + $colGap)
-    $c.Top       = $panelRowTop
-    $c.Width     = $colW
-    $c.Height    = 0
-    $c.Anchor    = "Top, Left"
-    $rp.Controls.Add($c)
-    $cols += $c
-}
-
-# -------------------------------------------------------------------
-# Web tools button list (built from discovered tools)
-# -------------------------------------------------------------------
 $webBtnList = @()
 foreach ($t in $webTools) {
     $target = if ($t.Folder) { $t.Folder } else { $t.Launcher }
@@ -417,80 +443,145 @@ $forgeTool  = Join-Path $StudioRoot "Creators\Forge"
 $fusionTool = Join-Path $StudioRoot "Creators\Fusion"
 $labTool    = Join-Path $StudioRoot "Creators\Lab"
 
-# ===================================================================
-# Tool and utility panels (original order)
-# ===================================================================
-# Column 0  — STUDIO + COMFYUI
-Add-PanelBox -Parent $cols[0] -Title "STUDIO" -Buttons @(
-    @{Text="Open Studio";       Color="#DC143C"; Desc="Character Generator - pose and identity locking";    Target=(Join-Path $studioTool "Open Studio.vbs"); Icon="Studio"}
+# Flow layout panel — categories flow left-to-right, wrap to next row
+$toolsInner = New-Object System.Windows.Forms.FlowLayoutPanel
+$toolsInner.Dock = "Fill"
+$toolsInner.Padding = New-Object System.Windows.Forms.Padding(6)
+$toolsInner.AutoScroll = $false
+$toolsInner.WrapContents = $true
+$toolsBox.Controls.Add($toolsInner)
+
+Add-PanelBox -Parent $toolsInner -Title "STUDIO" -Buttons @(
     @{Text="Studio Config";     Color="#DC143C"; Desc="Browse Studio config folder";                        Target=$studioTool}
     @{Text="Debug Studio";      Color="#DC143C"; Desc="Debug character generator workflow";                 Target=(Join-Path $studioTool "Start-Studio.ps1")}
     @{Text="Studio Folder";     Color="#DC143C"; Desc="Browse Studio folder";                              Target=$studioTool}
 )
-Add-PanelBox -Parent $cols[0] -Title "COMFYUI" -Buttons @(
+Add-PanelBox -Parent $toolsInner -Title "COMFYUI" -Buttons @(
     @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
 )
-
-# Column 1  — FORGE
-Add-PanelBox -Parent $cols[1] -Title "FORGE" -Buttons @(
-    @{Text="Open Forge";       Color="#8C325A"; Desc="Character Forge - final composition";               Target=(Join-Path $forgeTool "Open Forge.vbs"); Icon="Forge"}
+Add-PanelBox -Parent $toolsInner -Title "FORGE" -Buttons @(
     @{Text="Forge Config";     Color="#5A2840"; Desc="Browse Forge config folder";                         Target=$forgeTool}
     @{Text="Debug Forge";      Color="#5A2840"; Desc="Debug character design workflow";                    Target=(Join-Path $forgeTool "Debug_Forge.vbs")}
     @{Text="Forge Folder";     Color="#5A2840"; Desc="Browse Forge folder";                               Target=$forgeTool}
 )
-
-# Column 2  — FUSION + WEB APPS
-Add-PanelBox -Parent $cols[2] -Title "FUSION" -Buttons @(
-    @{Text="Open Fusion";      Color="#5A328C"; Desc="LoRA Fusion - dual LoRA testing";                  Target=(Join-Path $fusionTool "Open Fusion.vbs"); Icon="Fusion"}
+Add-PanelBox -Parent $toolsInner -Title "FUSION" -Buttons @(
     @{Text="Fusion Config";    Color="#3C2860"; Desc="Browse Fusion config folder";                        Target=$fusionTool}
     @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                        Target=(Join-Path $fusionTool "Debug_Fusion.vbs")}
     @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse Fusion folder";                               Target=$fusionTool}
 )
-Add-PanelBox -Parent $cols[2] -Title "WEB APPS" -Buttons $webBtnList
-
-# Column 3  — LAB + REPORTS
-Add-PanelBox -Parent $cols[3] -Title "LAB" -Buttons @(
-    @{Text="Open Lab";         Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";                   Target=(Join-Path $labTool "Open Lab.vbs"); Icon="Lab"}
+Add-PanelBox -Parent $toolsInner -Title "WEB APPS" -Buttons $webBtnList
+Add-PanelBox -Parent $toolsInner -Title "LAB" -Buttons @(
     @{Text="Lab Config";       Color="#284A70"; Desc="Browse Lab config folder";                          Target=$labTool}
     @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                           Target=(Join-Path $labTool "Debug_Lab.vbs")}
     @{Text="Lab Folder";       Color="#284A70"; Desc="Browse Lab folder";                                 Target=$labTool}
 )
-Add-PanelBox -Parent $cols[3] -Title "REPORTS & SESSION" -Buttons @(
+Add-PanelBox -Parent $toolsInner -Title "REPORTS & SESSION" -Buttons @(
     @{Text="Reports Folder";  Color="#463728"; Desc="Browse session reports";                       Target="$comfyRootPath\Reports"}
     @{Text="Session Module";  Color="#463728"; Desc="Shared session report module";                 Target=(Join-Path $StudioRoot "shared")}
     @{Text="Lab Config";      Color="#463728"; Desc="LoRA tester configuration";                    Target=(Join-Path $labTool "Lab.config.json")}
 )
-
-# Column 4  — COMFYUI TOOLS + MODELS + DEVELOPMENT
-Add-PanelBox -Parent $cols[4] -Title "COMFYUI TOOLS" -Buttons @(
+Add-PanelBox -Parent $toolsInner -Title "COMFYUI TOOLS" -Buttons @(
     @{Text="Open ComfyUI";    Color="#325032"; Desc="Launch ComfyUI web UI";                        Target="http://127.0.0.1:8000"; Mode="url"}
     @{Text="ComfyUI Manager"; Color="#325032"; Desc="Open ComfyUI Manager tab";                     Target="http://127.0.0.1:8000/manager"; Mode="url"}
     @{Text="ComfyUI Folder";  Color="#463728"; Desc="Browse ComfyUI root";                          Target=$comfyRootPath}
 )
-Add-PanelBox -Parent $cols[4] -Title "PROJECT  ·  MODELS" -Buttons @(
+Add-PanelBox -Parent $toolsInner -Title "MODELS" -Buttons @(
     @{Text="LoRA Models";   Color="#373746"; Desc="Browse LoRA files";       Target="$comfyRootPath\models\loras"}
     @{Text="Checkpoints";   Color="#373746"; Desc="Checkpoint files";        Target="$comfyRootPath\models\checkpoints"}
     @{Text="ControlNet";    Color="#373746"; Desc="ControlNet models";       Target="$comfyRootPath\models\controlnet"}
     @{Text="VAE";           Color="#373746"; Desc="VAE models";              Target="$comfyRootPath\models\vae"}
 )
-Add-PanelBox -Parent $cols[4] -Title "DEVELOPMENT" -Buttons @(
+Add-PanelBox -Parent $toolsInner -Title "DEVELOPMENT" -Buttons @(
     @{Text="Open in VS Code";  Color="#2C2C32"; Desc="Open project in VS Code";                    Target="code";         Arguments=$StudioRoot}
     @{Text="Open Terminal";    Color="#2C2C32"; Desc="PowerShell at project root";                 Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
     @{Text="GitHub Issues";    Color="#24292E"; Desc="Open repo issues";                           Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
 )
 
 # -------------------------------------------------------------------
-# Finalise inner panel height so scrolling works correctly
+# Dynamic layout: calculate Tools height from card positions, sync on resize
 # -------------------------------------------------------------------
-$maxBottom = 0
-foreach ($c in ($cols + @($rowBox))) {
-    $bottom = $c.Top + $c.Height
-    if ($bottom -gt $maxBottom) { $maxBottom = $bottom }
+function Sync-Layout {
+    $rp.Width = $rightPanel.ClientSize.Width
+    $sectionW = $rp.Width - $padLeft - $padRight
+    $hdr.Width = $rp.Width
+    $rowBox.Width = $sectionW
+    $workersBox.Width = $sectionW
+    $toolsBox.Width = $sectionW
+    $toolsInner.PerformLayout()
+    $maxCardBottom = 0
+    foreach ($ctrl in $toolsInner.Controls) {
+        $b = $ctrl.Top + $ctrl.Height
+        if ($b -gt $maxCardBottom) { $maxCardBottom = $b }
+    }
+    $toolsBox.Height = [Math]::Max(180, $maxCardBottom + 20)
+    $maxBottom = 0
+    foreach ($c in @($rowBox, $workersBox, $toolsBox)) {
+        $b = $c.Top + $c.Height
+        if ($b -gt $maxBottom) { $maxBottom = $b }
+    }
+    $rp.Height = $maxBottom + 16
 }
-$rp.Height = $maxBottom + 16
+
+# Calculate initial layout after all cards are created
+Sync-Layout
+
+# Re-sync on resize (handles form resize and scrollbar appearance)
+$rightPanel.Add_Resize({ Sync-Layout })
 
 # -------------------------------------------------------------------
 # Show
 # -------------------------------------------------------------------
-$form.Add_Shown({ $form.Activate() })
+$form.Add_Shown({
+    $form.Activate()
+    # Write layout log after form is fully laid out
+    try {
+        $logDir = Join-Path (Join-Path $StudioRoot "Creators") "logs"
+        if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
+        $logPath = Join-Path $logDir "dashboard-layout.log"
+        $sectionW = $rp.Width - $padLeft - $padRight
+        $toolsInner.PerformLayout()
+        $maxCardBottom = 0; $clippedSections = @()
+        foreach ($ctrl in $toolsInner.Controls) { $b = $ctrl.Top + $ctrl.Height; if ($b -gt $maxCardBottom) { $maxCardBottom = $b } }
+        $toolsPadding = $toolsBox.Height - $maxCardBottom
+        if ($toolsPadding -gt 80) { $clippedSections += "WARNING: Tools & Resources empty height: $toolsPadding px beyond cards" }
+        foreach ($c in @($rowBox, $workersBox, $toolsBox)) {
+            if ($c.Left + $c.Width -gt $rp.Width) { $clippedSections += "WARNING: '$($c.Text.Trim())' right edge ($($c.Left+$c.Width)) exceeds rp width ($($rp.Width))" }
+        }
+        $logLines = @(
+            "=== MystikStudio Dashboard Layout Report ===",
+            "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
+            "Dashboard window size: $($form.ClientSize.Width) x $($form.ClientSize.Height)",
+            "Minimum size: $($form.MinimumSize.Width) x $($form.MinimumSize.Height)",
+            "Main content padding: left=$padLeft right=$padRight (scrollbar reserve: 20 px)",
+            "Main content width (sectionW): $sectionW",
+            "",
+            "--- Sections ---",
+            "Character Suite bounds: left=$($rowBox.Left) top=$($rowBox.Top) width=$($rowBox.Width) height=$($rowBox.Height)",
+            "Character Suite tile container (csFlow) bounds: left=$($csFlow.Left) top=$($csFlow.Top) width=$($csFlow.Width) height=$($csFlow.Height)",
+            "Number of Character Suite tiles created: $($csFlow.Controls.Count)",
+            ""
+        )
+        foreach ($tile in $csFlow.Controls) {
+            $target = ""
+            foreach ($ld in $launcherDefs) {
+                if ($ld.Text -eq $tile.Text) { $target = $ld.Target; break }
+            }
+            $logLines += "  Tile: '$($tile.Text)'  bounds: l=$($tile.Left) t=$($tile.Top) w=$($tile.Width) h=$($tile.Height)  launch: $target"
+        }
+        $logLines += ""
+        $logLines += "Fusion tile launch target: $($launcherDefs[2].Target)"
+        $logLines += "Workers bounds: left=$($workersBox.Left) top=$($workersBox.Top) width=$($workersBox.Width) height=$($workersBox.Height)"
+        $logLines += "Tools & Resources bounds: left=$($toolsBox.Left) top=$($toolsBox.Top) width=$($toolsBox.Width) height=$($toolsBox.Height)"
+        $logLines += "Tools & Resources calculated height: $($toolsBox.Height) (max card bottom: $maxCardBottom + 20 pad)"
+        $logLines += ""
+        $logLines += "--- Tools & Resources Cards ---"
+        foreach ($ctrl in $toolsInner.Controls) {
+            $logLines += "  Card: '$($ctrl.Text.Trim())'  bounds: l=$($ctrl.Left) t=$($ctrl.Top) w=$($ctrl.Width) h=$($ctrl.Height)"
+        }
+        $logLines += ""
+        if ($clippedSections.Count -gt 0) { $logLines += $clippedSections } else { $logLines += "No sections exceed visible content width." }
+        $logLines += "========================================="
+        $logLines | Out-File -FilePath $logPath -Encoding utf8
+    } catch { }
+})
 [void]$form.ShowDialog()

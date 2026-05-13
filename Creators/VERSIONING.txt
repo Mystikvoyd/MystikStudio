@@ -1,0 +1,78 @@
+MystikStudio Creators Versioning Standard
+=========================================
+
+Version format:
+MAJOR.MINOR.PATCH-STAGE.BUILD
+
+Example:
+0.1.0-alpha.1
+
+Meaning:
+  MAJOR - changes only when the user explicitly says this is a major release.
+  MINOR - changes only when the user explicitly says to move to the next minor version or lock a minor version.
+  PATCH - changes for fixes and normal improvements.
+  STAGE - alpha, beta, rc, or release.
+  BUILD - increments for repeated test builds inside the same patch.
+
+Current default stage: alpha
+Current default version if no version exists: 0.1.0-alpha.1
+
+Core rules:
+1. Read VERSIONING.txt before changing versioned code.
+2. Do not invent another versioning system.
+3. Do not create competing version standards inside individual apps.
+4. Do not use dates as the main version.
+5. Do not jump MAJOR unless the user explicitly asks.
+6. Do not jump MINOR unless the user explicitly asks.
+7. If the user gives an exact version then use that exact version.
+8. If the user says to lock a minor version then store that locked MAJOR.MINOR line and keep future changes inside that line until the user changes it.
+9. For normal fixes use PATCH or BUILD only.
+10. Keep version files simple text unless a component already has a working JSON version system.
+
+Component version rules:
+1. Product version tracks the overall MystikStudio Creators system.
+2. Dashboard version tracks Dashboard UI and launcher behavior.
+3. Legacy app versions track PowerShell app behavior.
+4. C app versions track C# app UI and app behavior.
+5. Worker versions track generation engine behavior.
+6. Profile versions track app to ComfyUI connection rules.
+7. Workflow versions track ComfyUI workflow structure and node mapping.
+8. Schema versions track saved config, history, reports, queue files, and data formats.
+9. Shared data version tracks shared list file structure and expected file names.
+10. Launcher versions track app launch behavior.
+11. Build script versions track compile or package behavior.
+12. Repair script versions track repair or cleanup behavior.
+13. Test script versions track validation behavior.
+
+Current items covered:
+  Dashboard             Start-MystikStudioDashboard.ps1
+  PowerShell Fusion     Creators\Fusion\Start-Fusion.ps1
+  PowerShell Lab        Creators\Lab\Start-Lab.ps1
+  PowerShell Forge      Creators\Forge\Start-Forge.ps1
+  PowerShell Studio     Creators\Studio\Start-Studio.ps1
+  C-Fusion              Creators\C-Fusion\C-Fusion.exe
+  MystikWorker          Creators\MystikWorker\MystikWorker.exe
+  Shared data files     Creators\data\*.txt
+  Worker profiles       Creators\MystikWorker\profiles\*.json
+  Workflow files        Creators\comfyui\workflows\*.api.json
+  Config files          Creators\*\*.config.json
+  History files         Creators\C-Fusion\history\*, Creators\Fusion\*.runlog.json
+  Report files          Creators\*\reports\*
+  Launcher files        Creators\*\Open *.vbs
+  Build scripts         Creators\C-Fusion\Build-*.ps1
+  Repair scripts        Creators\*\Repair-*.ps1
+  Test scripts          Creators\*\Test-*.ps1
+
+Future items covered:
+  C-Lab                 Creators\C-Lab\*
+  C-Forge               Creators\C-Forge\*
+  C-Studio              Creators\C-Studio\*
+  Additional worker profiles  Creators\MystikWorker\profiles\*.json
+  Additional ComfyUI workflows  Creators\comfyui\workflows\*.api.json
+  Future shared services
+  Future creator modules
+  Future dashboard tools
+  Future schema versions
+  Future report formats
+  Future history formats
+  Future data folders

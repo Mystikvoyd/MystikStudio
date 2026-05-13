@@ -1,0 +1,5 @@
+Product: MystikStudio Creators
+Version: 0.2.0-alpha.1
+Locked Minor Version: none
+Stage: alpha
+Schema Version: 1
