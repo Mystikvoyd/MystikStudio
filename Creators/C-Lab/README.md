@@ -1,23 +1,25 @@
 # C-Lab — Future C# Migration Scaffold
 
-**Status:** Scaffold only — not an active Dashboard target.
+**Status:** Staged C# migration.
+**Not active Dashboard target** because Windows Smart App Control blocks unsigned or untrusted exe launch.
+**Active Dashboard target remains Lab PowerShell** until signing, WDAC, or trusted deployment is solved.
 
 ## Purpose
-Future C# counterpart for the current PowerShell Lab app.
+Future C# counterpart for the current PowerShell Studio app.
 
 ## PowerShell Source App
 - **Name:** Lab
 - **Location:** `H:\MystikStudio\Creators\Lab`
 - **Launch:** `Open Lab.vbs` → `Start-Lab.ps1`
 - **Config:** `Lab.config.json`
-- **Current Dashboard target:** `Creators\Lab\Open Lab.vbs`
+- **Current Dashboard target:** `Creators\Lab\Open Lab.vbs` (PowerShell — working)
+- **Staged Dashboard target:** `Creators\C-Lab\Lab.exe` (C# — blocked by Smart App Control)
 
 ## Planned Implementation
 - **Exe name:** `Lab.exe`
-- **Output path:** `Creators\C-Lab\build\Lab.exe`
+- **Output path:** `Creators\C-Lab\Lab.exe`
 - **Icon:** `H:\MystikStudio\Icons\Lab.ico`
 - **Compile:** `csc.exe /target:winexe /win32icon:"H:\MystikStudio\Icons\Lab.ico"`
-- **Dashboard target (future):** `Creators\C-Lab\build\Lab.exe`
 
 ## Known Inputs
 - LoRA model testing parameters
@@ -32,4 +34,4 @@ Future C# counterpart for the current PowerShell Lab app.
 ## Rollback
 - Original PowerShell files remain at `Creators\Lab\`
 - Archive rollback docs at `Creators\archive\Lab-PowerShell\README.txt`
-- Do not use as active Dashboard target until migration is complete.
+- Do not activate as Dashboard target until signing/trust is solved.

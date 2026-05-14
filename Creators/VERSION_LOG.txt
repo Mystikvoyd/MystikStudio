@@ -1083,3 +1083,26 @@ Notes:
   Rollback doc updated with restore instructions.
   Studio, Forge, Fusion, MystikWorker all unchanged.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 50
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Lab C# migration staging
+Change Type: Lab C# migration staging correction
+Summary: Restored Dashboard Lab target to the working PowerShell launcher because C-Lab.exe is blocked by Windows Smart App Control. Kept C-Lab files staged for future signing/trust work.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Lab target restored to Creators\Lab\Open Lab.vbs)
+  Creators\C-Lab\README.md (updated - notes Smart App Control blocking; staged status)
+  Creators\archive\Lab-PowerShell\README.txt (updated - clarifies PowerShell Lab remains active target)
+  Creators\CSharp-Migration-Plan.md (updated - added Migration Gate section for Smart App Control)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Dashboard Lab target: Creators\C-Lab\Lab.exe -> Creators\Lab\Open Lab.vbs (restored to working PS)
+  C-Lab files NOT deleted. All migration work preserved at Creators\C-Lab\.
+  C-Lab README now states: "Not active Dashboard target because Windows Smart App Control
+    blocks unsigned or untrusted exe launch."
+  Migration plan updated with section 10.4: Migration Gate — do not switch Dashboard targets
+    to C# exes until Smart App Control trust check passes on the user machine.
+  For Forge and Studio: build and stage C# versions first, but do not replace Dashboard launch
+    targets until signing/trust is solved.
+  Dashboard baseline remains V01.02.01xxB.

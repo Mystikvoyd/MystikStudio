@@ -3,27 +3,23 @@ Lab-PowerShell — Preserved as Lab-PS
 Archived: 2026-05-13
 Baseline at migration: V01.02.01xxB
 
-The old PowerShell Lab app is now preserved as Lab-PS.
+IMPORTANT: Lab PowerShell remains the ACTIVE Dashboard Lab target.
+C-Lab is staged but blocked by Windows Smart App Control.
 
-The Dashboard now launches the C# exe version for Lab.
+To activate C-Lab later:
+1. Solve signing/trust issue for C-Lab\Lab.exe
+2. Change Dashboard target to: Creators\C-Lab\Lab.exe
+3. Update this README accordingly.
 
 Old PowerShell Lab location (preserved):
   H:\MystikStudio\Creators\Lab
 
-Old Dashboard launch:
+Current Dashboard launch (working):
   H:\MystikStudio\Creators\Lab\Open Lab.vbs
 
-New Dashboard launch:
+Staged C# Dashboard target (blocked until trust solved):
   H:\MystikStudio\Creators\C-Lab\Lab.exe
 
-How to restore the old PowerShell Lab button:
-  1. Edit the Dashboard script:
-       H:\MystikStudio\Start-MystikStudioDashboard.ps1
-  2. Find the $launcherDefs array and change the Lab entry back to:
-       Target=(Join-Path $StudioRoot "Creators\Lab\Open Lab.vbs")
-  3. Save and restart the Dashboard.
-
-Notes:
-  The C# Lab exe is at: H:\MystikStudio\Creators\C-Lab\Lab.exe
-  The old PowerShell Lab is not deleted and can still be launched directly.
-  Both versions can coexist. Only the Dashboard button changed.
+How to check C-Lab trust status:
+  .\tools\signing\Test-CFusionTrust.ps1 (Fusion trust check)
+  Similar trust setup will be needed for C-Lab.

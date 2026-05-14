@@ -191,6 +191,16 @@ Creators\archive\
 - All three apps depend on ComfyUI being reachable
 - The worker dependency (MystikWorker) may need to be running for some operations
 
+### Migration Gate: Smart App Control / Trust Check
+- **Do not switch Dashboard targets to C# exe versions until the exe passes the Windows Smart App Control trust check on the user machine.**
+- C# exe versions built with a self-signed dev certificate will be blocked by Smart App Control in Enforce mode.
+- Before switching the Dashboard target, the exe must either:
+  - Have a WDAC supplemental policy installed (see `tools\signing\Install-CFusionLocalTrustPolicy.ps1` for the Fusion pattern), or
+  - Be signed with a real CA code signing certificate with established cloud reputation, or
+  - Smart App Control must be in Audit or Off mode (not recommended).
+- The Lab C# migration proved this gate is necessary: `Lab.exe` compiled successfully and the Dashboard target was switched, but Smart App Control blocked launch.
+- **For Forge and Studio:** Build and stage C# versions first. Do not replace Dashboard launch targets until trust/signing is solved.
+
 ## 11. Recommended Migration Order
 
 1. **Lab first** — simplest app, lowest risk, good pattern validation
