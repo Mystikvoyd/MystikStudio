@@ -1256,3 +1256,26 @@ Notes:
     %TEMP%\MystikStudioCForge_v2.p7b (Forge SHA256: 27784822EE7F6AC3E7031199F886C9EAF21840A657AEE1C91CFF5F3D60E85AA4)
     Admin install: Copy-Item to C:\Windows\System32\CodeIntegrity\ then reboot.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 56
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Dashboard startup resilience
+Change Type: Dashboard startup logging and resilience
+Summary: Added Dashboard startup logging and improved error resilience around mutex, FormClosing, and ShowDialog to prevent silent launch failures from blocking the Dashboard.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - added Write-StartupLog function; startup log written to
+    Creators\logs\dashboard-startup-latest.log; try/catch around FormClosing handler;
+    try/catch around ShowDialog; startup logging at key lifecycle points)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Startup log written to H:\MystikStudio\Creators\logs\dashboard-startup-latest.log with timestamps
+    for: script start, mutex check, mutex acquired/existing window, form creation, ShowDialog launch.
+  FormClosing handler wrapped in try/catch to prevent worker shutdown errors from blocking Dashboard close.
+  ShowDialog wrapped in try/catch for safety.
+  Dashboard confirmed launching (PID 49164). All Character Suite targets verified:
+    Studio: Creators\Studio\Open Studio.vbs (PowerShell)
+    Forge: Creators\C-Forge\Forge.exe (C# active)
+    Fusion: Creators\C-Fusion\C-Fusion.exe (C# active)
+    Lab: Creators\C-Lab\Lab.exe (C# active)
+  Dashboard version V01.02.01xxB confirmed.

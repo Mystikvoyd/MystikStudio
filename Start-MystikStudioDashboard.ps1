@@ -7,6 +7,18 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
+# Startup log
+$startupLogDir = Join-Path $PSScriptRoot "Creators\logs"
+if (-not (Test-Path $startupLogDir)) { New-Item -ItemType Directory -Path $startupLogDir -Force | Out-Null }
+$startupLogPath = Join-Path $startupLogDir "dashboard-startup-latest.log"
+$startupLines = @()
+function Write-StartupLog($msg) {
+    $line = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $msg"
+    $script:startupLines += $line
+    try { $line | Out-File -FilePath $script:startupLogPath -Encoding utf8 -Append } catch { }
+}
+Write-StartupLog "Dashboard starting. PSScriptRoot: $PSScriptRoot"
+
 $StudioRoot = $PSScriptRoot
 $ComfyRoot  = "C:\Users\Michael\Documents\ComfyUI"
 $StudioVersion = "01.02.01xxB"
@@ -123,12 +135,15 @@ function Show-ExistingDashboardWindow {
     return $true
 }
 
+Write-StartupLog "Mutex check starting"
 $mutexCreated = $false
 $mutex = New-Object System.Threading.Mutex($true, "Local\MystikStudioDashboard", [ref]$mutexCreated)
 if (-not $mutexCreated) {
+    Write-StartupLog "Existing Dashboard window found. Bringing to front."
     [void](Show-ExistingDashboardWindow)
     return
 }
+Write-StartupLog "Mutex acquired. Building Dashboard form."
 
 # -------------------------------------------------------------------
 # Discovery
@@ -788,8 +803,9 @@ $rightPanel.Add_Resize({ Sync-Layout })
 # -------------------------------------------------------------------
 # Show
 # -------------------------------------------------------------------
+Write-StartupLog "Form created. Adding FormClosing handler."
 $form.Add_FormClosing({
-    Stop-AllDashboardWorkers
+    try { Stop-AllDashboardWorkers } catch { Write-StartupLog "FormClosing error: $($_.Exception.Message)" }
 })
 $form.Add_Shown({
     $form.Activate()
@@ -856,4 +872,6 @@ $form.Add_Shown({
         $logLines | Out-File -FilePath $logPath -Encoding utf8
     } catch { }
 })
-[void]$form.ShowDialog()
+Write-StartupLog "Launching Dashboard form (ShowDialog)..."
+try { [void]$form.ShowDialog() } catch { Write-StartupLog "ShowDialog failed: $($_.Exception.Message)" }
+Write-StartupLog "Dashboard closed."
