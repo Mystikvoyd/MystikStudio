@@ -1220,3 +1220,35 @@ Notes:
   Old PowerShell Forge preserved as Forge-PS at Creators\Forge\ (rollback documented)
   Forge Dashboard target already active: Creators\C-Forge\Forge.exe (from Entry 53)
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 55
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Lab Forge UI polish, GPU status
+Change Type: Lab and Forge UI polish, native GPU status
+Summary: Polished C-Lab and C-Forge layouts and replaced the ComfyUI-only GPU status with a compact native Windows GPU/VRAM status bar using WMI and Performance Counters.
+Files Changed:
+  Creators\shared\GpuStatusProvider.cs (created - native GPU/VRAM provider using Win32_VideoController
+    WMI and GPU Adapter Memory Performance Counters; ComfyUI status check as secondary source)
+  Creators\C-Lab\Lab.cs (updated - added compact bottom GPU bar with 5-second Timer auto-refresh;
+    calls GpuStatusProvider.Refresh())
+  Creators\C-Lab\Lab.exe (updated - rebuilt and signed)
+  Creators\C-Lab\Build-CLab.ps1 (updated - added shared\GpuStatusProvider.cs and System.Management ref)
+  Creators\C-Forge\Forge.cs (updated - replaced large GPU tab with compact bottom GPU bar;
+    GpuStatusProvider-based; GPU tab now shows full GpuInfo.ToString(); duplicate lblGpuStatus fixed)
+  Creators\C-Forge\Forge.exe (updated - rebuilt and signed)
+  Creators\C-Forge\Build-CForge.ps1 (updated - added shared\GpuStatusProvider.cs and System.Management ref)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  GPU status bar: Compact Label docked to bottom of form (22px height). Shows GPU name, VRAM used/total,
+    Shared memory, ComfyUI online/offline. Color: green when ComfyUI online, red when offline.
+  Native Windows sources used:
+    1. Win32_VideoController WMI — GPU name and AdapterRAM (dedicated VRAM total).
+       Skips Microsoft Basic Display adapters. Prefers GPU with largest AdapterRAM.
+    2. GPU Adapter Memory Performance Counters — Dedicated Usage and Shared Usage.
+       Falls back gracefully if counters not available (shows "?" for VRAM used).
+    3. ComfyUI GET /system_stats — used only for online/offline status and name cross-check.
+  Multiple GPU handling: WMI picks the GPU with the largest AdapterRAM, skipping software renderers.
+  Apps rebuilt and signed (Valid), but both are blocked by Smart App Control after rebuild (new hash).
+    WDAC policy update or re-allow needed before Lab/Forge can launch again.
+  Dashboard baseline remains V01.02.01xxB.

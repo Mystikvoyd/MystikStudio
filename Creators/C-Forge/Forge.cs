@@ -24,6 +24,7 @@ public class ForgeForm : Form {
     private DataGridView gridOutputs;
     private Panel previewPanel;
     private Label lblGpuStatus;
+    private Timer gpuTimer;
     private bool sessionActive = false;
     private List<Dictionary<string, object>> sessionEntries = new List<Dictionary<string, object>>();
     private string forgeRoot, configPath, prefsPath, runLogPath, reportsFolder;
@@ -106,7 +107,28 @@ public class ForgeForm : Form {
         gridOutputs.Columns[5].Visible = false;
         gridOutputs.CellClick += (o, ev) => { if (ev.RowIndex >= 0 && gridOutputs.Rows[ev.RowIndex].Cells["Path"].Value != null) SetPreview(gridOutputs.Rows[ev.RowIndex].Cells["Path"].Value.ToString()); };
         split.Panel2.Controls.Add(gridOutputs);
+
+        // GPU status bar
+        lblGpuStatus = new Label { Dock = DockStyle.Bottom, Height = 22, BackColor = Color.FromArgb(28, 28, 38), ForeColor = Color.FromArgb(150, 200, 150), Font = new Font("Segoe UI", 7.5f), Padding = new Padding(8, 3, 0, 0) };
+        this.Controls.Add(lblGpuStatus);
+        lblGpuStatus.BringToFront();
+        string logsDir = Path.Combine(forgeRoot, "logs"); Directory.CreateDirectory(logsDir);
+        GpuStatusProvider.SetLogDir(logsDir);
+        UpdateGpuBar();
+        gpuTimer = new Timer { Interval = 5000 }; gpuTimer.Tick += (o, e) => UpdateGpuBar(); gpuTimer.Start();
+
         LoadModels(); LoadPrefs(); Log("Character Forge ready.");
+    }
+
+    private void UpdateGpuBar() {
+        try {
+            var info = GpuStatusProvider.Refresh();
+            if (lblGpuStatus != null && !lblGpuStatus.IsDisposed) {
+                string comfyStr = info.ComfyUiOnline ? "Online" : "Offline";
+                lblGpuStatus.Text = "GPU: " + info.Name + "  |  VRAM: " + (info.DedicatedUsed > 0 ? (info.DedicatedUsed / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " / " : "? / ") + (info.DedicatedTotal > 0 ? (info.DedicatedTotal / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " GB" : "?") + "  |  ComfyUI: " + comfyStr;
+                lblGpuStatus.ForeColor = info.ComfyUiOnline ? Color.FromArgb(150, 200, 150) : Color.FromArgb(200, 150, 150);
+            }
+        } catch { }
     }
 
     private System.ComponentModel.BackgroundWorker bgWorker;
@@ -239,17 +261,12 @@ public class ForgeForm : Form {
     private void BuildSessionTab() { tabSession.Controls.Add(txtLog); }
 
     private void BuildGpuTab() {
-        lblGpuStatus = new Label { Left = 8, Top = 8, Width = 580, Height = 100, Font = new Font("Consolas", 9), ForeColor = Color.FromArgb(180, 220, 180) };
-        tabGpu.Controls.Add(lblGpuStatus);
-        btnRefreshGPU = MakeButton("Refresh GPU", 8, 100, 130, 28, Color.FromArgb(50, 50, 60));
-        btnRefreshGPU.Click += (o, e) => UpdateGpuStatus();
-        tabGpu.Controls.Add(btnRefreshGPU);
-        UpdateGpuStatus();
-    }
-
-    private void UpdateGpuStatus() {
-        try { var wc = new WebClient(); wc.Headers.Add("User-Agent", "Forge/1.0"); string stats = wc.DownloadString(comfyUrl + "/system_stats"); lblGpuStatus.Text = "ComfyUI: Connected\n" + FormatStats(stats); }
-        catch { lblGpuStatus.Text = "ComfyUI: Offline\nGPU: Unknown\nVRAM: Unknown"; }
+        var lbl = new Label { Left = 8, Top = 8, Width = 580, Height = 100, Font = new Font("Consolas", 9), ForeColor = Color.FromArgb(180, 220, 180) };
+        tabGpu.Controls.Add(lbl);
+        var btn = MakeButton("Refresh", 8, 100, 130, 28, Color.FromArgb(50, 50, 60));
+        btn.Click += (o, e) => { try { var info = GpuStatusProvider.Refresh(); lbl.Text = info.ToString(); } catch { lbl.Text = "GPU: Unknown"; } };
+        tabGpu.Controls.Add(btn);
+        try { var info = GpuStatusProvider.Refresh(); lbl.Text = info.ToString(); } catch { lbl.Text = "GPU: Unknown"; }
     }
 
     private string FormatStats(string json) {

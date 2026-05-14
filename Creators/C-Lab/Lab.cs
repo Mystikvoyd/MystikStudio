@@ -17,13 +17,15 @@ public class LabForm : Form {
     private ComboBox comboCheckpointStyle, comboCheckpoint;
     private NumericUpDown numLora, numSeed, numSteps, numCfg, numWidth, numHeight, numCNStrength, numCNStart, numCNEnd;
     private CheckBox chkLora, chkRandomSeed, chkCN, chkIncludePrompts, chkEnableOutfit, chkRealism, chkCapture;
-    private Button btnGenerate, btnRefresh, btnOutput, btnSession, btnOpenReport, btnApplyProfile, btnApplyPreset, btnSavePreset, btnRefreshLists, btnApplyOutfit;
+    private Button btnGenerate, btnRefresh, btnOutput, btnSession, btnOpenReport;
     private PictureBox previewBox;
     private DataGridView gridOutputs;
     private Panel previewPanel;
     private bool sessionActive = false;
     private List<Dictionary<string, object>> sessionEntries = new List<Dictionary<string, object>>();
     private string configPath, prefsPath, runLogPath, reportsFolder;
+    private Label lblGpuStatus;
+    private Timer gpuTimer;
 
     public LabForm() {
         string labRoot = Path.GetDirectoryName(Application.ExecutablePath);
@@ -110,8 +112,28 @@ public class LabForm : Form {
         this.Load += (o, e) => { try { split.Panel1MinSize = 300; split.Panel2MinSize = 200; split.SplitterDistance = 520; } catch { } };
         bottomPanel.Controls.Add(gridOutputs);
 
+        // GPU status bar
+        lblGpuStatus = new Label { Dock = DockStyle.Bottom, Height = 22, BackColor = Color.FromArgb(28, 28, 38), ForeColor = Color.FromArgb(150, 200, 150), Font = new Font("Segoe UI", 7.5f), Padding = new Padding(8, 3, 0, 0) };
+        this.Controls.Add(lblGpuStatus);
+        lblGpuStatus.BringToFront();
+        string logsDir = Path.Combine(labRoot, "logs"); Directory.CreateDirectory(logsDir);
+        GpuStatusProvider.SetLogDir(logsDir);
+        UpdateGpuBar();
+        gpuTimer = new Timer { Interval = 5000 }; gpuTimer.Tick += (o, e) => UpdateGpuBar(); gpuTimer.Start();
+
         LoadPrefs();
         LoadLoraItems();
+    }
+
+    private void UpdateGpuBar() {
+        try {
+            var info = GpuStatusProvider.Refresh();
+            if (lblGpuStatus != null && !lblGpuStatus.IsDisposed) {
+                string comfyStr = info.ComfyUiOnline ? "Online" : "Offline";
+                lblGpuStatus.Text = "GPU: " + info.Name + "  |  VRAM: " + (info.DedicatedUsed > 0 ? (info.DedicatedUsed / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " / " : "? / ") + (info.DedicatedTotal > 0 ? (info.DedicatedTotal / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " GB" : "?") + "  |  ComfyUI: " + comfyStr;
+                lblGpuStatus.ForeColor = info.ComfyUiOnline ? Color.FromArgb(150, 200, 150) : Color.FromArgb(200, 150, 150);
+            }
+        } catch { }
     }
 
     private Button CreateButton(string text, int x, int y, int w, int h, Color bg, Color fg, Font font) {
