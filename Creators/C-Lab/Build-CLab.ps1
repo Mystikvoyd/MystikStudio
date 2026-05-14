@@ -10,8 +10,7 @@ param(
 
 $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $baseDir = Split-Path -Parent $PSScriptRoot
-$shared = Join-Path $baseDir "shared\GpuStatusProvider.cs"
-$refs = @("System.dll", "System.Core.dll", "System.Drawing.dll", "System.Windows.Forms.dll", "System.Net.dll", "System.Web.Extensions.dll", "System.Data.dll", "System.Xml.dll", "System.Management.dll")
+$refs = @("System.dll", "System.Core.dll", "System.Drawing.dll", "System.Windows.Forms.dll", "System.Net.dll", "System.Web.Extensions.dll", "System.Data.dll", "System.Xml.dll")
 $refArgs = $refs | ForEach-Object { "/reference:$_" }
 
 $versionFile = Join-Path $PSScriptRoot "version.txt"
@@ -39,7 +38,7 @@ $generatedSource = Join-Path $PSScriptRoot "_generated_Lab.cs"
 $labOut = Join-Path $PSScriptRoot "Lab.exe"
 if (Test-Path $labSource) {
     New-PatchedLabSource -SourcePath $labSource -OutPath $generatedSource
-    & $csc /target:winexe /win32icon:"H:\MystikStudio\Icons\Lab.ico" /out:$labOut @refArgs (Join-Path $PSScriptRoot "_version.cs"), $generatedSource, $shared 2>&1
+    & $csc /target:winexe /win32icon:"H:\MystikStudio\Icons\Lab.ico" /out:$labOut @refArgs (Join-Path $PSScriptRoot "_version.cs"), $generatedSource 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Lab.exe built: $labOut" -ForegroundColor Green
     } else { Write-Host "Lab build failed" -ForegroundColor Red }
