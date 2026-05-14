@@ -94,22 +94,17 @@ public class LabForm : Form {
         BuildControlNetTab();
         BuildExtrasTab();
 
-        var split = new SplitContainer { Dock = DockStyle.Fill, SplitterWidth = 4 };
-        right.Controls.Add(split);
-
+        // Right side: preview on top, output history on bottom
         previewPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(18, 18, 24) };
-        split.Panel2.Controls.Add(previewPanel);
-
+        right.Controls.Add(previewPanel);
         previewBox = new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom };
         previewPanel.Controls.Add(previewBox);
 
         var bottomPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(22, 22, 30) };
-        split.Panel2.Controls.Add(bottomPanel);
-
+        right.Controls.Add(bottomPanel);
         gridOutputs = new DataGridView { Dock = DockStyle.Fill, AllowUserToAddRows = false, ReadOnly = true, RowHeadersVisible = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, BackgroundColor = Color.FromArgb(16, 16, 22), ForeColor = Color.FromArgb(200, 200, 210), BorderStyle = BorderStyle.None };
         gridOutputs.Columns.Add("Time", "Time"); gridOutputs.Columns.Add("File", "File"); gridOutputs.Columns.Add("LoRA", "LoRA"); gridOutputs.Columns.Add("Seed", "Seed"); gridOutputs.Columns.Add("Path", "Path"); gridOutputs.Columns[4].Visible = false;
         gridOutputs.CellClick += (o, e) => { if (e.RowIndex >= 0 && gridOutputs.Rows[e.RowIndex].Cells["Path"].Value != null) SetPreview(gridOutputs.Rows[e.RowIndex].Cells["Path"].Value.ToString()); };
-        this.Load += (o, e) => { try { split.Panel1MinSize = 300; split.Panel2MinSize = 200; split.SplitterDistance = 520; } catch { } };
         bottomPanel.Controls.Add(gridOutputs);
 
         // GPU status bar
@@ -118,6 +113,7 @@ public class LabForm : Form {
         lblGpuStatus.BringToFront();
         string logsDir = Path.Combine(labRoot, "logs"); Directory.CreateDirectory(logsDir);
         GpuStatusProvider.SetLogDir(logsDir);
+        GpuStatusProvider.SetComfyUrl("http://127.0.0.1:8000");
         UpdateGpuBar();
         gpuTimer = new Timer { Interval = 5000 }; gpuTimer.Tick += (o, e) => UpdateGpuBar(); gpuTimer.Start();
 

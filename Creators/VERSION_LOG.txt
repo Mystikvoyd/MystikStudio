@@ -1439,3 +1439,27 @@ Notes:
   Recovery tag: fusion-lkg-direct-launch-before-gpu-vram
   Dashboard targets unchanged.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 64
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: C-Lab C-Forge pre-lock UI correction
+Change Type: C-Lab and C-Forge pre-lock UI correction
+Summary: Fixed direct C# Lab and Forge layout (preview/output history split was broken), GPU status VRAM display (added nvidia-smi support, fixed Unknown display), and ComfyUI status (default URL changed 8188->8000 to match config). Rebuilt both exes with Smart App Control temporarily disabled for testing.
+Files Changed:
+  Creators\C-Lab\Lab.cs (updated - removed broken SplitContainer; preview + output history now use TableLayoutPanel rows directly)
+  Creators\C-Forge\Forge.cs (updated - same layout fix; added SetComfyUrl(8000) call)
+  Creators\shared\GpuStatusProvider.cs (rewritten - fixed class structure; added nvidia-smi support with 3s timeout;
+    added SetComfyUrl method; default URL 8000; VRAM shows Unknown instead of 0.0 for unused values;
+    fixed static field declarations that were lost in prior edit)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Layout fix: Both Lab and Forge had previewPanel and bottomPanel both added to split.Panel2, causing the preview
+    to be invisible. Removed the extra SplitContainer — now uses the TableLayoutPanel directly (preview top 68%,
+    output history bottom 32%). Left panel stays at 580px (Lab) / 640px (Forge).
+  GPU/VRAM: Added nvidia-smi --query-gpu with 3-second timeout. Falls back to WMI for name/total VRAM.
+    Performance counters for used VRAM with double sample + delay. Shows "Unknown" instead of "0.0 GB" when
+    VRAM used cannot be read. Shows "?" for used when total is known but used is not.
+  ComfyUI: Default URL changed from 8188 to 8000 (matches Forge.config.json).
+  Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
+  Dashboard baseline remains V01.02.01xxB.

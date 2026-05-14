@@ -95,18 +95,15 @@ public class ForgeForm : Form {
         tabs.TabPages.Add(tabMain); tabs.TabPages.Add(tabModel); tabs.TabPages.Add(tabCN); tabs.TabPages.Add(tabSession); tabs.TabPages.Add(tabGpu);
 
         BuildCompTab(); BuildModelsTab(); BuildCNTab(); BuildSessionTab(); BuildGpuTab();
-        var split = new SplitContainer { Dock = DockStyle.Fill, SplitterWidth = 4 };
-        right.Controls.Add(split);
-        this.Load += (o, e) => { try { split.SplitterDistance = 580; } catch { } };
         previewPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(18, 18, 24) };
-        split.Panel2.Controls.Add(previewPanel);
+        right.Controls.Add(previewPanel);
         previewBox = new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom };
         previewPanel.Controls.Add(previewBox);
         gridOutputs = new DataGridView { Dock = DockStyle.Fill, AllowUserToAddRows = false, ReadOnly = true, RowHeadersVisible = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, BackgroundColor = Color.FromArgb(16, 16, 22), ForeColor = Color.FromArgb(200, 200, 210), BorderStyle = BorderStyle.None };
         gridOutputs.Columns.Add("Time", "Time"); gridOutputs.Columns.Add("File", "File"); gridOutputs.Columns.Add("LoRA1", "LoRA1"); gridOutputs.Columns.Add("LoRA2", "LoRA2"); gridOutputs.Columns.Add("Seed", "Seed"); gridOutputs.Columns.Add("Path", "Path");
         gridOutputs.Columns[5].Visible = false;
         gridOutputs.CellClick += (o, ev) => { if (ev.RowIndex >= 0 && gridOutputs.Rows[ev.RowIndex].Cells["Path"].Value != null) SetPreview(gridOutputs.Rows[ev.RowIndex].Cells["Path"].Value.ToString()); };
-        split.Panel2.Controls.Add(gridOutputs);
+        right.Controls.Add(gridOutputs);
 
         // GPU status bar
         lblGpuStatus = new Label { Dock = DockStyle.Bottom, Height = 22, BackColor = Color.FromArgb(28, 28, 38), ForeColor = Color.FromArgb(150, 200, 150), Font = new Font("Segoe UI", 7.5f), Padding = new Padding(8, 3, 0, 0) };
@@ -114,6 +111,7 @@ public class ForgeForm : Form {
         lblGpuStatus.BringToFront();
         string logsDir = Path.Combine(forgeRoot, "logs"); Directory.CreateDirectory(logsDir);
         GpuStatusProvider.SetLogDir(logsDir);
+        GpuStatusProvider.SetComfyUrl("http://127.0.0.1:8000");
         UpdateGpuBar();
         gpuTimer = new Timer { Interval = 5000 }; gpuTimer.Tick += (o, e) => UpdateGpuBar(); gpuTimer.Start();
 
