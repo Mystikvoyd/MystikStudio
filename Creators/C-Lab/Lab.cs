@@ -346,13 +346,13 @@ public class LabForm : Form {
             if (wf == null) { Log("ERROR: Could not parse workflow JSON"); btnGenerate.Enabled = true; return; }
             SetWfNode(wf, "4", "text", txtPrompt.Text);
             SetWfNode(wf, "5", "text", txtNegative.Text);
-            SetWfNode(wf, "6", "seed", seed);
-            SetWfNode(wf, "6", "steps", (int)numSteps.Value);
-            SetWfNode(wf, "6", "cfg", (double)numCfg.Value);
-            SetWfNode(wf, "6", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
-            SetWfNode(wf, "6", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
             SetWfNode(wf, "6", "width", (int)numWidth.Value);
             SetWfNode(wf, "6", "height", (int)numHeight.Value);
+            SetWfNode(wf, "7", "seed", seed);
+            SetWfNode(wf, "7", "steps", (int)numSteps.Value);
+            SetWfNode(wf, "7", "cfg", (double)numCfg.Value);
+            SetWfNode(wf, "7", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
+            SetWfNode(wf, "7", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
             var payload = new Dictionary<string, object>(); payload["prompt"] = wf;
             string payloadJson = json.Serialize(payload);
             Log("Sending to ComfyUI...");

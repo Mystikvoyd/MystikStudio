@@ -1490,3 +1490,20 @@ Notes:
   ComfyUI URL defaults to port 8000 (matching config), read from config if available.
   Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 66
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: C-Lab C-Forge direct generation fix
+Change Type: C-Lab and C-Forge direct generation fix
+Summary: Fixed direct C# Lab and Forge generation pipeline - KSampler parameters were being set on Node 6 (EmptyLatentImage) instead of Node 7 (KSampler). Fixed both apps and rebuilt.
+Files Changed:
+  Creators\C-Forge\Forge.cs (updated - KSampler params moved from node 6 to node 7; node 6 now only sets width/height)
+  Creators\C-Lab\Lab.cs (updated - same node mapping fix)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: Workflow JSON has node 6 = EmptyLatentImage (width, height, batch_size) and node 7 = KSampler
+    (seed, steps, cfg, sampler_name, scheduler). C# code was incorrectly setting KSampler params on node 6.
+    The PowerShell invoke scripts use the correct mapping: node 6 for width/height, node 7 for generation params.
+  Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
+  Dashboard baseline remains V01.02.01xxB.

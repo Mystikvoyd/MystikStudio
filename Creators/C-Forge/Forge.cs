@@ -156,13 +156,13 @@ public class ForgeForm : Form {
             // Modify workflow nodes (matching PowerShell invoke script pattern)
             SetWfNode(wf, "4", "text", txtPrompt.Text);
             SetWfNode(wf, "5", "text", txtNegative.Text);
-            SetWfNode(wf, "6", "seed", seed);
-            SetWfNode(wf, "6", "steps", (int)numSteps.Value);
-            SetWfNode(wf, "6", "cfg", (double)numCfg.Value);
-            SetWfNode(wf, "6", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
-            SetWfNode(wf, "6", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
             SetWfNode(wf, "6", "width", (int)numWidth.Value);
             SetWfNode(wf, "6", "height", (int)numHeight.Value);
+            SetWfNode(wf, "7", "seed", seed);
+            SetWfNode(wf, "7", "steps", (int)numSteps.Value);
+            SetWfNode(wf, "7", "cfg", (double)numCfg.Value);
+            SetWfNode(wf, "7", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
+            SetWfNode(wf, "7", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
             // Send to ComfyUI
             var payload = new Dictionary<string, object>(); payload["prompt"] = wf;
             string payloadJson = json.Serialize(payload);
