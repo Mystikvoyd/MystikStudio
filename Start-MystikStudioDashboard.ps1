@@ -358,7 +358,7 @@ foreach ($ld in $launcherDefs) {
             catch {
                 $errMsg = $_.Exception.Message
                 if ($errMsg -match "blocked|policy|Application Control|Access Denied|740") {
-                    [System.Windows.Forms.MessageBox]::Show("$($ld.Text) is blocked by Windows Application Control.`n`nRun trust check:`n  .\tools\signing\Test-CFusionTrust.ps1`n`nInstall policy as Admin:`n  .\tools\signing\Install-CFusionLocalTrustPolicy.ps1 -Install`n`nIf managed, get approval first.", "Launch blocked", "OK", "Error")
+                    [System.Windows.Forms.MessageBox]::Show("$($ld.Text) is blocked by Windows Application Control.`n`nRun trust check:`n  .\tools\signing\Test-CFusionTrust.ps1`n`nInstall local trust policy as Admin:`n  .\tools\signing\Install-CFusionLocalTrustPolicy.ps1 -Install`n`nIf managed, get approval first.", "Launch blocked", "OK", "Error")
                 } else {
                     [System.Windows.Forms.MessageBox]::Show("Failed to launch $($ld.Text):`n$errMsg", "Launch failed", "OK", "Error")
                 }

@@ -1321,3 +1321,21 @@ Notes:
     Forge: 27784822EE7F6AC3E7031199F886C9EAF21840A657AEE1C91CFF5F3D60E85AA4
   Fusion trust is unaffected (separate WDAC policy, not modified).
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 59
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Lab Forge trust, Dashboard message
+Change Type: Lab Forge trust refresh
+Summary: Updated Dashboard blocked message wording to be less Fusion-specific and provided admin commands for WDAC policy install.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - blocked message now says "Install local trust policy as Admin" instead of "Install policy as Admin")
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Dashboard blocked message updated for clarity — applies to any App Control blocked app, not just Fusion.
+  Admin commands for WDAC install remain the same as Entry 58:
+    Copy-Item "$env:TEMP\MystikStudioCLab_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
+    Copy-Item "$env:TEMP\MystikStudioCForge_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
+    Then reboot.
+  Lab and Forge still blocked until admin runs the above commands.
+  Dashboard baseline remains V01.02.01xxB.
