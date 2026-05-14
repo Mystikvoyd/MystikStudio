@@ -1507,3 +1507,19 @@ Notes:
     The PowerShell invoke scripts use the correct mapping: node 6 for width/height, node 7 for generation params.
   Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 67
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: C-Lab C-Forge layout consolidation
+Change Type: layout polish
+Summary: Consolidated Forge tabs from 5 to 2 (Composition + Session), removed GPU Status tab (bottom bar covers it), moved Models and ControlNet into Composition tab as group boxes (Fusion style). Consolidated Lab tabs from 4 to 2 (Generation + Extras), removed separate Models and ControlNet tabs. Kept 3 LoRAs in Forge, 1 LoRA in Lab. Both apps keep bottom GPU bar.
+Files Changed:
+  Creators\C-Forge\Forge.cs (updated - removed tabGpu, tabModel, tabCN; consolidated into Composition tab with Models and ControlNet group boxes; removed old BuildModelsTab, BuildCNTab, BuildGpuTab methods; removed orphaned Outfit section and leftover references)
+  Creators\C-Lab\Lab.cs (updated - removed tabModel, tabCN; consolidated Generation tab with group boxes; removed BuildModelsTab, BuildControlNetTab methods; kept single LoRA, Extras tab for log)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Forge now has 2 tabs: Composition (prompt, 3 LoRAs, params, sampler, workflow, Models group box, ControlNet group box) and Session (log). GPU status shown via bottom bar only.
+  Lab now has 2 tabs: Generation (prompt, 1 LoRA, params, sampler) and Extras (log). Models and ControlNet accessible via bottom GPU bar only.
+  Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
+  Dashboard baseline remains V01.02.01xxB.

@@ -84,17 +84,11 @@ public class LabForm : Form {
         actionBar.Controls.Add(chkIncludePrompts);
 
         tabMain = new TabPage("Generation") { Padding = new Padding(6), AutoScroll = true };
-        tabModel = new TabPage("Models") { Padding = new Padding(6) };
-        tabCN = new TabPage("ControlNet") { Padding = new Padding(6) };
         tabExtras = new TabPage("Extras") { Padding = new Padding(6) };
         tabs.TabPages.Add(tabMain);
-        tabs.TabPages.Add(tabModel);
-        tabs.TabPages.Add(tabCN);
         tabs.TabPages.Add(tabExtras);
 
         BuildGenerationTab();
-        BuildModelsTab();
-        BuildControlNetTab();
         BuildExtrasTab();
 
         // Right side: preview on top, output history on bottom
@@ -225,58 +219,6 @@ public class LabForm : Form {
         outfitBox.Controls.Add(comboOutfitPlacement); gy += 22;
         txtOutfit = new TextBox { Left = 8, Top = gy, Width = 382, Height = 22, Font = new Font("Segoe UI", 8), ReadOnly = true };
         outfitBox.Controls.Add(txtOutfit);
-    }
-
-    private void BuildModelsTab() {
-        int y = 4;
-        tabModel.Controls.Add(MakeLabel("Checkpoint Style", 8, y));
-        comboCheckpointStyle = new ComboBox { Left = 8, Top = y + 18, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
-        comboCheckpointStyle.Items.Add("All"); comboCheckpointStyle.SelectedIndex = 0;
-        tabModel.Controls.Add(comboCheckpointStyle);
-        y += 46;
-        tabModel.Controls.Add(MakeLabel("Checkpoint", 8, y));
-        comboCheckpoint = new ComboBox { Left = 8, Top = y + 18, Width = 380, DropDownStyle = ComboBoxStyle.DropDownList };
-        tabModel.Controls.Add(comboCheckpoint);
-        y += 46;
-        tabModel.Controls.Add(MakeLabel("Diffuser / Refiner", 8, y));
-        comboDiffuser = new ComboBox { Left = 8, Top = y + 18, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
-        tabModel.Controls.Add(comboDiffuser);
-        y += 46;
-        tabModel.Controls.Add(MakeLabel("Workflow Preset", 8, y));
-        comboWorkflow = new ComboBox { Left = 8, Top = y + 18, Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
-        comboWorkflow.Items.Add("Standard LoRA Test"); comboWorkflow.SelectedIndex = 0;
-        tabModel.Controls.Add(comboWorkflow);
-        y += 46;
-        chkRealism = new CheckBox { Text = "Realism Boost", Left = 8, Top = y, Width = 120, Height = 22 };
-        tabModel.Controls.Add(chkRealism);
-    }
-
-    private void BuildControlNetTab() {
-        int y = 4;
-        chkCN = new CheckBox { Text = "Enable ControlNet", Left = 8, Top = y, Width = 140, Height = 22 };
-        tabCN.Controls.Add(chkCN); y += 28;
-        tabCN.Controls.Add(MakeLabel("Model", 8, y));
-        comboCNModel = new ComboBox { Left = 8, Top = y + 18, Width = 250, DropDownStyle = ComboBoxStyle.DropDownList };
-        comboCNModel.Items.Add("None"); comboCNModel.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNModel); y += 46;
-        tabCN.Controls.Add(MakeLabel("Input Image", 8, y));
-        comboCNImage = new ComboBox { Left = 8, Top = y + 18, Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
-        comboCNImage.Items.Add("None"); comboCNImage.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNImage); y += 46;
-        tabCN.Controls.Add(MakeLabel("Preprocessor / Filter", 8, y));
-        comboCNFilter = new ComboBox { Left = 8, Top = y + 18, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
-        comboCNFilter.Items.Add("None"); comboCNFilter.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNFilter); y += 46;
-        tabCN.Controls.Add(MakeLabel("Strength", 8, y));
-        numCNStrength = new NumericUpDown { Left = 8, Top = y + 18, Width = 80, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 1 };
-        tabCN.Controls.Add(numCNStrength); y += 46;
-        tabCN.Controls.Add(MakeLabel("Start / End", 8, y));
-        numCNStart = new NumericUpDown { Left = 8, Top = y + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m, Value = 0 };
-        tabCN.Controls.Add(numCNStart);
-        var lblTo = new Label { Text = "to", Left = 70, Top = y + 20, Width = 20 };
-        tabCN.Controls.Add(lblTo);
-        numCNEnd = new NumericUpDown { Left = 90, Top = y + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m, Value = 1 };
-        tabCN.Controls.Add(numCNEnd);
     }
 
     private void BuildExtrasTab() {

@@ -11,15 +11,15 @@ using System.Windows.Forms;
 
 public class ForgeForm : Form {
     private TabControl tabs;
-    private TabPage tabMain, tabModel, tabCN, tabSession, tabGpu;
+    private TabPage tabMain, tabModel, tabCN, tabSession;
     private TextBox txtPrompt, txtNegative, txtOutfit, txtLog;
     private ComboBox comboLora1, comboLora2, comboLora3, comboSampler, comboScheduler;
-    private ComboBox comboCheckpoint, comboDiffuser, comboCNModel, comboCNImage, comboCNFilter, comboWorkflow;
+    private ComboBox comboCheckpoint, comboCNModel, comboCNImage, comboCNFilter, comboWorkflow;
     private ComboBox comboOutCat, comboOutItem, comboOutColor, comboOutMat, comboOutPreset, comboOutfitPlacement;
     private NumericUpDown numLora1Str, numLora2Str, numLora3Str, numSeed, numSteps, numCfg, numWidth, numHeight;
     private NumericUpDown numCNStrength, numCNStart, numCNEnd;
     private CheckBox chkLora1, chkLora2, chkLora3, chkRandomSeed, chkCN, chkIncludePrompts, chkEnableOutfit;
-    private Button btnGenerate, btnRefresh, btnOutput, btnSession, btnOpenReport, btnRefreshLists, btnRefreshGPU;
+    private Button btnGenerate, btnRefresh, btnOutput, btnSession, btnOpenReport, btnRefreshLists;
     private PictureBox previewBox;
     private DataGridView gridOutputs;
     private Panel previewPanel;
@@ -88,13 +88,10 @@ public class ForgeForm : Form {
         actionBar.Controls.Add(chkIncludePrompts);
 
         tabMain = new TabPage("Composition") { Padding = new Padding(6), AutoScroll = true };
-        tabModel = new TabPage("Models") { Padding = new Padding(6) };
-        tabCN = new TabPage("ControlNet") { Padding = new Padding(6) };
         tabSession = new TabPage("Session") { Padding = new Padding(6) };
-        tabGpu = new TabPage("GPU Status") { Padding = new Padding(6) };
-        tabs.TabPages.Add(tabMain); tabs.TabPages.Add(tabModel); tabs.TabPages.Add(tabCN); tabs.TabPages.Add(tabSession); tabs.TabPages.Add(tabGpu);
+        tabs.TabPages.Add(tabMain); tabs.TabPages.Add(tabSession);
 
-        BuildCompTab(); BuildModelsTab(); BuildCNTab(); BuildSessionTab(); BuildGpuTab();
+        BuildCompTab(); BuildSessionTab();
         previewPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(18, 18, 24) };
         right.Controls.Add(previewPanel);
         previewBox = new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom };
@@ -276,69 +273,39 @@ public class ForgeForm : Form {
         tabMain.Controls.Add(Lbl("Workflow Preset", 8, y));
         comboWorkflow = MakeCombo(8, y + 18, 300); comboWorkflow.Items.Add("Standard"); comboWorkflow.SelectedIndex = 0;
         tabMain.Controls.Add(comboWorkflow); y += 46;
-        var outfitBox = new GroupBox { Text = "Outfit", Left = 6, Top = y, Width = 460, Height = 130 };
-        tabMain.Controls.Add(outfitBox); int oy = 18;
-        outfitBox.Controls.Add(Lbl("Category", 8, oy, 60, 16)); outfitBox.Controls.Add(Lbl("Item", 200, oy, 60, 16)); oy += 16;
-        comboOutCat = MakeCombo(8, oy, 180); comboOutCat.Items.Add("-- All --"); comboOutCat.SelectedIndex = 0;
-        outfitBox.Controls.Add(comboOutCat);
-        comboOutItem = MakeCombo(200, oy, 180); comboOutItem.Enabled = false;
-        outfitBox.Controls.Add(comboOutItem); oy += 24;
-        outfitBox.Controls.Add(Lbl("Color", 8, oy, 60, 16)); outfitBox.Controls.Add(Lbl("Material", 200, oy, 60, 16)); oy += 16;
-        comboOutColor = MakeCombo(8, oy, 180); comboOutColor.Items.Add("-- None --"); comboOutColor.SelectedIndex = 0;
-        outfitBox.Controls.Add(comboOutColor);
-        comboOutMat = MakeCombo(200, oy, 180); comboOutMat.Items.Add("-- None --"); comboOutMat.SelectedIndex = 0;
-        outfitBox.Controls.Add(comboOutMat); oy += 24;
-        chkEnableOutfit = new CheckBox { Text = "Enable", Left = 8, Top = oy, Width = 60, Height = 18 };
-        outfitBox.Controls.Add(chkEnableOutfit);
-        comboOutfitPlacement = MakeCombo(70, oy - 1, 120); comboOutfitPlacement.Items.Add("Append"); comboOutfitPlacement.Items.Add("Prepend"); comboOutfitPlacement.SelectedIndex = 0;
-        outfitBox.Controls.Add(comboOutfitPlacement);
-        btnRefreshLists = MakeButton("Refresh Lists", 200, oy - 2, 90, 22, Color.FromArgb(50, 50, 60));
-        outfitBox.Controls.Add(btnRefreshLists);
-    }
-
-    private void BuildModelsTab() {
-        int y = 4;
-        tabModel.Controls.Add(Lbl("Checkpoint", 8, y));
-        comboCheckpoint = MakeCombo(8, y + 18, 380); comboCheckpoint.Items.Add("None"); comboCheckpoint.SelectedIndex = 0;
-        tabModel.Controls.Add(comboCheckpoint); y += 46;
-        tabModel.Controls.Add(Lbl("Diffuser / Refiner", 8, y));
-        comboDiffuser = MakeCombo(8, y + 18, 200); comboDiffuser.Items.Add("(checkpoint default)"); comboDiffuser.SelectedIndex = 0;
-        tabModel.Controls.Add(comboDiffuser);
-    }
-
-    private void BuildCNTab() {
-        int y = 4;
-        chkCN = new CheckBox { Text = "Enable ControlNet", Left = 8, Top = y, Width = 140, Height = 22 };
-        tabCN.Controls.Add(chkCN); y += 28;
-        tabCN.Controls.Add(Lbl("Model", 8, y));
-        comboCNModel = MakeCombo(8, y + 18, 250); comboCNModel.Items.Add("None"); comboCNModel.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNModel); y += 46;
-        tabCN.Controls.Add(Lbl("Input Image", 8, y));
-        comboCNImage = MakeCombo(8, y + 18, 300); comboCNImage.Items.Add("None"); comboCNImage.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNImage); y += 46;
-        tabCN.Controls.Add(Lbl("Preprocessor", 8, y));
-        comboCNFilter = MakeCombo(8, y + 18, 200); comboCNFilter.Items.AddRange(new[] { "None", "Canny", "Depth", "OpenPose" }); comboCNFilter.SelectedIndex = 0;
-        tabCN.Controls.Add(comboCNFilter); y += 46;
-        tabCN.Controls.Add(Lbl("Strength", 8, y));
-        numCNStrength = new NumericUpDown { Left = 8, Top = y + 18, Width = 80, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 1 };
-        tabCN.Controls.Add(numCNStrength); y += 46;
-        tabCN.Controls.Add(Lbl("Start / End", 8, y));
-        numCNStart = new NumericUpDown { Left = 8, Top = y + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m };
-        tabCN.Controls.Add(new Label { Text = "to", Left = 70, Top = y + 20, Width = 20 });
-        numCNEnd = new NumericUpDown { Left = 90, Top = y + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m, Value = 1 };
-        tabCN.Controls.Add(numCNEnd);
+        // Models group box (Fusion style)
+        var modelBox = new GroupBox { Text = "Models", Left = 6, Top = y, Width = 460, Height = 80 };
+        tabMain.Controls.Add(modelBox); int my = 20;
+        modelBox.Controls.Add(Lbl("Checkpoint", 8, my));
+        comboCheckpoint = MakeCombo(8, my + 18, 300); comboCheckpoint.Items.Add("None"); comboCheckpoint.SelectedIndex = 0;
+        modelBox.Controls.Add(comboCheckpoint); y += 56;
+        // ControlNet group box (Fusion style)
+        y += 4;
+        var cnBox = new GroupBox { Text = "ControlNet", Left = 6, Top = y, Width = 460, Height = 170 };
+        tabMain.Controls.Add(cnBox); int cy = 20;
+        chkCN = new CheckBox { Text = "Enable", Left = 8, Top = cy, Width = 100, Height = 22 };
+        cnBox.Controls.Add(chkCN); cy += 26;
+        cnBox.Controls.Add(Lbl("Model", 8, cy));
+        comboCNModel = MakeCombo(8, cy + 18, 250); comboCNModel.Items.Add("None"); comboCNModel.SelectedIndex = 0;
+        cnBox.Controls.Add(comboCNModel); cy += 44;
+        cnBox.Controls.Add(Lbl("Input Image", 8, cy));
+        comboCNImage = MakeCombo(8, cy + 18, 300); comboCNImage.Items.Add("None"); comboCNImage.SelectedIndex = 0;
+        cnBox.Controls.Add(comboCNImage); cy += 44;
+        cnBox.Controls.Add(Lbl("Preprocessor", 8, cy));
+        comboCNFilter = MakeCombo(8, cy + 18, 200); comboCNFilter.Items.AddRange(new[] { "None", "Canny", "Depth", "OpenPose" }); comboCNFilter.SelectedIndex = 0;
+        cnBox.Controls.Add(comboCNFilter); cy += 44;
+        cnBox.Controls.Add(Lbl("Strength", 8, cy));
+        numCNStrength = new NumericUpDown { Left = 8, Top = cy + 18, Width = 80, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 1 };
+        cnBox.Controls.Add(numCNStrength);
+        cnBox.Controls.Add(Lbl("Start / End", 100, cy));
+        numCNStart = new NumericUpDown { Left = 100, Top = cy + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m };
+        cnBox.Controls.Add(numCNStart);
+        cnBox.Controls.Add(new Label { Text = "to", Left = 164, Top = cy + 20, Width = 20 });
+        numCNEnd = new NumericUpDown { Left = 184, Top = cy + 18, Width = 60, DecimalPlaces = 2, Minimum = 0, Maximum = 1, Increment = 0.05m, Value = 1 };
+        cnBox.Controls.Add(numCNEnd);
     }
 
     private void BuildSessionTab() { tabSession.Controls.Add(txtLog); }
-
-    private void BuildGpuTab() {
-        var lbl = new Label { Left = 8, Top = 8, Width = 580, Height = 100, Font = new Font("Consolas", 9), ForeColor = Color.FromArgb(180, 220, 180) };
-        tabGpu.Controls.Add(lbl);
-        var btn = MakeButton("Refresh", 8, 100, 130, 28, Color.FromArgb(50, 50, 60));
-        btn.Click += (o, e) => { try { var info = GpuStatusProvider.Refresh(); lbl.Text = info.ToString(); } catch { lbl.Text = "GPU: Unknown"; } };
-        tabGpu.Controls.Add(btn);
-        try { var info = GpuStatusProvider.Refresh(); lbl.Text = info.ToString(); } catch { lbl.Text = "GPU: Unknown"; }
-    }
 
     private string FormatStats(string json) {
         try { var jss = new JavaScriptSerializer(); var d = jss.Deserialize<Dictionary<string, object>>(json); if (d == null) return "GPU: Unknown";
