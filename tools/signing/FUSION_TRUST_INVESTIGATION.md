@@ -78,7 +78,19 @@ The fact that Fusion launches suggests either:
 ## Conclusion
 **Fusion launches because it was compiled before the critical policy state, and the existing `MystikStudioCreators.p7b` (generated from scanning C-Fusion) covers its hash. Lab and Forge were rebuilt after and were never covered by any policy.**
 
+### Fusion Direct Launch — Grandfathered Exception
+Fusion's current direct exe launch is a **grandfathered exception** due to:
+- Its original 05/12 build hash being covered by the `MystikStudioCreators.p7b` policy that exists in `C:\Windows\System32\CodeIntegrity\`
+- Timing: it was established before the system's WDAC/SAC policies fully locked down for new self-signed exes
+
+**Fragility warning:**
+- **Do not rebuild Fusion** unless a new trust path is proven first. A rebuild will change Fusion's hash and the `MystikStudioCreators.p7b` policy will no longer cover it, causing Fusion to become blocked like Lab and Forge.
+- **Do not delete `MystikStudioCreators.p7b`** from `C:\Windows\System32\CodeIntegrity\`. Removing it may cause Fusion to stop launching.
+
 ## Recommended Next Action
-**Do not retry C# activation.** The WDAC supplemental policy path on this system only worked by historical accident for Fusion. Lab and Forge cannot be activated without either:
-1. A Microsoft-trusted code signing certificate (EV Code Signing or standard CA)
-2. Or a change in the system's WDAC/Smart App Control policy (not recommended)
+**Do not retry C# activation for Lab or Forge.** The WDAC supplemental policy path on this system only worked by historical accident for Fusion. Lab and Forge cannot be activated without either:
+1. A Microsoft-trusted code signing certificate (EV Code Signing or standard CA), or
+2. A change in the system's WDAC/Smart App Control policy (not recommended), or
+3. Using a system that does not have WDAC Enterprise signing enabled.
+
+C# exes are staged at `Creators\C-Lab\Lab.exe` and `Creators\C-Forge\Forge.exe` for future reference, but they are not launchable on this system. Dashboard targets must remain on PowerShell fallback for Lab and Forge.

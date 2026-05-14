@@ -1390,3 +1390,26 @@ Notes:
     If any exe is still blocked, Dashboard targets stay on PowerShell fallback.
   Dashboard targets unchanged in this pass — still PowerShell for Lab and Forge.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 62
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Documentation
+Change Type: C# migration plan update, trust documentation
+Summary: Updated project docs to treat Fusion direct launch as a grandfathered hash-policy exception, and confirmed Lab/Forge remain on permanent PowerShell fallback because WDAC supplemental policy installation failed on this system.
+Files Changed:
+  Creators\CSharp-Migration-Plan.md (updated - documented Fusion as grandfathered exception; added
+    Dashboard targets table; added warning about rebuilding Fusion or deleting .p7b; declared
+    WDAC supplemental policy path as not working on this system)
+  tools\signing\FUSION_TRUST_INVESTIGATION.md (updated - added grandfathered exception note,
+    fragility warning about rebuild/p7b deletion)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Fusion is treated as a grandfathered exception. Its direct exe launch depends on:
+    1. Original 05/12 build hash in MystikStudioCreators.p7b
+    2. The .p7b file remaining in C:\Windows\System32\CodeIntegrity\
+  Do not rebuild Fusion (changes hash, breaks trust).
+  Do not delete MystikStudioCreators.p7b (removes Fusion coverage).
+  Lab and Forge on permanent PowerShell fallback: Open Lab.vbs / Open Forge.vbs.
+  C# activation is not supported on this system for Lab or Forge.
+  Dashboard baseline remains V01.02.01xxB.
