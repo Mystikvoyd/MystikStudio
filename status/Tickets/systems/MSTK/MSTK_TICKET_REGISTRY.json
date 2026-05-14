@@ -1,7 +1,30 @@
 {
+  "schema_version": "1.0",
   "system_code": "MSTK",
   "system_name": "MystikStudio",
-  "ticket_format": "MSTK-T-{parent:09}-{stub:04}",
+  "ticket_format": "<SYS4>-<TYPE>-<PARENT_NUMBER>-<STUB_NUMBER>",
+  "allowed_types": [
+    "T",
+    "I",
+    "P",
+    "R",
+    "C",
+    "B",
+    "E",
+    "D",
+    "K",
+    "A",
+    "M"
+  ],
+  "numbering_rules": {
+    "system_code_length": 4,
+    "parent_number_digits": 9,
+    "stub_number_digits": 4,
+    "parent_stub_number": "0000",
+    "registry_is_source_of_truth": true,
+    "do_not_reuse_ticket_ids": true,
+    "do_not_renumber_closed_tickets": true
+  },
   "next_parent_number": 3,
   "last_issued_ticket": "MSTK-T-000000002-0000",
   "ticket_count": 2,
