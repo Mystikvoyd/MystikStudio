@@ -1362,8 +1362,31 @@ Notes:
   Supplemental policies (MystikStudioCLab_v2.p7b, MystikStudioCForge_v2.p7b) can override this
     but require Admin privileges to copy to C:\Windows\System32\CodeIntegrity\.
   Since admin rights are unavailable, Dashboard targets restored to PowerShell:
-    Lab: Creators\Lab\Open Lab.vbs
+     Lab: Creators\Lab\Open Lab.vbs
     Forge: Creators\Forge\Open Forge.vbs
   C-Lab and C-Forge files preserved at Creators\C-Lab\ and Creators\C-Forge\ for future use
     when admin installs the supplemental WDAC policies.
+  Dashboard baseline remains V01.02.01xxB.
+
+Entry 61
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Creator trust workflow
+Change Type: creator trust workflow
+Summary: Added a unified MystikStudio local trust installer and post reboot activation workflow for C-Lab and C-Forge while keeping Dashboard targets on PowerShell fallback until trust is confirmed.
+Files Changed:
+  tools\signing\Install-MystikStudioLocalTrustPolicy.ps1 (created - unified WDAC policy installer for Fusion, Lab, Forge;
+    supports -Install, -Status, default dry-run; generates hash-based supplemental policy; requires admin and reboot)
+  tools\signing\Test-MystikStudioCreatorTrust.ps1 (created - tests signature, hash, MOTW, and direct launch for all 3 exes)
+  tools\Activate-CSharpCreatorTargets.ps1 (created - post-reboot activation; tests direct launch; only switches Dashboard
+    targets to C# if exe is trusted; validates Dashboard parser after edit; reverts on failure)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Install-MystikStudioLocalTrustPolicy.ps1 covers: C-Fusion.exe, Lab.exe, Forge.exe.
+    Dry-run by default. -Install requires admin. -Status shows whether policy is installed.
+    Generates a single combined WDAC supplemental policy named MystikStudioCreators.p7b.
+  Test-MystikStudioCreatorTrust.ps1 tests all 3 exes and reports trust status.
+  Activate-CSharpCreatorTargets.ps1 only switches Dashboard targets after confirming trust.
+    If any exe is still blocked, Dashboard targets stay on PowerShell fallback.
+  Dashboard targets unchanged in this pass — still PowerShell for Lab and Forge.
   Dashboard baseline remains V01.02.01xxB.
