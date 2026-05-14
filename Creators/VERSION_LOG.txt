@@ -1251,4 +1251,8 @@ Notes:
   Multiple GPU handling: WMI picks the GPU with the largest AdapterRAM, skipping software renderers.
   Apps rebuilt and signed (Valid), but both are blocked by Smart App Control after rebuild (new hash).
     WDAC policy update or re-allow needed before Lab/Forge can launch again.
+  Hash-based WDAC supplemental policies generated at:
+    %TEMP%\MystikStudioCLab_v2.p7b (Lab SHA256: B1CE724529BCA0B1C98539B355A45B1696033BF173B47D992DF64AED3DFCEE7B)
+    %TEMP%\MystikStudioCForge_v2.p7b (Forge SHA256: 27784822EE7F6AC3E7031199F886C9EAF21840A657AEE1C91CFF5F3D60E85AA4)
+    Admin install: Copy-Item to C:\Windows\System32\CodeIntegrity\ then reboot.
   Dashboard baseline remains V01.02.01xxB.

@@ -7,12 +7,11 @@
 - **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
 - **Thumbprint:** `03DF7DEC03A342769B3130D3C97888051E2CD22F`
 - **Smart App Control:** Exe is signed but self-signed cert lacks cloud reputation.
-  Lab.exe launches directly when signed. May still be blocked by Smart App Control
-  in Enforce mode depending on local policy state.
-- **WDAC policy:** Not installed for Lab.exe yet. If Smart App Control blocks launch,
-  create a hash-based WDAC supplemental policy following the Fusion pattern using
-  Install-CFusionLocalTrustPolicy.ps1 as reference.
-- **Direct launch test:** Lab.exe opens successfully (confirmed 2026-05-13).
+  After the GPU status rebuild (Entry 55), the new binary hash requires a WDAC trust refresh.
+- **WDAC policy:** Hash-based supplemental policy generated at `%TEMP%\MystikStudioCLab_v2.p7b`.
+  Admin must install: `Copy-Item "$env:TEMP\MystikStudioCLab_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force`
+  then reboot.
+- **Direct launch test:** Blocked until admin installs the WDAC policy (previously confirmed on build before GPU rebuild).
 
 ## Active Dashboard Target
 - **Current:** `Creators\C-Lab\Lab.exe` (C# — active, trusted, opens directly)

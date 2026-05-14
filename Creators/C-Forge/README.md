@@ -3,8 +3,14 @@
 **Status:** Active Dashboard target. Forge.exe signed, opens directly, ComfyUI integration complete.
 
 ## Active Dashboard Target
-- **Current:** `Creators\C-Forge\Forge.exe` (C# — active, trusted, opens directly)
+- **Current:** `Creators\C-Forge\Forge.exe` (C# — active, signed, requires WDAC refresh after rebuild)
 - **Old PowerShell preserved as Forge-PS:** `Creators\Forge\`
+
+## Trust Status
+- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
+- **Direct launch test:** Confirmed on previous builds. After GPU status rebuild (Entry 55), new binary hash requires WDAC trust refresh.
+- **WDAC policy:** Hash-based supplemental policy at `%TEMP%\MystikStudioCForge_v2.p7b`. Admin must run:
+  `Copy-Item "$env:TEMP\MystikStudioCForge_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force` then reboot.
 
 ## Features
 - Triple LoRA character composition (3 LoRA slots with individual strength controls)
