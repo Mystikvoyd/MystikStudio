@@ -1028,3 +1028,33 @@ Notes:
     Tools & Resources compact card layout with Worker tools card.
     No unnecessary external worker console for normal use.
   Recovery tag: recovery/dashboard-worker-V01.02.01xxB
+
+Entry 48
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Migration planning
+Change Type: C# migration preparation
+Summary: Prepared the C# migration plan and scaffold folders for Studio, Forge, and Lab while preserving the locked Dashboard baseline V01.02.01xxB.
+Files Changed:
+  Creators\CSharp-Migration-Plan.md (created - full migration plan with app inventories,
+    Fusion pattern documentation, scaffold structure, rollback plan, migration order)
+  Creators\C-Studio\README.md (created - scaffold notes)
+  Creators\C-Studio\version.txt (created - scaffold version)
+  Creators\C-Forge\README.md (created - scaffold notes)
+  Creators\C-Forge\version.txt (created - scaffold version)
+  Creators\C-Lab\README.md (created - scaffold notes)
+  Creators\C-Lab\version.txt (created - scaffold version)
+  Creators\archive\Studio-PowerShell\README.txt (created - archive preparation)
+  Creators\archive\Forge-PowerShell\README.txt (created - archive preparation)
+  Creators\archive\Lab-PowerShell\README.txt (created - archive preparation)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Dashboard version unchanged (remains V01.02.01xxB). No Dashboard files modified.
+  No Dashboard launch targets changed. No live apps modified.
+  Fusion migration pattern documented for reuse: csc.exe /win32icon, tool.json,
+    Dashboard $launcherDefs update, archive preservation, rollback docs.
+  Recommended migration order: Lab (first), Forge (second), Studio (third).
+  Lab has lowest complexity — best first candidate for pattern validation.
+  Risks identified: Each exe will face Smart App Control blocks (needs WDAC policy
+    or CA cert, same as C-Fusion). Studio has highest complexity — largest migration risk.
+  C-Studio, C-Forge, C-Lab scaffold folders created with src/, build/, logs/ subdirs.

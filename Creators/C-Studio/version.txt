@@ -1,0 +1,4 @@
+Component: C-Studio (scaffold)
+Version: 0.1.0-alpha.1
+Schema Version: 1
+Stage: alpha
