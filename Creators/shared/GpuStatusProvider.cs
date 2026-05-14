@@ -13,10 +13,13 @@ public class GpuInfo {
     public string ComfyUiStatus { get; set; }
     public bool ComfyUiOnline { get; set; }
     public override string ToString() {
-        string dTotal = (DedicatedTotal > 0 ? (DedicatedTotal / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " GB" : "Unknown");
-        string dUsed = (DedicatedUsed > 0 ? (DedicatedUsed / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") : "?");
-        string sUsed = (SharedUsed > 0 ? (SharedUsed / (1024.0 * 1024.0 * 1024.0)).ToString("0.0") + " GB" : "");
+        string dTotal = (DedicatedTotal > 0 ? FormatGb(DedicatedTotal) + " GB" : "? GB");
+        string dUsed = (DedicatedUsed > 0 ? FormatGb(DedicatedUsed) + " GB" : "? GB");
+        string sUsed = (SharedUsed > 0 ? FormatGb(SharedUsed) + " GB" : "");
         return "GPU: " + Name + " | VRAM: " + dUsed + " / " + dTotal + (SharedUsed > 0 ? " | Shared: " + sUsed : "") + " | ComfyUI: " + (ComfyUiOnline ? "Online" : "Offline");
+    }
+    private static string FormatGb(long bytes) {
+        return (bytes / (1024.0 * 1024.0 * 1024.0)).ToString("0.0");
     }
 }
 
