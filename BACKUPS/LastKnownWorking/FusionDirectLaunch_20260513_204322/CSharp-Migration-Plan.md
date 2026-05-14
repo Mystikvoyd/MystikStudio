@@ -223,11 +223,6 @@ The WDAC supplemental policy approach used for Fusion does not work for newer ex
 ### WARNING — Fusion Exe Fragility
 - **Do not rebuild Fusion** unless a new trust path is proven first. Rebuilding changes the hash and will likely cause Fusion to be blocked the same way Lab and Forge are now.
 - **Do not delete `MystikStudioCreators.p7b`** from `C:\Windows\System32\CodeIntegrity\`. Removing it may cause Fusion to stop launching.
-- **LKG Backup:** A last-known-working backup of the exact working C-Fusion.exe exists at:
-  `BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\`
-  Restore script: `tools\Restore-FusionLastKnownWorking.ps1`
-  Recovery tag: `fusion-lkg-direct-launch-before-gpu-vram`
-  Before any Fusion rebuild, verify the LKG backup is intact.
 
 ### Recommended Future Path
 - Use PowerShell fallback for Lab, Forge, and Studio indefinitely.

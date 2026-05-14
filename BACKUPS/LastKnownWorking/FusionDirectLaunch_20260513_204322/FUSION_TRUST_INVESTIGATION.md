@@ -94,14 +94,3 @@ Fusion's current direct exe launch is a **grandfathered exception** due to:
 3. Using a system that does not have WDAC Enterprise signing enabled.
 
 C# exes are staged at `Creators\C-Lab\Lab.exe` and `Creators\C-Forge\Forge.exe` for future reference, but they are not launchable on this system. Dashboard targets must remain on PowerShell fallback for Lab and Forge.
-
-## Fusion LKG Backup
-A last-known-working backup of the exact working Fusion binary was created at:
-`H:\MystikStudio\BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\`
-
-- **Backed up SHA256:** `12181699FC565357DFA8D90A055ACD96C371D04B80094F451E06FCFD896B0CDF`
-- **Restore script:** `H:\MystikStudio\tools\Restore-FusionLastKnownWorking.ps1`
-- **Recovery tag:** `fusion-lkg-direct-launch-before-gpu-vram`
-- **Zip artifact:** `C-Fusion-bin-backup.zip` (44KB) in the backup folder
-
-Before any Fusion rebuild, verify this LKG backup is intact and the restore script works.

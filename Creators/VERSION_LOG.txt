@@ -1413,3 +1413,29 @@ Notes:
   Lab and Forge on permanent PowerShell fallback: Open Lab.vbs / Open Forge.vbs.
   C# activation is not supported on this system for Lab or Forge.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 63
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Fusion LKG backup
+Change Type: Fusion last known working checkpoint
+Summary: Captured the exact working Fusion direct launch binary and restore path before allowing Fusion rebuild work.
+Files Changed:
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\C-Fusion.exe (copied - exact working binary, 58KB)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\fusion-sha256.txt (created - recorded hash)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\README.md (created - checkpoint note)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\C-Fusion-bin-backup.zip (created - binary archive, 44KB)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\Start-MystikStudioDashboard.ps1 (copied - reference)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\CSharp-Migration-Plan.md (copied - reference)
+  BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\FUSION_TRUST_INVESTIGATION.md (copied - reference)
+  tools\Restore-FusionLastKnownWorking.ps1 (created - restore script with hash verification)
+  Creators\CSharp-Migration-Plan.md (updated - added LKG backup info and restore path)
+  tools\signing\FUSION_TRUST_INVESTIGATION.md (updated - added LKG backup section)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Fusion SHA256: 12181699FC565357DFA8D90A055ACD96C371D04B80094F451E06FCFD896B0CDF
+  Backup path: BACKUPS\LastKnownWorking\FusionDirectLaunch_20260513_204322\
+  Restore script: tools\Restore-FusionLastKnownWorking.ps1
+  Recovery tag: fusion-lkg-direct-launch-before-gpu-vram
+  Dashboard targets unchanged.
+  Dashboard baseline remains V01.02.01xxB.
