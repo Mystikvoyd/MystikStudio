@@ -970,6 +970,8 @@ public class LabForm : Form {
             SetProgressLab(15, "Sending to ComfyUI...");
             var payload = new Dictionary<string, object>(); payload["prompt"] = wf;
             string payloadJson = json.Serialize(payload);
+            // Diagnostic: save outgoing payload after all UI mappings and LoRA injection
+            try { File.WriteAllText(@"C:\Users\Michael\Documents\Leonardo Prompts\Lab_Last_ComfyUI_Payload.json", payloadJson); } catch { }
             Log("Sending to ComfyUI...");
             var client = new WebClient(); client.Headers.Add("Content-Type", "application/json"); client.Encoding = Encoding.UTF8;
             string resp;
