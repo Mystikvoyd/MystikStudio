@@ -1,6 +1,6 @@
 MystikStudio Dashboard - Template Baseline
 ============================================
-Version: V01.02.01xxA
+Version: V01.02.01xxB
 Date: 2026-05-13
 Purpose: Approved Dashboard layout template for future iterations.
 
@@ -31,6 +31,6 @@ Do not regress:
 
 Recovery:
 ----------
-- Recovery tag: recovery/dashboard-V01.02.01xxA (or recovery-dashboard-V01.02.01xxA)
+- Recovery tag: recovery/dashboard-V01.02.01xxB (or recovery-dashboard-V01.02.01xxB)
 - Old PowerShell Fusion is archived and restorable via:
     H:\MystikStudio\Creators\archive\Fusion-PowerShell\README.txt

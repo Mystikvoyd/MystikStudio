@@ -22,9 +22,12 @@ Original PowerShell entry point:
   H:\MystikStudio\Creators\Fusion\Start-Fusion.ps1
 
 Current Dashboard Fusion button behavior:
-------------------------------------------
+-----------------------------------------
 The Fusion card in the Dashboard's Character Suite now launches:
   H:\MystikStudio\Creators\C-Fusion\C-Fusion.exe
+
+The exe version is now named simply "Fusion".
+The old PowerShell version is now referred to as "Fusion-PS".
 
 How to restore the old PowerShell Fusion button:
 --------------------------------------------------
@@ -41,5 +44,5 @@ Notes:
 - The C-Fusion exe remains at: H:\MystikStudio\Creators\C-Fusion\C-Fusion.exe
 - The old PowerShell Fusion is not deleted and can still be launched directly.
 - Both versions can coexist. Only the Dashboard button changed.
-- Dashboard baseline version: V01.02.01xxA
-- Recovery tag: recovery/dashboard-V01.02.01xxA
+- Dashboard baseline version: V01.02.01xxB
+- Recovery tag: recovery/dashboard-V01.02.01xxB

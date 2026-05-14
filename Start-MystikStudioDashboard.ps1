@@ -1,6 +1,6 @@
 # MystikStudio Dashboard — Split Panel: folders left, tools right
 # Fixed: column widths computed after form is shown; row 0 uses placeholder panels
-# Release snapshot: 01.02.01xxA
+# Release snapshot: 01.02.01xxB
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Windows.Forms
@@ -9,41 +9,117 @@ Add-Type -AssemblyName System.Drawing
 
 $StudioRoot = $PSScriptRoot
 $ComfyRoot  = "C:\Users\Michael\Documents\ComfyUI"
-$StudioVersion = "01.02.01xxA"
+$StudioVersion = "01.02.01xxB"
+
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+public static class MystikWindowHelper {
+    [DllImport("user32.dll")]
+    public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+    [DllImport("user32.dll")]
+    public static extern bool IsIconic(IntPtr hWnd);
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")]
+    public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+    [DllImport("user32.dll")]
+    public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(IntPtr hWnd);
+    [DllImport("user32.dll")]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+    public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+    public static IntPtr FindWindowByPid(uint targetPid) {
+        IntPtr found = IntPtr.Zero;
+        EnumWindows((hWnd, lParam) => {
+            if (!IsWindowVisible(hWnd)) return true;
+            uint pid = 0;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (pid == targetPid) { found = hWnd; return false; }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
+
+    public static IntPtr FindWindowByPidAndTitle(uint targetPid, string titleHint) {
+        IntPtr found = IntPtr.Zero;
+        EnumWindows((hWnd, lParam) => {
+            if (!IsWindowVisible(hWnd)) return true;
+            uint pid = 0;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if (pid == targetPid) {
+                StringBuilder sb = new StringBuilder(512);
+                GetWindowText(hWnd, sb, sb.Capacity);
+                string t = sb.ToString();
+                if (t.IndexOf(titleHint, StringComparison.OrdinalIgnoreCase) >= 0) { found = hWnd; return false; }
+                if (found == IntPtr.Zero) found = hWnd;
+            }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
+
+    public static string GetWindowTitle(IntPtr hWnd) {
+        StringBuilder sb = new StringBuilder(512);
+        GetWindowText(hWnd, sb, sb.Capacity);
+        return sb.ToString();
+    }
+
+    public static IntPtr FindWindowByTitle(string titleContains) {
+        IntPtr found = IntPtr.Zero;
+        EnumWindows((hWnd, lParam) => {
+            if (!IsWindowVisible(hWnd)) return true;
+            StringBuilder sb = new StringBuilder(512);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            if (sb.ToString().IndexOf(titleContains, StringComparison.OrdinalIgnoreCase) >= 0) { found = hWnd; return false; }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
+
+    public static IntPtr FindWindowByAnyTitle(string[] searchTerms) {
+        IntPtr found = IntPtr.Zero;
+        EnumWindows((hWnd, lParam) => {
+            if (!IsWindowVisible(hWnd)) return true;
+            StringBuilder sb = new StringBuilder(512);
+            GetWindowText(hWnd, sb, sb.Capacity);
+            string t = sb.ToString();
+            foreach (string s in searchTerms) {
+                if (t.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0) { found = hWnd; return false; }
+            }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
+}
+public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
+"@
 
 function Show-ExistingDashboardWindow {
     param([string]$WindowTitle = "MystikStudio Dashboard*")
 
     try { Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop } catch {}
-    Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-
-public static class MystikDashboardWindow {
-    [DllImport("user32.dll")]
-    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-    [DllImport("user32.dll")]
-    public static extern bool SetForegroundWindow(IntPtr hWnd);
-
-    [DllImport("user32.dll")]
-    public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-}
-"@
 
     $proc = Get-Process | Where-Object { $_.MainWindowTitle -like $WindowTitle } | Select-Object -First 1
     if ($null -eq $proc) { return $false }
     $handle = $proc.MainWindowHandle
     if ($handle -eq [IntPtr]::Zero) { return $false }
 
-    [void][MystikDashboardWindow]::ShowWindowAsync($handle, 9)
+    [void][MystikWindowHelper]::ShowWindowAsync($handle, 9)
     $screen = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
     $width = 1100
     $height = 1000
     $x = [Math]::Max($screen.Left, [Math]::Floor($screen.Left + (($screen.Width - $width) / 2)))
     $y = [Math]::Max($screen.Top, [Math]::Floor($screen.Top + (($screen.Height - $height) / 2)))
-    [void][MystikDashboardWindow]::MoveWindow($handle, $x, $y, $width, $height, $true)
-    [void][MystikDashboardWindow]::SetForegroundWindow($handle)
+    [void][MystikWindowHelper]::MoveWindow($handle, $x, $y, $width, $height, $true)
+    [void][MystikWindowHelper]::SetForegroundWindow($handle)
     return $true
 }
 
@@ -281,13 +357,152 @@ foreach ($ld in $launcherDefs) {
 }
 
 # -------------------------------------------------------------------
-# ROW 0b — Workers launcher GroupBox
+# ROW 0b — Workers launcher GroupBox with embedded status panel
 # -------------------------------------------------------------------
-# Worker tile data — defined before GroupBox so resize handler uses correct count
 $wtileW = 200; $wtileH = 200; $wimgSz = 140
 
+$script:mwProcess = $null
+$script:mwOutEvent = $null
+$script:mwErrEvent = $null
+$script:mwExEvent = $null
+
+function Write-MWLog($line) {
+    $logDir = Join-Path (Join-Path $StudioRoot "Creators\MystikWorker") "logs"
+    $logFile = Join-Path $logDir "dashboard-worker-latest.log"
+    if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
+    "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $line" | Out-File -FilePath $logFile -Encoding utf8 -Append
+    $tsLogFile = Join-Path $logDir "dashboard-worker-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+    "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $line" | Out-File -FilePath $tsLogFile -Encoding utf8 -Append
+}
+
+function Append-WorkerOutput($text) {
+    if ($workerOutputBox -and -not $workerOutputBox.IsDisposed) {
+        try { $workerOutputBox.Invoke([Action]{ $workerOutputBox.AppendText("$text`r`n") }) } catch { }
+    }
+    Write-MWLog $text
+}
+
+function Update-WorkerStatus($status, $color) {
+    if ($workerStatusLabel -and -not $workerStatusLabel.IsDisposed) {
+        try { $workerStatusLabel.Invoke([Action]{ $workerStatusLabel.Text = "Status: $status"; $workerStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb($color[0],$color[1],$color[2]) }) } catch { }
+    }
+}
+
+function Start-MystikWorkerHidden {
+    $exePath = Join-Path $StudioRoot "Creators\MystikWorker\MystikWorker.exe"
+    $workDir = Join-Path $StudioRoot "Creators\MystikWorker"
+    if (-not (Test-Path $exePath)) { Append-WorkerOutput "ERROR: $exePath not found"; return }
+    if ($script:mwProcess -and -not $script:mwProcess.HasExited) { Append-WorkerOutput "Worker is already running (PID: $($script:mwProcess.Id))"; Update-WorkerStatus "Running" @(0,180,80); return }
+
+    $tcp = New-Object System.Net.Sockets.TcpClient
+    try { $tcp.Connect("127.0.0.1", 5005); $tcp.Dispose(); Append-WorkerOutput "Port 5005 is already in use. Checking health ..."
+        try { $r = Invoke-WebRequest -Uri "http://127.0.0.1:5005/health" -UseBasicParsing -TimeoutSec 5; Append-WorkerOutput "Health: $($r.Content)" } catch { Append-WorkerOutput "Health check failed: $($_.Exception.Message)" }
+        Update-WorkerStatus "Already Running" @(200,180,60); return
+    } catch { $tcp.Dispose() }
+
+    Append-WorkerOutput "Starting MystikWorker (hidden) ..."
+    Update-WorkerStatus "Starting" @(180,180,80)
+
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $exePath; $psi.WorkingDirectory = $workDir
+    $psi.UseShellExecute = $false; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.CreateNoWindow = $true
+
+    $proc = New-Object System.Diagnostics.Process; $proc.StartInfo = $psi
+
+    $outEvent = Register-ObjectEvent -InputObject $proc -EventName OutputDataReceived -MessageData $workerOutputBox -Action {
+        $d = $EventArgs.Data; $box = $Event.MessageData
+        if ($d -and $box -and -not $box.IsDisposed) { try { $box.Invoke([Action]{ $box.AppendText("$d`r`n") }) } catch { } }
+    }
+
+    $errEvent = Register-ObjectEvent -InputObject $proc -EventName ErrorDataReceived -MessageData $workerOutputBox -Action {
+        $d = $EventArgs.Data; $box = $Event.MessageData
+        if ($d -and $box -and -not $box.IsDisposed) { try { $box.Invoke([Action]{ $box.AppendText("ERR: $d`r`n") }) } catch { } }
+    }
+
+    $exEvent = Register-ObjectEvent -InputObject $proc -EventName Exited -MessageData $workerOutputBox -Action {
+        $ec = $EventSource.ExitCode; $box = $Event.MessageData
+        if ($box -and -not $box.IsDisposed) { try { $box.Invoke([Action]{ $box.AppendText("MystikWorker exited with code: $ec`r`n") }) } catch { } }
+        Update-WorkerStatus "Stopped" @(140,140,140)
+    }
+
+    [void]$proc.Start(); $proc.BeginOutputReadLine(); $proc.BeginErrorReadLine()
+    $script:mwProcess = $proc; $script:mwOutEvent = $outEvent; $script:mwErrEvent = $errEvent; $script:mwExEvent = $exEvent
+
+    Append-WorkerOutput "MystikWorker started (PID: $($proc.Id))"
+    Update-WorkerStatus "Running" @(0,180,80)
+}
+
+function Focus-MystikWorkerWindow {
+    $exePath = Join-Path $StudioRoot "Creators\MystikWorker\MystikWorker.exe"
+    $proc = Get-Process -Name "MystikWorker" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $proc) { Append-WorkerOutput "No MystikWorker process found."; return }
+    $proc.Refresh(); $hwnd = $proc.MainWindowHandle
+    if ($hwnd -eq [IntPtr]::Zero) { $hwnd = [MystikWindowHelper]::FindWindowByAnyTitle(@("MystikWorker", "MystikWorker.exe", $exePath)) }
+    if ($hwnd -eq [IntPtr]::Zero) { Append-WorkerOutput "No visible window found for MystikWorker."; return }
+    try { $title = [MystikWindowHelper]::GetWindowTitle($hwnd) } catch { $title = "?" }
+    Append-WorkerOutput "Focusing window: $title"
+    [void][MystikWindowHelper]::ShowWindowAsync($hwnd, 9); [void][MystikWindowHelper]::SetForegroundWindow($hwnd)
+    try { $screen = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+        $rect = New-Object RECT
+        if ([MystikWindowHelper]::GetWindowRect($hwnd, [ref]$rect)) {
+            $rw = $rect.Right - $rect.Left; $rh = $rect.Bottom - $rect.Top
+            $cx = [Math]::Max($screen.Left, [Math]::Floor($screen.Left + ($screen.Width - $rw) / 2))
+            $cy = [Math]::Max($screen.Top, [Math]::Floor($screen.Top + ($screen.Height - $rh) / 2))
+            [void][MystikWindowHelper]::MoveWindow($hwnd, $cx, $cy, $rw, $rh, $true)
+        }
+    } catch { }
+}
+
+function Stop-MystikWorkerSafe {
+    param([switch]$Quiet)
+    $exePath = Join-Path $StudioRoot "Creators\MystikWorker\MystikWorker.exe"
+    $targetProc = $null
+    if ($script:mwProcess -and -not $script:mwProcess.HasExited) { $targetProc = $script:mwProcess }
+    else { $targetProc = Get-Process -Name "MystikWorker" -ErrorAction SilentlyContinue | Select-Object -First 1 }
+    if (-not $targetProc) { if (-not $Quiet) { Append-WorkerOutput "No MystikWorker process found to close." }; return }
+    try { $path = $targetProc.MainModule.FileName } catch { $path = "" }
+    if ($path -ne $exePath) {
+        try { $pp = Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue
+            if ($pp) { $ppProc = Get-Process -Id $pp.OwningProcess -ErrorAction SilentlyContinue
+                if ($ppProc) { try { $ppPath = $ppProc.MainModule.FileName } catch { $ppPath = "" }
+                    if ($ppPath -ne $exePath) { return }
+                }
+            }
+        } catch { }
+        return
+    }
+    $workerPid = $targetProc.Id
+    if ($Quiet) { Write-MWLog "Closing MystikWorker (PID: $workerPid) ..." } else { Append-WorkerOutput "Closing MystikWorker (PID: $workerPid) ..." }
+    try {
+        $targetProc.CloseMainWindow(); Start-Sleep -Milliseconds 500
+        if (-not $targetProc.HasExited) { $targetProc.Kill() }
+        if ($Quiet) { Write-MWLog "MystikWorker (PID: $workerPid) closed." } else { Append-WorkerOutput "MystikWorker (PID: $workerPid) closed." }
+        $script:mwProcess = $null
+        try { Update-WorkerStatus "Stopped" @(140,140,140) } catch { }
+    } catch {
+        if ($Quiet) { Write-MWLog "Failed to close: $($_.Exception.Message)" } else { Append-WorkerOutput "Failed to close: $($_.Exception.Message)" }
+    }
+}
+
+function Close-MystikWorker {
+    try { Stop-MystikWorkerSafe } catch { Append-WorkerOutput "Close Worker error: $($_.Exception.Message)" }
+}
+
+function Stop-AllDashboardWorkers {
+    try { Stop-MystikWorkerSafe -Quiet } catch { Write-MWLog "Stop-AllDashboardWorkers error: $($_.Exception.Message)" }
+}
+
+function Clear-WorkerOutput { try { $workerOutputBox.Invoke([Action]{ $workerOutputBox.Clear() }) } catch { } }
+
+function Refresh-WorkerStatus {
+    try { $r = Invoke-WebRequest -Uri "http://127.0.0.1:5005/health" -UseBasicParsing -TimeoutSec 5; Append-WorkerOutput "Health: $($r.Content)"; Update-WorkerStatus "Running" @(0,180,80) } catch {
+        if ($script:mwProcess -and -not $script:mwProcess.HasExited) { Append-WorkerOutput "Health check failed but process is running."; Update-WorkerStatus "Running" @(0,180,80) }
+        else { Append-WorkerOutput "Health check: worker not reachable."; Update-WorkerStatus "Stopped" @(140,140,140) }
+    }
+}
+
 $workerDefs = @(
-    @{Text="MystikWorker"; Color="#326040"; Desc="C# Generation Worker - local ComfyUI bridge"; Target=(Join-Path $StudioRoot "Creators\MystikWorker\MystikWorker.exe")}
+    @{Text="MystikWorker"; Color="#326040"; Desc="C# Generation Worker - local ComfyUI bridge"}
 )
 
 $workersBox = New-Object System.Windows.Forms.GroupBox
@@ -295,66 +510,103 @@ $workersBox.Text = "  WORKERS"
 $workersBox.Left  = $padLeft
 $workersBox.Top   = $rowBox.Top + $rowBox.Height + 6
 $workersBox.Width = $rowBox.Width
-$workersBox.Height = 240
+$workersBox.Height = 265
 $workersBox.Anchor = "Top, Left"
 $workersBox.ForeColor = [System.Drawing.Color]::FromArgb(180,200,180)
 $workersBox.Font      = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
 $workersBox.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
 $rp.Controls.Add($workersBox)
 
-$wrkWrap = New-Object System.Windows.Forms.Panel
-$wrkWrap.Dock = "Fill"
-$workersBox.Controls.Add($wrkWrap)
+# Left panel: MystikWorker tile centered
+$wrkLeft = New-Object System.Windows.Forms.Panel
+$wrkLeft.Width = 215; $wrkLeft.Height = $workersBox.Height - 5
+$wrkLeft.Left = 4; $wrkLeft.Top = 18
+$wrkLeft.BackColor = [System.Drawing.Color]::FromArgb(28,28,38)
+$workersBox.Controls.Add($wrkLeft)
+
 $wrkFlow = New-Object System.Windows.Forms.FlowLayoutPanel
-$wrkFlow.Left = 0; $wrkFlow.Top = 6; $wrkFlow.Height = $workersBox.Height - 30
+$wrkFlow.Dock = "Fill"
 $wrkFlow.WrapContents = $true; $wrkFlow.AutoScroll = $false
-# Set initial width and centering so tiles are visible immediately
-$wrkFlow.Width = $workerDefs.Count * $wtileW + ($workerDefs.Count - 1) * 6 + 12
-$wrkFlow.Left = [Math]::Max(0, [Math]::Floor(($wrkWrap.ClientSize.Width - $wrkFlow.Width) / 2))
-$wrkWrap.Controls.Add($wrkFlow)
-$wrkWrap.Add_Resize({
-    $tw = $workerDefs.Count * $wtileW + ($workerDefs.Count - 1) * 6 + 12
-    $wrkFlow.Width = [Math]::Min($tw, $wrkWrap.ClientSize.Width - 12)
-    $wrkFlow.Left = [Math]::Max(0, [Math]::Floor(($wrkWrap.ClientSize.Width - $wrkFlow.Width) / 2))
-})
+$wrkLeft.Controls.Add($wrkFlow)
+
 foreach ($wd in $workerDefs) {
     $wbtn = New-Object System.Windows.Forms.Button
-    $wbtn.Text      = $wd.Text
-    $wbtn.Width     = $wtileW
-    $wbtn.Height    = $wtileH
-    $wbtn.FlatStyle = "Flat"
-    $wbtn.FlatAppearance.BorderSize = 0
-    $wbtn.BackColor = ColorFromHex $wd.Color
+    $wbtn.Text = $wd.Text; $wbtn.Width = $wtileW; $wbtn.Height = $wtileH
+    $wbtn.FlatStyle = "Flat"; $wbtn.FlatAppearance.BorderSize = 0
+    $wbtn.BackColor = ColorFromHex "#326040"
     $wbtn.ForeColor = [System.Drawing.Color]::Black
-    $wbtn.Font      = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-    $wbtn.TextAlign = "BottomCenter"
-    $wbtn.TextImageRelation = "ImageAboveText"
-    $wbtn.ImageAlign = "MiddleCenter"
+    $wbtn.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
+    $wbtn.TextAlign = "BottomCenter"; $wbtn.TextImageRelation = "ImageAboveText"; $wbtn.ImageAlign = "MiddleCenter"
     $wimg = Get-ToolImage $wd.Text $wimgSz
     if ($wimg) { $wbtn.Image = $wimg; $wbtn.Padding = New-Object System.Windows.Forms.Padding(4,0,0,0) }
-    $wt = $wd.Target
-    $wIsExe = $wt -like '*.exe'
-    $wbtn.Add_Click({
-        if (-not $wt) { return }
-        if (-not (Test-Path $wt)) { [System.Windows.Forms.MessageBox]::Show("File not found:`n$wt", "Launch failed", "OK", "Error"); return }
-        if ($wIsExe) {
-            $workDir = [System.IO.Path]::GetDirectoryName($wt)
-            try { Start-Process -FilePath $wt -WorkingDirectory $workDir -ErrorAction Stop }
-            catch {
-                $errMsg = $_.Exception.Message
-                if ($errMsg -match "blocked|policy|Application Control|Access Denied|740") {
-                    [System.Windows.Forms.MessageBox]::Show("$($wd.Text) was blocked. Run trust check and install policy as Admin.", "Launch blocked", "OK", "Error")
-                } else {
-                    [System.Windows.Forms.MessageBox]::Show("Failed to launch $($wd.Text):`n$errMsg", "Launch failed", "OK", "Error")
-                }
-            }
-        } else {
-            try { Start-Process -FilePath $wt -ErrorAction Stop } catch { [System.Windows.Forms.MessageBox]::Show("Failed to launch $($wd.Text):`n$($_.Exception.Message)", "Launch failed", "OK", "Error") }
-        }
-    }.GetNewClosure())
+    $wbtn.Add_Click({ try { Start-MystikWorkerHidden } catch { Append-WorkerOutput "Error: $($_.Exception.Message)" } }.GetNewClosure())
     (New-Object System.Windows.Forms.ToolTip).SetToolTip($wbtn, $wd.Desc)
     $wrkFlow.Controls.Add($wbtn)
 }
+
+# Right panel: status, output box, buttons (fixed half-width for better proportions)
+$wrkRight = New-Object System.Windows.Forms.Panel
+$wrkRight.Left = $wrkLeft.Left + $wrkLeft.Width + 4
+$wrkRight.Top = 18; $wrkRight.Width = 520
+$wrkRight.Height = $workersBox.Height - 22
+$wrkRight.BackColor = [System.Drawing.Color]::FromArgb(22,22,30)
+$workersBox.Controls.Add($wrkRight)
+
+$workerStatusLabel = New-Object System.Windows.Forms.Label
+$workerStatusLabel.Text = "Status: Stopped"
+$workerStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(140,140,140)
+$workerStatusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+$workerStatusLabel.Left = 6; $workerStatusLabel.Top = 4; $workerStatusLabel.AutoSize = $true
+$wrkRight.Controls.Add($workerStatusLabel)
+
+$workerOutputBox = New-Object System.Windows.Forms.TextBox
+$workerOutputBox.Multiline = $true; $workerOutputBox.ReadOnly = $true; $workerOutputBox.ScrollBars = "Vertical"
+$workerOutputBox.Left = 6; $workerOutputBox.Top = 22
+$workerOutputBox.Width = $wrkRight.Width - 12
+$workerOutputBox.Height = $wrkRight.Height - 58
+$workerOutputBox.Anchor = "Top, Left, Right, Bottom"
+$workerOutputBox.BackColor = [System.Drawing.Color]::FromArgb(16,16,22)
+$workerOutputBox.ForeColor = [System.Drawing.Color]::FromArgb(180,200,180)
+$workerOutputBox.Font = New-Object System.Drawing.Font("Consolas", 8.5)
+$wrkRight.Controls.Add($workerOutputBox)
+
+# Buttons row (no Focus button)
+$btnY = $workerOutputBox.Top + $workerOutputBox.Height + 4
+$bw = 95; $bh = 24
+$btnStart = New-Object System.Windows.Forms.Button
+$btnStart.Text = "Start"; $btnStart.Left = 6; $btnStart.Top = $btnY; $btnStart.Width = $bw; $btnStart.Height = $bh
+$btnStart.FlatStyle = "Flat"; $btnStart.FlatAppearance.BorderSize = 0
+$btnStart.BackColor = [System.Drawing.Color]::FromArgb(0,100,50); $btnStart.ForeColor = [System.Drawing.Color]::White
+$btnStart.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$btnStart.Add_Click({ try { Start-MystikWorkerHidden } catch { Append-WorkerOutput "Error: $($_.Exception.Message)" } })
+$wrkRight.Controls.Add($btnStart)
+
+$btnClose = New-Object System.Windows.Forms.Button
+$btnClose.Text = "Close"; $btnClose.Left = $btnStart.Left + $btnStart.Width + 3; $btnClose.Top = $btnY
+$btnClose.Width = $bw; $btnClose.Height = $bh
+$btnClose.FlatStyle = "Flat"; $btnClose.FlatAppearance.BorderSize = 0
+$btnClose.BackColor = [System.Drawing.Color]::FromArgb(100,30,30); $btnClose.ForeColor = [System.Drawing.Color]::White
+$btnClose.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$btnClose.Add_Click({ Close-MystikWorker })
+$wrkRight.Controls.Add($btnClose)
+
+$btnClear = New-Object System.Windows.Forms.Button
+$btnClear.Text = "Clear"; $btnClear.Left = $btnClose.Left + $btnClose.Width + 3; $btnClear.Top = $btnY
+$btnClear.Width = $bw; $btnClear.Height = $bh
+$btnClear.FlatStyle = "Flat"; $btnClear.FlatAppearance.BorderSize = 0
+$btnClear.BackColor = [System.Drawing.Color]::FromArgb(60,60,60); $btnClear.ForeColor = [System.Drawing.Color]::White
+$btnClear.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$btnClear.Add_Click({ Clear-WorkerOutput })
+$wrkRight.Controls.Add($btnClear)
+
+$btnRefresh = New-Object System.Windows.Forms.Button
+$btnRefresh.Text = "Refresh"; $btnRefresh.Left = $btnClear.Left + $btnClear.Width + 3; $btnRefresh.Top = $btnY
+$btnRefresh.Width = $bw; $btnRefresh.Height = $bh
+$btnRefresh.FlatStyle = "Flat"; $btnRefresh.FlatAppearance.BorderSize = 0
+$btnRefresh.BackColor = [System.Drawing.Color]::FromArgb(40,40,60); $btnRefresh.ForeColor = [System.Drawing.Color]::White
+$btnRefresh.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$btnRefresh.Add_Click({ Refresh-WorkerStatus })
+$wrkRight.Controls.Add($btnRefresh)
 
 # -------------------------------------------------------------------
 # Panel-box helper — stacks GroupBox + buttons, grows the column panel
@@ -364,7 +616,7 @@ function Add-PanelBox {
         [System.Windows.Forms.Panel]$Parent,
         [string]$Title,
         [object[]]$Buttons,
-        [int]$CardWidth = 180
+        [int]$CardWidth = 155
     )
 
     $box = New-Object System.Windows.Forms.GroupBox
@@ -380,7 +632,7 @@ function Add-PanelBox {
     $bw = $box.Width - 16
     foreach ($b in $Buttons) {
         $isMain = $b.ContainsKey('Icon') -and $b.Icon
-        $btnHeight = if ($isMain) { 52 } else { 30 }
+        $btnHeight = if ($isMain) { 48 } else { 28 }
 
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text      = $b.Text
@@ -442,6 +694,7 @@ $studioTool = Join-Path $StudioRoot "Creators\Studio"
 $forgeTool  = Join-Path $StudioRoot "Creators\Forge"
 $fusionTool = Join-Path $StudioRoot "Creators\Fusion"
 $labTool    = Join-Path $StudioRoot "Creators\Lab"
+$workerTool = Join-Path $StudioRoot "Creators\MystikWorker"
 
 # Flow layout panel — categories flow left-to-right, wrap to next row
 $toolsInner = New-Object System.Windows.Forms.FlowLayoutPanel
@@ -456,9 +709,6 @@ Add-PanelBox -Parent $toolsInner -Title "STUDIO" -Buttons @(
     @{Text="Debug Studio";      Color="#DC143C"; Desc="Debug character generator workflow";                 Target=(Join-Path $studioTool "Start-Studio.ps1")}
     @{Text="Studio Folder";     Color="#DC143C"; Desc="Browse Studio folder";                              Target=$studioTool}
 )
-Add-PanelBox -Parent $toolsInner -Title "COMFYUI" -Buttons @(
-    @{Text="Scripts"; Color="#325032"; Desc="ComfyUI automation scripts"; Target=(Join-Path $StudioRoot "Creators\comfyui\scripts")}
-)
 Add-PanelBox -Parent $toolsInner -Title "FORGE" -Buttons @(
     @{Text="Forge Config";     Color="#5A2840"; Desc="Browse Forge config folder";                         Target=$forgeTool}
     @{Text="Debug Forge";      Color="#5A2840"; Desc="Debug character design workflow";                    Target=(Join-Path $forgeTool "Debug_Forge.vbs")}
@@ -469,12 +719,17 @@ Add-PanelBox -Parent $toolsInner -Title "FUSION" -Buttons @(
     @{Text="Debug Fusion";     Color="#3C2860"; Desc="Debug LoRA Fusion workflow";                        Target=(Join-Path $fusionTool "Debug_Fusion.vbs")}
     @{Text="Fusion Folder";    Color="#3C2860"; Desc="Browse Fusion folder";                               Target=$fusionTool}
 )
-Add-PanelBox -Parent $toolsInner -Title "WEB APPS" -Buttons $webBtnList
 Add-PanelBox -Parent $toolsInner -Title "LAB" -Buttons @(
     @{Text="Lab Config";       Color="#284A70"; Desc="Browse Lab config folder";                          Target=$labTool}
     @{Text="Debug Lab";        Color="#284A70"; Desc="Debug LoRA Lab workflow";                           Target=(Join-Path $labTool "Debug_Lab.vbs")}
     @{Text="Lab Folder";       Color="#284A70"; Desc="Browse Lab folder";                                 Target=$labTool}
 )
+Add-PanelBox -Parent $toolsInner -Title "DEVELOPMENT" -Buttons @(
+    @{Text="Open in VS Code";  Color="#2C2C32"; Desc="Open project in VS Code";                    Target="code";         Arguments=$StudioRoot}
+    @{Text="Open Terminal";    Color="#2C2C32"; Desc="PowerShell at project root";                 Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
+    @{Text="GitHub Issues";    Color="#24292E"; Desc="Open repo issues";                           Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
+)
+Add-PanelBox -Parent $toolsInner -Title "WEB APPS" -Buttons $webBtnList
 Add-PanelBox -Parent $toolsInner -Title "REPORTS & SESSION" -Buttons @(
     @{Text="Reports Folder";  Color="#463728"; Desc="Browse session reports";                       Target="$comfyRootPath\Reports"}
     @{Text="Session Module";  Color="#463728"; Desc="Shared session report module";                 Target=(Join-Path $StudioRoot "shared")}
@@ -491,10 +746,12 @@ Add-PanelBox -Parent $toolsInner -Title "MODELS" -Buttons @(
     @{Text="ControlNet";    Color="#373746"; Desc="ControlNet models";       Target="$comfyRootPath\models\controlnet"}
     @{Text="VAE";           Color="#373746"; Desc="VAE models";              Target="$comfyRootPath\models\vae"}
 )
-Add-PanelBox -Parent $toolsInner -Title "DEVELOPMENT" -Buttons @(
-    @{Text="Open in VS Code";  Color="#2C2C32"; Desc="Open project in VS Code";                    Target="code";         Arguments=$StudioRoot}
-    @{Text="Open Terminal";    Color="#2C2C32"; Desc="PowerShell at project root";                 Target="powershell.exe"; Arguments="-NoExit cd `"$StudioRoot`""}
-    @{Text="GitHub Issues";    Color="#24292E"; Desc="Open repo issues";                           Target="https://github.com/Mystikvoyd/MystikStudio/issues"; Mode="url"}
+Add-PanelBox -Parent $toolsInner -Title "WORKERS" -Buttons @(
+    @{Text="Worker Folder";      Color="#326040"; Desc="Browse MystikWorker folder";                      Target=$workerTool}
+    @{Text="Debug Worker";       Color="#326040"; Desc="Launch MystikWorker in debug command window";     Target="cmd.exe"; Arguments="/k `"$(Join-Path $workerTool 'Debug-MystikWorker.cmd')`""}
+    @{Text="Worker Status";      Color="#326040"; Desc="Check port 5005 health and process info";         Target="powershell.exe"; Arguments="-NoProfile -File `"$workerTool\Check-WorkerStatus.ps1`""}
+    @{Text="Worker Logs";        Color="#326040"; Desc="Browse MystikWorker logs";                        Target=(Join-Path $workerTool "logs")}
+    @{Text="Delete Old Records"; Color="#3A2848"; Desc="Clean old worker logs, keep newest 5";           Target="powershell.exe"; Arguments="-NoProfile -File `"$workerTool\Cleanup-WorkerLogs.ps1`" -Keep 5 -Force"}
 )
 
 # -------------------------------------------------------------------
@@ -531,6 +788,9 @@ $rightPanel.Add_Resize({ Sync-Layout })
 # -------------------------------------------------------------------
 # Show
 # -------------------------------------------------------------------
+$form.Add_FormClosing({
+    Stop-AllDashboardWorkers
+})
 $form.Add_Shown({
     $form.Activate()
     # Write layout log after form is fully laid out
@@ -547,6 +807,10 @@ $form.Add_Shown({
         foreach ($c in @($rowBox, $workersBox, $toolsBox)) {
             if ($c.Left + $c.Width -gt $rp.Width) { $clippedSections += "WARNING: '$($c.Text.Trim())' right edge ($($c.Left+$c.Width)) exceeds rp width ($($rp.Width))" }
         }
+        $cardsPerRow = if ($toolsInner.Controls.Count -gt 0) { [math]::Floor($toolsInner.ClientSize.Width / ($toolsInner.Controls[0].Width + 6)) } else { 0 }
+        $totalRows = if ($cardsPerRow -gt 0) { [math]::Ceiling($toolsInner.Controls.Count / $cardsPerRow) } else { 0 }
+        $mainNeedsScroll = $rp.Height -gt $rightPanel.ClientSize.Height
+        $workerCmdPath = Join-Path (Join-Path $StudioRoot "Creators\MystikWorker") "Debug-MystikWorker.cmd"
         $logLines = @(
             "=== MystikStudio Dashboard Layout Report ===",
             "Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
@@ -554,6 +818,14 @@ $form.Add_Shown({
             "Minimum size: $($form.MinimumSize.Width) x $($form.MinimumSize.Height)",
             "Main content padding: left=$padLeft right=$padRight (scrollbar reserve: 20 px)",
             "Main content width (sectionW): $sectionW",
+            "Tools card width: 155 px",
+            "Cards per row: ~$cardsPerRow   Total rows: ~$totalRows",
+            "Main page requires scrolling: $mainNeedsScroll",
+            "Tools & Resources inner scrollbar: $($toolsInner.AutoScroll)",
+            "",
+            "Debug Worker command path: $workerCmdPath",
+            "Worker folder path: $(Join-Path $StudioRoot 'Creators\MystikWorker')",
+            "Worker logs path: $(Join-Path $StudioRoot 'Creators\MystikWorker\logs')",
             "",
             "--- Sections ---",
             "Character Suite bounds: left=$($rowBox.Left) top=$($rowBox.Top) width=$($rowBox.Width) height=$($rowBox.Height)",

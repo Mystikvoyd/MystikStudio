@@ -536,3 +536,495 @@ Notes:
   Recovery tag: recovery/dashboard-V01.02.01xxA
   Old PowerShell Fusion remains archived and restorable.
   No C-Fusion, MystikWorker, Lab, Forge, or Studio versions bumped in this entry.
+
+Entry 30
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard
+Change Type: dashboard tool addition
+Summary: Added a Workers Tools & Resources card with Worker Folder and Debug Worker actions. Debug Worker launches MystikWorker in a command window that stays open so errors can be read.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - added $workerTool path; added WORKERS card to Tools
+    & Resources between FUSION and WEB APPS with Worker Folder, Debug Worker, Worker Logs buttons)
+  Creators\MystikWorker\Debug-MystikWorker.cmd (created - debug launcher script)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  WORKERS card added as a compact Tools & Resources card (180px fixed width, same as other cards).
+  Card color: #326040 (MystikWorker green).
+  Worker Folder opens H:\MystikStudio\Creators\MystikWorker via Start-Process.
+  Debug Worker launches Debug-MystikWorker.cmd in a visible console window.
+  Debug-MystikWorker.cmd: prints header, runs MystikWorker.exe, captures exit code,
+    writes logs\debug-launch.log, and pauses for keypress before closing.
+  Worker Logs opens H:\MystikStudio\Creators\MystikWorker\logs (Explorer shows error if missing).
+  MystikWorker.exe and source code not modified.
+  Main MystikWorker tile in Workers section unchanged.
+
+Entry 31
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard, MystikWorker debug
+Change Type: dashboard tool fix, worker debug fix
+Summary: Fixed Debug Worker launch path to use H:\MystikStudio\Creators\MystikWorker and compacted Tools & Resources cards so the added WORKERS card does not push content off screen.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Add-PanelBox CardWidth default 180->155, btnHeight 30->28;
+    layout logging now includes compact card details, cards per row, and worker paths)
+  Creators\MystikWorker\Debug-MystikWorker.cmd (rewritten - uses %~dp0 instead of %CD% for correct
+    working directory; uses absolute script-dir paths for exe and log)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause of wrong path: CMD script used %CD% (the Dashboard's working directory H:\MystikStudio)
+    instead of %~dp0 (the script's own directory H:\MystikStudio\Creators\MystikWorker).
+  Fix: Script now uses %~dp0 for SCRIPT_DIR, EXE, and LOG_DIR. Full absolute paths throughout.
+  Card compaction: CardWidth reduced 180->155px, button height reduced 30->28px.
+  At 1048px content width: ~6 cards fit per row (was 5). 11 cards now need 2 rows (was 3).
+  Tools & Resources height recalculated dynamically by Sync-Layout.
+  All 11 cards preserved. No button behavior changed.
+  Layout logging now reports cards per row, total rows, main scroll state, and worker paths.
+
+Entry 32
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard, MystikWorker debug
+Change Type: worker debug tooling, dashboard tool addition
+Summary: Fixed MystikWorker debug log path, preserved timestamped debug logs, added port 5005 diagnostics, and added a Delete Old Records button that keeps the newest 5 worker logs.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - added Delete Old Records button to WORKERS card;
+    launches Cleanup-WorkerLogs.ps1 -Keep 5 -Force)
+  Creators\MystikWorker\Debug-MystikWorker.cmd (rewritten - fixed log path separator; timestamped
+    log filenames debug-launch-YYYYMMDD-HHMMSS.log; copies to debug-launch-latest.log;
+    added port 5005 detection via netstat + Get-NetTCPConnection; skips launch if port busy)
+  Creators\MystikWorker\Cleanup-WorkerLogs.ps1 (created - cleanup script, keeps newest 5 by default,
+    accepts -Keep and -Force parameters)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Log path bug: %LOG_DIR%debug-launch.log was missing backslash between %LOG_DIR% (ends in 'logs')
+    and filename, producing 'logsdebug-launch.log'. Now uses %LOG_DIR%\debug-launch-*.log.
+  Timestamped logs create one file per launch in H:\MystikStudio\Creators\MystikWorker\logs\.
+  Most recent run is also copied to debug-launch-latest.log for quick access.
+  Port 5005 check runs before launching MystikWorker.exe. Uses netstat -ano to find LISTENING
+    connections on 127.0.0.1:5005, then Get-NetTCPConnection + Get-Process for name resolution.
+    If port is busy, shows PID/name/state, does NOT launch the exe, and pauses.
+  Delete Old Records button runs Cleanup-WorkerLogs.ps1 with -Keep 5 -Force (skips confirmation
+    prompt). Sorts logs by LastWriteTime descending, deletes all beyond the newest 5.
+  WORKERS card now has 4 buttons: Worker Folder, Debug Worker, Worker Logs, Delete Old Records.
+  Button heights at 28px keep the card compact (fits within 155px width).
+  MystikWorker.exe and source code not modified.
+
+Entry 33
+-------
+Dashboard Version: V01.02.01xxA
+Component: WDAC trust policy
+Change Type: trust policy fix, WDAC installer fix
+Summary: Fixed the C-Fusion WDAC local trust installer so it uses a valid App Control policy structure instead of invalid ProductSigners/SigningKeys XML.
+Files Changed:
+  Install-CFusionLocalTrustPolicy.ps1 (rewritten - uses New-CIPolicy + ConvertFrom-CIPolicy instead
+    of hand-built XML; generates hash-based supplemental policy; removes audit mode for enforcement)
+  Remove-CFusionLocalTrustPolicy.ps1 (updated - removed broken policy refresh after file deletion)
+  README-CFusionTrust.txt (updated - documents hash-based approach, production signing recommendation,
+    and note that rebuilds require policy reinstall)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: Hand-built XML used <SigningKeys> as a child of <ProductSigners>, which is not valid
+    in the current WDAC schema. Only <DeniedSigners> and <AllowedSigners> are valid children.
+  Fix: Replaced hand-built XML with official Microsoft App Control tooling.
+    New-CIPolicy -FilePaths <exe> -UserPEs -Level Hash generates a valid hash-based allow rule.
+  Rule type: Hash (SHA256 file hash) — narrowest possible scope, allows only this exact binary.
+  Policy generation: New-CIPolicy → XML modification (supplemental, remove audit) → ConvertFrom-CIPolicy → .p7b
+  Policy location: C:\Windows\System32\CodeIntegrity\MystikStudioC-Fusion.p7b
+  Admin required for install. Reboot may be required if CIM refresh fails.
+  Remove script no longer attempts stale policy refresh after file deletion (was calling CIM
+    method on already-deleted file).
+  Test-CFusionTrust.ps1 already detects installed policy correctly — no changes needed.
+
+Entry 34
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker debug
+Change Type: worker debug fix
+Summary: Fixed MystikWorker debug launch so the command window stays open, logs are preserved, and duplicate launches are prevented when port 5005 is already in use.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Debug Worker button now uses cmd.exe /k with Arguments
+    instead of direct CMD launch, ensuring the console window always stays visible)
+  Creators\MystikWorker\Debug-MystikWorker.cmd (rewritten - port check uses PowerShell
+    Get-NetTCPConnection instead of netstat parsing; when port 5005 is busy, shows PID/process name
+    and tries Invoke-WebRequest against /health endpoint; skips launch and pauses)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Debug window staying open: Now guaranteed by two mechanisms.
+    1. Dashboard launches via cmd.exe /k "Debug-MystikWorker.cmd" — /k keeps the shell alive even
+       if the script exits without pause (belt-and-suspenders with the script's built-in pause).
+    2. Every code path in the script reaches pause > nul before endlocal.
+  Port 5005 check uses PowerShell Get-NetTCPConnection instead of fragile netstat column parsing.
+    If busy: prints owning PID, process name, connection state; runs Invoke-WebRequest to /health;
+    does NOT launch the exe; pauses so user can read the output.
+    If free: launches MystikWorker.exe, captures exit code, pauses.
+  Timestamped logs written to H:\MystikStudio\Creators\MystikWorker\logs\debug-launch-YYYYMMDD-HHMMSS.log.
+    Latest run always copied to debug-launch-latest.log.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 36
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker launch
+Change Type: worker launch fix
+Summary: Updated MystikWorker Dashboard launch behavior so clicking Worker again focuses and centers the existing worker window instead of launching a duplicate instance.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - main MystikWorker tile now launches powershell.exe
+    with Start-OrFocus-MystikWorker.ps1; click handler supports Arguments parameter; removed
+    inline port check in favor of PS1 script logic)
+  Creators\MystikWorker\Start-OrFocus-MystikWorker.ps1 (created - reusable helper that checks
+    process/port/health, focuses existing window or starts new instance)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Detection: Script checks three things — Get-Process -Name "MystikWorker", TcpClient port 5005,
+    and Invoke-WebRequest /health endpoint. Worker is considered running if any of these match.
+  Focus behavior: Uses user32.dll ShowWindowAsync (SW_RESTORE=9) to restore if minimized,
+    GetWindowRect to read current size, MoveWindow to center on the window's current screen
+    (Screen.FromHandle), then SetForegroundWindow to bring to front. Window is not resized.
+  No window handle: If the process is running but MainWindowHandle is 0 (headless/service mode),
+    script logs the PID, port status, and health response instead of focusing.
+  Launch behavior: If not running, launches via cmd.exe /k with title "MystikWorker",
+    cd to script directory, and exe path. Window stays open if worker exits.
+  Logging: Each invocation logs to logs/start-or-focus-latest.log with timestamp,
+    process/port/health status, and action taken.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+Summary: Rebuilt MystikWorker debug launch using a PowerShell debug wrapper with persistent console, real time stdout/stderr capture, port 5005 detection, health checks, and duplicate launch prevention.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - main MystikWorker tile now checks port 5005 via
+    TcpClient before launching; added Worker Status button to WORKERS card running
+    Check-WorkerStatus.ps1)
+  Creators\MystikWorker\Debug-MystikWorker.ps1 (created - full PowerShell debug script with
+    System.Diagnostics.Process, OutputDataReceived/ErrorDataReceived events for real-time
+    stdout/stderr capture to both console and timestamped log)
+  Creators\MystikWorker\Debug-MystikWorker.cmd (rewritten - simple wrapper calling PS1 with
+    -NoExit -File, keeping the console alive)
+  Creators\MystikWorker\Check-WorkerStatus.ps1 (created - port 5005 health check script)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Debug window staying open: Three layers of protection.
+    1. Dashboard: cmd.exe /k "Debug-MystikWorker.cmd"
+    2. CMD wrapper: powershell -NoExit -File "Debug-MystikWorker.ps1"
+    3. PS1 script: Read-Host at every exit path.
+  stdout/stderr capture: Debug-MystikWorker.ps1 uses ProcessStartInfo with
+    RedirectStandardOutput=true, RedirectStandardError=true, then registers
+    OutputDataReceived and ErrorDataReceived events with Register-ObjectEvent.
+    Each line of output is written to console and appended to the timestamped log file.
+  Port 5005 check: Both the main MystikWorker tile and Debug Worker use TcpClient.Connect
+    to check if port 5005 is listening. If busy, main tile shows a MessageBox and does NOT
+    launch. Debug Worker shows PID/process/health and does NOT launch a duplicate.
+  Timestamped logs: H:\MystikStudio\Creators\MystikWorker\logs\debug-worker-YYYYMMDD-HHMMSS.log
+    Latest: debug-worker-latest.log (copied on each run).
+  Worker Status button runs Check-WorkerStatus.ps1 (port check, Get-NetTCPConnection,
+    Invoke-WebRequest /health) in a visible -NoExit console.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 37
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker launch
+Change Type: worker launch behavior fix
+Summary: Changed normal MystikWorker Dashboard tile to focus and center the existing worker window without opening extra PowerShell, cmd, or terminal helper windows.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - added StartOrFocus-MystikWorker function with user32.dll
+    focus/center logic; click handler simplified to call function directly; removed Target/Arguments
+    from workerDefs; added MystikWindowHelper class with GetWindowRect; all logic now runs inside
+    Dashboard process without external helper processes)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Why extra windows were opening: The old $workerDefs Target pointed to powershell.exe with Arguments
+    that launched Start-OrFocus-MystikWorker.ps1. This opened a visible PowerShell window. The PS1
+    then sometimes opened a cmd.exe /k wrapper to launch the worker.
+  Fix: All logic moved into the Dashboard script itself. The click handler calls StartOrFocus-MystikWorker
+    directly — a PowerShell function that runs inside the Dashboard's own process.
+  Detection: Get-Process -Name "MystikWorker", TcpClient.Connect port 5005, Invoke-WebRequest /health.
+  If running with visible window: Uses MystikDashboardWindow (ShowWindowAsync/SW_RESTORE) to restore
+    if minimized, MystikWindowHelper.GetWindowRect to read window size, MoveWindow to center on the
+    window's current screen (Screen.FromHandle), and SetForegroundWindow to bring to front.
+    No console windows are opened during this process.
+  If running without visible window: Shows Dashboard MessageBox with PID/health status.
+  If not running: Launches MystikWorker.exe directly via ProcessStartInfo with UseShellExecute=$true,
+    WindowStyle=Normal. No cmd.exe or powershell.exe wrappers.
+  Debug Worker is unaffected — still opens debug console as intended.
+  Worker Status is unaffected — still opens status console as intended.
+
+Entry 38
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker launch
+Change Type: worker launch bugfix
+Summary: Fixed MystikWorker second click Dashboard crash caused by assigning to PowerShell read-only $PID variable.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - renamed $pid to $workerPid in StartOrFocus-MystikWorker
+    function; wrapped click handler in try/catch to prevent raw .NET exception dialogs;
+    exception details logged to start-or-focus-latest.log)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: Line 348 assigned to $pid = $proc.Id. In PowerShell, $pid is an alias for the
+    built-in automatic variable $PID which contains the current PowerShell process ID and is
+    read-only. Assigning to it throws: "Cannot overwrite variable PID because it is read-only
+    or constant."
+  Fix: Changed $pid to $workerPid throughout. Also added a try/catch wrapper around the entire
+    click handler so any unexpected errors show a friendly MessageBox instead of a raw .NET
+    exception dialog.
+  Second click flow: StartOrFocus-MystikWorker checks process name, port 5005, and /health.
+    If already running with visible window: focuses and centers it. No duplicate launched.
+    If running without window: shows MessageBox with PID and health status.
+    If not running: starts MystikWorker.exe directly via ProcessStartInfo.
+  Logging: All actions logged to logs/start-or-focus-latest.log with timestamps.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 39
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker focus
+Change Type: worker focus bugfix
+Summary: Fixed MystikWorker second click focus behavior by detecting the visible console window through robust window enumeration instead of relying only on MainWindowHandle.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - expanded MystikWindowHelper Add-Type with EnumWindows,
+    GetWindowThreadProcessId, IsWindowVisible, GetWindowText, FindWindowByPid,
+    FindWindowByPidAndTitle, GetWindowTitle; rewrote StartOrFocus-MystikWorker with multi-strategy
+    window discovery; changed launch to use cmd.exe /k "title MystikWorker" so console window has
+    a recognizable title)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Why the visible worker window was not found before: (Get-Process MystikWorker).MainWindowHandle
+    returns 0 for console applications because the visible window belongs to conhost.exe or
+    Windows Terminal, not to MystikWorker.exe itself.
+  Window detection now uses a 3-strategy cascade:
+    1. MainWindowHandle after process.Refresh() — catches GUI windows immediately.
+    2. FindWindowByPidAndTitle — enumerates all visible top-level windows, matches by PID
+       AND title containing "MystikWorker". This finds the console window when it has
+       the recognizable title.
+    3. FindWindowByPid — enumerates all visible top-level windows belonging to the PID.
+       This catches any visible window owned by the process even without a matching title.
+    Each step only proceeds if the previous step returned IntPtr.Zero.
+  Worker window title: Now launched via cmd.exe /k "title MystikWorker && cd /d ... && exe".
+    The single cmd window IS the worker console — the title "MystikWorker" makes it findable
+    by FindWindowByPidAndTitle on subsequent clicks.
+  Second click flow: Health check succeeds → window search cascade runs → window found →
+    ShowWindowAsync(restore) → GetWindowRect → MoveWindow(center) → SetForegroundWindow.
+  If focus fails after all 3 strategies: MessageBox shows PID, health, MainWindowHandle,
+    and which search strategies matched.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 40
+-------
+Dashboard Version: V01.02.01xxA
+Component: MystikWorker focus
+Change Type: worker focus bugfix
+Summary: Added title-only window search strategy to find the MystikWorker console window when PID-based detection fails because the visible window belongs to conhost.exe instead of MystikWorker.exe.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - added FindWindowByTitle and FindWindowByAnyTitle C#
+    methods to MystikWindowHelper; added strategy #4 title-only search in StartOrFocus-MystikWorker
+    that searches all visible windows for titles containing "MystikWorker", "MystikWorker.exe",
+    or the exe path, bypassing PID matching entirely)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause of persistent detection failure: The existing 3 strategies all relied on
+    GetWindowThreadProcessId to match windows by PID. For console applications, this API
+    returns the PID of conhost.exe (the console host), NOT MystikWorker.exe. So searching
+    by MystikWorker's PID never finds the window.
+  Fix: Added FindWindowByAnyTitle(string[]) — enumerates ALL visible top-level windows
+    regardless of PID and matches window title against multiple search terms.
+    Search terms: "MystikWorker", "MystikWorker.exe", and the full exe path.
+    This catches windows launched by the old direct Process.Start (title = exe path)
+    and windows launched by the new cmd.exe /k "title MystikWorker" (title = "MystikWorker").
+  Complete 4-strategy cascade:
+    1. MainWindowHandle after Refresh()
+    2. FindWindowByPidAndTitle (PID + title)
+    3. FindWindowByPid (PID only)
+    4. FindWindowByAnyTitle (title only — catches conhost-owned windows)
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 41
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard workers panel
+Change Type: worker dashboard integration
+Summary: Added embedded MystikWorker status/output panel, hid normal worker console launch, captured worker stdout/stderr in the Dashboard, added safe Close Worker, and fixed the MystikDashboardWindow type error.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - moved ShowWindowAsync/SetForegroundWindow/MoveWindow to
+    script-level MystikWindowHelper Add-Type; removed MystikDashboardWindow type from inside
+    Show-ExistingDashboardWindow; rewrote Workers section with embedded status panel containing
+    status label, output TextBox, Start/Focus/Close/Clear/Refresh buttons; replaced console launch
+    with hidden Process with stdout/stderr redirection; added Start-MystikWorkerHidden,
+    Focus-MystikWorkerWindow, Close-MystikWorker, Append-WorkerOutput, Update-WorkerStatus,
+    Write-MWLog, Refresh-WorkerStatus functions)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  MystikDashboardWindow type error: The type was defined via Add-Type inside Show-ExistingDashboardWindow
+    function, but was referenced by StartOrFocus-MystikWorker before the type existed at runtime.
+    Fix: Moved ShowWindowAsync, SetForegroundWindow, MoveWindow to the script-level MystikWindowHelper
+    Add-Type (which is loaded during script parsing), and removed the separate MystikDashboardWindow type.
+  Hidden launch: Start-MystikWorkerHidden uses ProcessStartInfo with UseShellExecute=$false,
+    RedirectStandardOutput=$true, RedirectStandardError=$true, CreateNoWindow=$true.
+    No cmd.exe, powershell.exe, or terminal windows are opened.
+  Output capture: Uses Register-ObjectEvent with OutputDataReceived and ErrorDataReceived events.
+    Each line is appended to the Dashboard output TextBox via Invoke (thread-safe) and written to
+    dashboard-worker-latest.log and a timestamped dashboard-worker-YYYYMMDD-HHMMSS.log.
+  Worker Status panel: Added inside the Workers GroupBox (height increased 240->480px).
+    Top half: MystikWorker tile. Bottom half: status label, output box, 5 buttons.
+    Status label shows: Stopped, Starting, Running, Already Running.
+  Close Worker: Confirms path matches MystikWorker.exe, shows confirmation dialog,
+    tries CloseMainWindow first, falls back to Kill, logs result.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 42
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard workers panel layout
+Change Type: worker dashboard integration fix
+Summary: Moved MystikWorker status/output panel beside the worker tile, restored compact Workers section height, wired worker buttons, and captured worker output in the Dashboard without opening a normal console.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Workers section height reduced 480->260px; layout changed
+    from stacked top/bottom to side-by-side left/right; left: MystikWorker tile 200x200px; right:
+    status label, output box, 5 compact buttons; Worker Status card button no longer opens console;
+    all worker controls wired to embedded functions)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Layout fix: Changed from vertical stack (tile above, status below) to horizontal split
+    (tile left, status panel right). Tile is 200x200 in a 215px-wide left panel. Status panel
+    fills the remaining width. GroupBox height restored to 260px (close to the original 240px).
+  Side-by-side layout: Left panel sized to tile (215px wide). Right panel fills remaining width
+    with status label, output TextBox (fills most space), and 5 buttons (Start, Focus, Close,
+    Clear, Refresh) at 95x24px each in a row.
+  Tools & Resources is no longer pushed down — restored to approximately the same vertical
+    position as the approved template.
+  PID 4/System avoidance: Close-MystikWorker verifies MainModule.FileName equals the expected
+    exe path. Will not kill if path mismatch. Appends "Cannot safely identify MystikWorker
+    process to close" to the embedded output when no safe match.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 43
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard workers panel, Fusion naming, build
+Change Type: worker dashboard fix, naming cleanup, icon fix
+Summary: Fixed remaining worker Dashboard $PID crash, improved embedded worker panel layout and safe close behavior, clarified output capture behavior, renamed current exe Fusion vs old Fusion-PS, and embedded Fusion icon in the exe.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - renamed $pid to $workerPid in Close-MystikWorker;
+    Workers section height 260->320px; right status panel fixed at 520px width;
+    output box taller with adjusted proportions)
+  Build-CFusion.ps1 (updated - added /win32icon:"H:\MystikStudio\Icons\Fusion.ico" to csc.exe
+    compile command so the Fusion exe uses the Fusion taskbar icon instead of default colorful squares)
+  archive\Fusion-PowerShell\README.txt (updated - documented that current Fusion is the exe version,
+    old PowerShell version is now referred to as Fusion-PS)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  $PID crash fix: Line 473 in Close-MystikWorker had `$pid = $targetProc.Id`. In PowerShell,
+    $pid is an alias for the read-only $PID. Changed to $workerPid throughout the function.
+    Grep confirmed zero remaining `$pid=` or `$PID=` assignments in all Dashboard and worker scripts.
+  Layout: Workers section height 260->320px for better button fit. Right status panel fixed at
+    520px width (previously filled entire remaining width, making the output box too wide).
+    Output box top adjusted 24->22, height formula adjusted for the taller section.
+  Close Worker: Already had path verification against MainModule.FileName. Only fixed the $pid
+    variable. Path check prevents killing PID 4/System since HttpListener port owner may be PID 4.
+  Fusion icon: Added /win32icon:"H:\MystikStudio\Icons\Fusion.ico" to the csc.exe command in
+    Build-CFusion.ps1. On next build, C-Fusion.exe will have the Fusion icon embedded.
+  Fusion-PS naming: Updated archive README to state the exe version is "Fusion" and old PowerShell
+    version is "Fusion-PS". Dashboard already shows "Fusion" in Character Suite card, launching
+    C-Fusion.exe. No Dashboard card text changes needed.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 44
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard worker close
+Change Type: worker close bugfix
+Summary: Fixed remaining Close Worker MessageBox enum bug by replacing invalid DefaultButton2 string with valid [System.Windows.Forms.MessageBoxDefaultButton]::Button2 enum value.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - replaced string "DefaultButton2" with proper enum;
+    replaced string "YesNo"/"Question" with proper enum values; wrapped entire Close-MystikWorker
+    function in try/catch so errors append to worker output box instead of showing raw .NET dialog)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: MessageBox.Show call used `"DefaultButton2"` as a string for the defaultButton
+    parameter. PowerShell sometimes converts strings to enums successfully, but this specific
+    case threw: "Cannot convert argument 'defaultButton' ... to type
+    'System.Windows.Forms.MessageBoxDefaultButton'".
+  Fix: Changed all 5 parameters to explicit enum values:
+    text: "Close MystikWorker (PID: $workerPid)?"
+    caption: "Close Worker"
+    buttons: [System.Windows.Forms.MessageBoxButtons]::YesNo
+    icon: [System.Windows.Forms.MessageBoxIcon]::Warning
+    defaultButton: [System.Windows.Forms.MessageBoxDefaultButton]::Button2
+  Error handling: Wrapped entire Close-MystikWorker in try/catch. On failure, appends
+    "Close Worker error: ..." to the embedded output box. No raw .NET exception dialog appears.
+  Grep across H:\MystikStudio confirmed zero remaining DefaultButton1/2/3 references.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 45
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard worker panel, Tools layout
+Change Type: dashboard worker polish, tools layout polish
+Summary: Removed Close Worker confirmation, removed Focus button, shortened the Workers section, and reordered Tools & Resources cards into the approved row layout.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Close Worker no longer shows MessageBox confirmation,
+    closes immediately after safe path check; removed Focus button from embedded worker panel;
+    Workers section height 320->265px; reordered Tools & Resources cards: Row1=Studio/Forge/Fusion/
+    Lab/Development Row2=Web Apps/Reports Session/ComfyUI Tools/Models Row3=Workers)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  Close Worker: No longer shows any confirmation dialog. On click, verifies process path matches
+    MystikWorker.exe, then directly calls CloseMainWindow + Kill if needed. Safe path identification
+    preserved — never kills PID 4/System.
+  Focus button removed: The Focus button and Focus-MystikWorkerWindow are removed from the embedded
+    worker panel. Debug Worker button in Tools & Resources card remains available for debugging.
+  Workers section height: 320px -> 265px (55px reduction, ~4 text lines). Tools & Resources moves
+    up and remains more visible.
+  Tools & Resources card order:
+    Row 1: Studio, Forge, Fusion, Lab, Development
+    Row 2: Web Apps, Reports & Session, ComfyUI Tools, Models
+    Row 3: Workers
+  Cards remain at 155px fixed width, compact sizing preserved.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 46
+-------
+Dashboard Version: V01.02.01xxA
+Component: Dashboard worker lifecycle
+Change Type: dashboard worker lifecycle fix
+Summary: Added Dashboard close handling so MystikWorker is safely shut down when the Dashboard exits.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - refactored Close-MystikWorker into Stop-MystikWorkerSafe
+    with -Quiet switch for non-UI callers; added Stop-AllDashboardWorkers wrapper; added
+    $form.Add_FormClosing handler that calls Stop-AllDashboardWorkers)
+  VERSION_LOG.txt (updated - this entry)
+Notes:
+  FormClosing handler: Added before Add_Shown. Calls Stop-AllDashboardWorkers which calls
+    Stop-MystikWorkerSafe -Quiet. No confirmation dialog. No raw exception dialogs.
+  Shared logic: Stop-MystikWorkerSafe contains the safe close logic with path verification.
+    Close-MystikWorker (button handler) calls it without -Quiet, so output is shown in the
+    embedded output box. FormClosing calls it with -Quiet, so output goes only to the log file
+    (Write-MWLog) and not to the UI (which may be closing).
+  Safe path verification: MainModule.FileName is checked against the expected exe path before
+    any close/kill operation. PID 4/System is never killed. Port-5005-only detection is never
+    used as the sole identification method.
+  Close activity logged to: H:\MystikStudio\Creators\MystikWorker\logs\dashboard-worker-latest.log
+    with timestamps, PID, path verification status, and close method.
+  MystikWorker.exe not modified. MystikWorker source code not modified.
+
+Entry 47
+-------
+Dashboard Version: V01.02.01xxB
+Component: Dashboard baseline
+Change Type: dashboard recovery baseline, worker lifecycle baseline, version lock
+Summary: Locked the current working Dashboard and MystikWorker integration as V01.02.01xxB recovery baseline.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - version 01.02.01xxA -> 01.02.01xxB)
+  Creators\DASHBOARD_TEMPLATE_BASELINE.txt (updated - version V01.02.01xxA -> V01.02.01xxB)
+  Creators\archive\Fusion-PowerShell\README.txt (updated - baseline version V01.02.01xxB)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Version bumped from A to B suffix only. No minor/patch changes.
+  This baseline locks:
+    Explorer removed, no split layout.
+    Character Suite centered and compact with Studio/Forge/Fusion/Lab.
+    Fusion visible card launches C-Fusion.exe (exe version).
+    Old PowerShell Fusion preserved as Fusion-PS / rollback path.
+    Workers section with embedded MystikWorker panel (start, close, clear, refresh).
+    MystikWorker closes when Dashboard closes (FormClosing handler).
+    Tools & Resources compact card layout with Worker tools card.
+    No unnecessary external worker console for normal use.
+  Recovery tag: recovery/dashboard-worker-V01.02.01xxB
