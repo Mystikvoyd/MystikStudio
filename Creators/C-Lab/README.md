@@ -1,8 +1,22 @@
 # C-Lab — Future C# Migration Scaffold
 
-**Status:** Staged C# migration.
-**Not active Dashboard target** because Windows Smart App Control blocks unsigned or untrusted exe launch.
-**Active Dashboard target remains Lab PowerShell** until signing, WDAC, or trusted deployment is solved.
+**Status:** Staged C# migration — signed and launches directly.
+**Not yet active Dashboard target** until user confirms switch.
+
+## Trust Status
+- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
+- **Thumbprint:** `03DF7DEC03A342769B3130D3C97888051E2CD22F`
+- **Smart App Control:** Exe is signed but self-signed cert lacks cloud reputation.
+  Lab.exe launches directly when signed. May still be blocked by Smart App Control
+  in Enforce mode depending on local policy state.
+- **WDAC policy:** Not installed for Lab.exe yet. If Smart App Control blocks launch,
+  create a hash-based WDAC supplemental policy following the Fusion pattern using
+  Install-CFusionLocalTrustPolicy.ps1 as reference.
+- **Direct launch test:** Lab.exe opens successfully (confirmed 2026-05-13).
+
+## Active Dashboard Target
+- **Current:** `Creators\Lab\Open Lab.vbs` (PowerShell — working)
+- **Staged:** `Creators\C-Lab\Lab.exe` (C# — signed, launches directly, not yet switched)
 
 ## Purpose
 Future C# counterpart for the current PowerShell Studio app.

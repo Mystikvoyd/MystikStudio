@@ -1106,3 +1106,31 @@ Notes:
   For Forge and Studio: build and stage C# versions first, but do not replace Dashboard launch
     targets until signing/trust is solved.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 51
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: C-Lab trust/signing
+Change Type: C-Lab trust/signing pass
+Summary: Signed the staged C-Lab exe with the local dev code signing cert, fixed a .NET SplitContainer crash, confirmed Lab.exe launches directly, and documented the trust status without changing the live Dashboard target.
+Files Changed:
+  Creators\C-Lab\Lab.cs (updated - fixed SplitContainer crash; moved Panel1MinSize/Panel2MinSize/
+    SplitterDistance to Load event to avoid InvalidOperationException)
+  Creators\C-Lab\Lab.exe (updated - rebuilt and re-signed with dev cert)
+  Creators\C-Lab\README.md (updated - trust status, signature details, direct launch confirmation)
+  Creators\CSharp-Migration-Plan.md (updated - added C-Lab trust attempt result under Migration Gate)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Fusion trust process: C-Fusion.exe is signed with CN=MystikStudio Local Dev Code Signing
+    (thumbprint 03DF7DEC03A342769B3130D3C97888051E2CD22F) using Sign-MystikStudioExe.ps1.
+    WDAC policy is hash-based (New-CIPolicy -Level Hash) — covers only the specific exe by SHA256 hash.
+    Policy name: MystikStudioC-Fusion. Installed at C:\Windows\System32\CodeIntegrity\.
+  Lab.exe signing: Signed with same cert via same script. Status: Valid.
+  Lab.exe crash: Initial launch failed with InvalidOperationException at SplitContainer.set_SplitterDistance.
+    Fix: Moved splitter configuration (Panel1MinSize, Panel2MinSize, SplitterDistance) to the
+    Form.Load event when the control is parented and visible.
+  Lab.exe launch test: After fix and sign, Lab.exe launches directly and stays open (confirmed PID 30832).
+  WDAC policy: Not installed for Lab.exe. If Smart App Control Enforce blocks Lab.exe, an admin must
+    run the same hash-based WDAC policy process as Fusion (Install-CFusionLocalTrustPolicy.ps1 pattern).
+  Dashboard target: NOT changed. Lab still launches PowerShell version (Creators\Lab\Open Lab.vbs).
+  Dashboard baseline remains V01.02.01xxB.

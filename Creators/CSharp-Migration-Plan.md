@@ -199,6 +199,7 @@ Creators\archive\
   - Be signed with a real CA code signing certificate with established cloud reputation, or
   - Smart App Control must be in Audit or Off mode (not recommended).
 - The Lab C# migration proved this gate is necessary: `Lab.exe` compiled successfully and the Dashboard target was switched, but Smart App Control blocked launch.
+- **C-Lab trust attempt result (2026-05-13):** Lab.exe was signed with the same dev cert as Fusion (`CN=MystikStudio Local Dev Code Signing`). Signature status: Valid. After fixing a .NET SplitContainer crash, Lab.exe launches directly when signed. No WDAC policy was installed for Lab.exe. If Smart App Control blocks in Enforce mode, an admin must install a hash-based WDAC supplemental policy (same process as Fusion's `Install-CFusionLocalTrustPolicy.ps1`).
 - **For Forge and Studio:** Build and stage C# versions first. Do not replace Dashboard launch targets until trust/signing is solved.
 
 ## 11. Recommended Migration Order

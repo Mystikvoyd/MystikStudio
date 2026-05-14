@@ -92,7 +92,7 @@ public class LabForm : Form {
         BuildControlNetTab();
         BuildExtrasTab();
 
-        var split = new SplitContainer { Dock = DockStyle.Fill, SplitterWidth = 4, SplitterDistance = 520, Panel1MinSize = 300, Panel2MinSize = 200 };
+        var split = new SplitContainer { Dock = DockStyle.Fill, SplitterWidth = 4 };
         right.Controls.Add(split);
 
         previewPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(18, 18, 24) };
@@ -107,6 +107,7 @@ public class LabForm : Form {
         gridOutputs = new DataGridView { Dock = DockStyle.Fill, AllowUserToAddRows = false, ReadOnly = true, RowHeadersVisible = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, BackgroundColor = Color.FromArgb(16, 16, 22), ForeColor = Color.FromArgb(200, 200, 210), BorderStyle = BorderStyle.None };
         gridOutputs.Columns.Add("Time", "Time"); gridOutputs.Columns.Add("File", "File"); gridOutputs.Columns.Add("LoRA", "LoRA"); gridOutputs.Columns.Add("Seed", "Seed"); gridOutputs.Columns.Add("Path", "Path"); gridOutputs.Columns[4].Visible = false;
         gridOutputs.CellClick += (o, e) => { if (e.RowIndex >= 0 && gridOutputs.Rows[e.RowIndex].Cells["Path"].Value != null) SetPreview(gridOutputs.Rows[e.RowIndex].Cells["Path"].Value.ToString()); };
+        this.Load += (o, e) => { try { split.Panel1MinSize = 300; split.Panel2MinSize = 200; split.SplitterDistance = 520; } catch { } };
         bottomPanel.Controls.Add(gridOutputs);
 
         LoadPrefs();
