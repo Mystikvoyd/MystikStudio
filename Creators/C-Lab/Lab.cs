@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 public class LabForm : Form {
@@ -26,6 +28,7 @@ public class LabForm : Form {
     private string configPath, prefsPath, runLogPath, reportsFolder;
     private Label lblGpuStatus;
     private Timer gpuTimer;
+    private JavaScriptSerializer json = new JavaScriptSerializer();
 
     public LabForm() {
         string labRoot = Path.GetDirectoryName(Application.ExecutablePath);
@@ -277,7 +280,9 @@ public class LabForm : Form {
     }
 
     private void BuildExtrasTab() {
-        int y = 4;
+        logBox = new TextBox { Left = 6, Top = 4, Width = 540, Height = 180, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, BackColor = Color.FromArgb(16, 16, 22), ForeColor = Color.FromArgb(180, 220, 180), Font = new Font("Consolas", 8.5f) };
+        tabExtras.Controls.Add(logBox);
+        int y = 190;
         chkCapture = new CheckBox { Text = "Capture prompt variations", Left = 8, Top = y, Width = 200, Height = 22 };
         tabExtras.Controls.Add(chkCapture); y += 28;
         tabExtras.Controls.Add(MakeLabel("Variation notes", 8, y));
@@ -322,7 +327,92 @@ public class LabForm : Form {
         btnSession.Text = sessionActive ? "[ STOP SESSION ]" : "[ START SESSION ]";
         btnSession.BackColor = sessionActive ? Color.FromArgb(180, 40, 40) : Color.FromArgb(34, 120, 64);
     }
-    private void OnGenerate() { }
+    private void OnGenerate() {
+        try {
+            Log("Starting generation..."); btnGenerate.Enabled = false;
+            string prompt = txtPrompt.Text;
+            if (string.IsNullOrWhiteSpace(prompt)) { Log("ERROR: Prompt is empty."); btnGenerate.Enabled = true; return; }
+            int seed = (int)numSeed.Value;
+            if (chkRandomSeed.Checked) { seed = new Random().Next(1, int.MaxValue); numSeed.Value = seed; }
+            string cUrl = @"http://127.0.0.1:8000";
+            try { var wc = new WebClient(); wc.Headers.Add("User-Agent", "Lab/1.0"); wc.DownloadString(cUrl + "/system_stats"); Log("ComfyUI connected at " + cUrl); }
+            catch { Log("ERROR: ComfyUI not reachable at " + cUrl); btnGenerate.Enabled = true; return; }
+            string labRoot = Path.GetDirectoryName(Application.ExecutablePath);
+            string projectRoot = Path.GetFullPath(Path.Combine(labRoot, ".."));
+            string wfPath = Path.Combine(projectRoot, "comfyui", "workflows", "sdxl-basic-book-image.api.json");
+            if (!File.Exists(wfPath)) { Log("ERROR: Workflow not found at " + wfPath); btnGenerate.Enabled = true; return; }
+            string wfJson = File.ReadAllText(wfPath);
+            var wf = json.Deserialize<Dictionary<string, object>>(wfJson);
+            if (wf == null) { Log("ERROR: Could not parse workflow JSON"); btnGenerate.Enabled = true; return; }
+            SetWfNode(wf, "4", "text", txtPrompt.Text);
+            SetWfNode(wf, "5", "text", txtNegative.Text);
+            SetWfNode(wf, "6", "seed", seed);
+            SetWfNode(wf, "6", "steps", (int)numSteps.Value);
+            SetWfNode(wf, "6", "cfg", (double)numCfg.Value);
+            SetWfNode(wf, "6", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
+            SetWfNode(wf, "6", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
+            SetWfNode(wf, "6", "width", (int)numWidth.Value);
+            SetWfNode(wf, "6", "height", (int)numHeight.Value);
+            var payload = new Dictionary<string, object>(); payload["prompt"] = wf;
+            string payloadJson = json.Serialize(payload);
+            Log("Sending to ComfyUI...");
+            var client = new WebClient(); client.Headers.Add("Content-Type", "application/json"); client.Encoding = Encoding.UTF8;
+            string resp;
+            try { resp = client.UploadString(cUrl + "/prompt", payloadJson); }
+            catch (Exception ex) { Log("HTTP error: " + ex.Message); btnGenerate.Enabled = true; return; }
+            var respObj = json.Deserialize<Dictionary<string, object>>(resp);
+            string promptId = respObj != null && respObj.ContainsKey("prompt_id") ? Convert.ToString(respObj["prompt_id"]) : "";
+            if (string.IsNullOrEmpty(promptId)) { Log("No prompt_id in response"); btnGenerate.Enabled = true; return; }
+            Log("Queued. Prompt ID: " + promptId);
+            string outputPath = @"C:\Users\Michael\Documents\ComfyUI\output";
+            string imagePath = "";
+            for (int i = 0; i < 180; i++) {
+                System.Threading.Thread.Sleep(1000);
+                try {
+                    var hc = new WebClient(); hc.Encoding = Encoding.UTF8;
+                    string historyJson = hc.DownloadString(cUrl + "/history/" + promptId);
+                    var history = json.Deserialize<Dictionary<string, object>>(historyJson);
+                    if (history != null && history.ContainsKey(promptId)) {
+                        var entry = history[promptId] as Dictionary<string, object>;
+                        if (entry != null && entry.ContainsKey("outputs")) {
+                            var outputs = entry["outputs"] as Dictionary<string, object>;
+                            if (outputs != null) {
+                                foreach (var kv5 in outputs) {
+                                    var kv2 = kv5.Value as Dictionary<string, object>;
+                                    if (kv2 != null && kv2.ContainsKey("images") && kv2["images"] is ArrayList) {
+                                        var images = (ArrayList)kv2["images"];
+                                        if (images.Count > 0) {
+                                            var img = images[0] as Dictionary<string, object>;
+                                            if (img != null && img.ContainsKey("filename")) {
+                                                imagePath = Path.Combine(outputPath, Convert.ToString(img["filename"]));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(imagePath)) break;
+                    }
+                } catch { }
+            }
+            if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath)) {
+                Log("Generated: " + imagePath);
+                SetPreview(imagePath);
+                gridOutputs.Rows.Insert(0, DateTime.Now.ToString("HH:mm:ss"), Path.GetFileName(imagePath), (comboLora.SelectedItem != null ? comboLora.SelectedItem.ToString() : ""), seed.ToString(), imagePath);
+            } else { Log("Generation completed but output image not found in " + outputPath); }
+        } catch (Exception ex) { Log("Generation error: " + ex.Message); }
+        finally { btnGenerate.Enabled = true; }
+    }
+    private void SetWfNode(Dictionary<string, object> wf, string nodeId, string key, object value) {
+        if (!wf.ContainsKey(nodeId)) return;
+        var node = wf[nodeId] as Dictionary<string, object>;
+        if (node == null) return;
+        if (!node.ContainsKey("inputs")) { node["inputs"] = new Dictionary<string, object>(); }
+        var nodeInputs = node["inputs"] as Dictionary<string, object>;
+        if (nodeInputs == null) return;
+        nodeInputs[key] = value;
+    }
+    private void Log(string msg) { if (logBox != null && !logBox.IsDisposed) { logBox.AppendText("[" + DateTime.Now.ToString("HH:mm:ss") + "] " + msg + "\r\n"); logBox.SelectionStart = logBox.TextLength; logBox.ScrollToCaret(); } }
 }
 
 static class LabelExtensions {
@@ -336,3 +426,4 @@ class Program {
         Application.Run(new LabForm());
     }
 }
+

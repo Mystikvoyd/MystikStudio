@@ -1463,3 +1463,30 @@ Notes:
   ComfyUI: Default URL changed from 8188 to 8000 (matches Forge.config.json).
   Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 65
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: C-Lab C-Forge generation pipeline
+Change Type: C-Lab and C-Forge generation pipeline fix
+Summary: Fixed direct C# Lab and Forge generation requests so they match the working PowerShell fallback worker pipeline. Rebuilt both exes with Smart App Control off for testing.
+Files Changed:
+  Creators\C-Forge\Forge.cs (updated - rewritten BgWorker_DoWork to load workflow JSON, modify node inputs directly,
+    send to ComfyUI /prompt, poll /history for completion, update output history and preview; comfyUrl default 8188->8000;
+    added SetWfNode helper; removed placeholder string-replace approach)
+  Creators\C-Lab\Lab.cs (updated - implemented OnGenerate() with same full generation pipeline as Forge; added
+    JavaScriptSerializer, System.Collections, System.Web.Script.Serialization; added logBox to Extras tab;
+    fixed missing class closing brace; added LabelExtensions class; comfyUrl 8000)
+  Creators\shared\GpuStatusProvider.cs (had no functional changes but was rebuilt along with the apps)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Generation pipeline now matches PowerShell fallback:
+    1. Load workflow JSON file (from configured workflow path)
+    2. Modify specific node inputs using node IDs matching the PowerShell invoke scripts (node 4 = prompt text,
+       node 5 = negative text, node 6 = KSampler params: seed, steps, cfg, sampler_name, scheduler, width, height)
+    3. POST to ComfyUI /prompt endpoint
+    4. Poll GET /history/{prompt_id} until output image appears (up to 180s)
+    5. Load preview, add to output history grid
+  ComfyUI URL defaults to port 8000 (matching config), read from config if available.
+  Dashboard targets unchanged: Lab = Open Lab.vbs, Forge = Open Forge.vbs
+  Dashboard baseline remains V01.02.01xxB.

@@ -30,7 +30,7 @@ public class ForgeForm : Form {
     private string forgeRoot, configPath, prefsPath, runLogPath, reportsFolder;
     private Dictionary<string, object> config;
     private JavaScriptSerializer json = new JavaScriptSerializer();
-    private string comfyUrl = "http://127.0.0.1:8188";
+    private string comfyUrl = "http://127.0.0.1:8000";
     private string comfyOutputPath = @"C:\Users\Michael\Documents\ComfyUI\output";
 
     public ForgeForm() {
@@ -132,22 +132,95 @@ public class ForgeForm : Form {
     private System.ComponentModel.BackgroundWorker bgWorker;
     private void BgWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e) {
         try {
-            Invoke((Action)(() => { Log("Generating..."); btnGenerate.Enabled = false; }));
+            Invoke((Action)(() => { Log("Starting generation..."); btnGenerate.Enabled = false; }));
             string prompt = txtPrompt.Text;
             if (string.IsNullOrWhiteSpace(prompt)) { Invoke((Action)(() => Log("ERROR: Prompt is empty."))); return; }
-            try { var wc = new WebClient(); wc.Headers.Add("User-Agent", "Forge/1.0"); string test = wc.DownloadString(comfyUrl + "/system_stats"); Invoke((Action)(() => Log("ComfyUI connected."))); } catch { Invoke((Action)(() => { Log("ERROR: ComfyUI not reachable at " + comfyUrl); })); return; }
-            try {
-                var wc = new WebClient(); wc.Headers.Add("Content-Type", "application/json"); wc.Headers.Add("User-Agent", "Forge/1.0");
-                string wfPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "..", "comfyui", "workflows", "sdxl-basic-book-image.api.json");
-                string wfJson = File.ReadAllText(wfPath);
-                wfJson = wfJson.Replace("{prompt}", prompt).Replace("{negative}", txtNegative.Text).Replace("{seed}", ((int)numSeed.Value).ToString());
-                wfJson = wfJson.Replace("{steps}", ((int)numSteps.Value).ToString()).Replace("{cfg}", numCfg.Value.ToString("0.0"));
-                wfJson = wfJson.Replace("{width}", ((int)numWidth.Value).ToString()).Replace("{height}", ((int)numHeight.Value).ToString());
-                string resp = wc.UploadString(comfyUrl + "/prompt", wfJson);
-                Invoke((Action)(() => { Log("Queued: " + (resp.Length > 200 ? resp.Substring(0, 200) + "..." : resp)); }));
-            } catch (Exception ex) { Invoke((Action)(() => Log("Generate failed: " + ex.Message))); }
-        } catch (Exception ex) { Invoke((Action)(() => Log("Error: " + ex.Message))); }
+            // Resolve seed
+            int seed = (int)numSeed.Value;
+            if (chkRandomSeed.Checked) { seed = new Random().Next(1, int.MaxValue); Invoke((Action)(() => numSeed.Value = seed)); }
+            // Load config comfyUrl if available
+            string cUrl = comfyUrl;
+            if (config != null && config.ContainsKey("comfyUrl")) { cUrl = Convert.ToString(config["comfyUrl"]); }
+            // Check ComfyUI
+            try { var wc = new WebClient(); wc.Headers.Add("User-Agent", "Forge/1.0"); wc.DownloadString(cUrl + "/system_stats"); Invoke((Action)(() => Log("ComfyUI connected at " + cUrl))); }
+            catch { Invoke((Action)(() => { Log("ERROR: ComfyUI not reachable at " + cUrl); })); return; }
+            // Load workflow
+            string forgeRoot = Path.GetDirectoryName(Application.ExecutablePath);
+            string projectRoot = Path.GetFullPath(Path.Combine(forgeRoot, ".."));
+            string wfPath = Path.Combine(projectRoot, "comfyui", "workflows", "sdxl-basic-book-image.api.json");
+            if (config != null && config.ContainsKey("workflowPath")) { string wp = Convert.ToString(config["workflowPath"]); if (Path.IsPathRooted(wp)) wfPath = wp; else wfPath = Path.Combine(projectRoot, wp); }
+            if (!File.Exists(wfPath)) { Invoke((Action)(() => Log("ERROR: Workflow not found at " + wfPath))); return; }
+            string wfJson = File.ReadAllText(wfPath);
+            var wf = json.Deserialize<Dictionary<string, object>>(wfJson);
+            if (wf == null) { Invoke((Action)(() => Log("ERROR: Could not parse workflow JSON"))); return; }
+            // Modify workflow nodes (matching PowerShell invoke script pattern)
+            SetWfNode(wf, "4", "text", txtPrompt.Text);
+            SetWfNode(wf, "5", "text", txtNegative.Text);
+            SetWfNode(wf, "6", "seed", seed);
+            SetWfNode(wf, "6", "steps", (int)numSteps.Value);
+            SetWfNode(wf, "6", "cfg", (double)numCfg.Value);
+            SetWfNode(wf, "6", "sampler_name", comboSampler.SelectedItem != null ? comboSampler.SelectedItem.ToString() : "euler");
+            SetWfNode(wf, "6", "scheduler", comboScheduler.SelectedItem != null ? comboScheduler.SelectedItem.ToString() : "normal");
+            SetWfNode(wf, "6", "width", (int)numWidth.Value);
+            SetWfNode(wf, "6", "height", (int)numHeight.Value);
+            // Send to ComfyUI
+            var payload = new Dictionary<string, object>(); payload["prompt"] = wf;
+            string payloadJson = json.Serialize(payload);
+            Invoke((Action)(() => Log("Sending to ComfyUI...")));
+            var client = new WebClient(); client.Headers.Add("Content-Type", "application/json"); client.Encoding = Encoding.UTF8;
+            string resp;
+            try { resp = client.UploadString(cUrl + "/prompt", payloadJson); } catch (Exception ex) { Invoke((Action)(() => Log("HTTP error: " + ex.Message))); return; }
+            var respObj = json.Deserialize<Dictionary<string, object>>(resp);
+            string promptId = respObj != null && respObj.ContainsKey("prompt_id") ? Convert.ToString(respObj["prompt_id"]) : "";
+            if (string.IsNullOrEmpty(promptId)) { Invoke((Action)(() => Log("No prompt_id in response: " + (resp.Length > 200 ? resp.Substring(0, 200) : resp)))); return; }
+            Invoke((Action)(() => Log("Queued. Prompt ID: " + promptId)));
+            // Poll for completion
+            string outputPath = comfyOutputPath;
+            string imagePath = "";
+            for (int i = 0; i < 180; i++) {
+                System.Threading.Thread.Sleep(1000);
+                try {
+                    var hc = new WebClient(); hc.Encoding = Encoding.UTF8;
+                    string historyJson = hc.DownloadString(cUrl + "/history/" + promptId);
+                    var history = json.Deserialize<Dictionary<string, object>>(historyJson);
+                    if (history != null && history.ContainsKey(promptId)) {
+                        var entry = history[promptId] as Dictionary<string, object>;
+                        if (entry != null && entry.ContainsKey("outputs")) {
+                            var outputs = entry["outputs"] as Dictionary<string, object>;
+                            if (outputs != null) {
+                                foreach (var kv5 in outputs) {
+                                    var kv2 = kv5.Value as Dictionary<string, object>;
+                                    if (kv2 != null && kv2.ContainsKey("images") && kv2["images"] is ArrayList) {
+                                        var images = (ArrayList)kv2["images"];
+                                        if (images != null && images.Count > 0) {
+                                            var img = images[0] as Dictionary<string, object>;
+                                            if (img != null && img.ContainsKey("filename")) {
+                                                imagePath = Path.Combine(outputPath, Convert.ToString(img["filename"]));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(imagePath)) break;
+                    }
+                } catch { }
+            }
+            if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath)) {
+                string finalPath = imagePath;
+                Invoke((Action)(() => { Log("Generated: " + finalPath); SetPreview(finalPath); gridOutputs.Rows.Insert(0, DateTime.Now.ToString("HH:mm:ss"), Path.GetFileName(finalPath), (comboLora1.SelectedItem != null ? comboLora1.SelectedItem.ToString() : ""), seed.ToString(), finalPath); }));
+            } else { Invoke((Action)(() => Log("Generation completed but output image not found in " + outputPath))); }
+        } catch (Exception ex) { Invoke((Action)(() => Log("Generation error: " + ex.Message))); }
         finally { Invoke((Action)(() => { btnGenerate.Enabled = true; })); }
+    }
+    private void SetWfNode(Dictionary<string, object> wf, string nodeId, string key, object value) {
+        if (!wf.ContainsKey(nodeId)) return;
+        var node = wf[nodeId] as Dictionary<string, object>;
+        if (node == null) return;
+        if (!node.ContainsKey("inputs")) { node["inputs"] = new Dictionary<string, object>(); }
+        var nodeInputs = node["inputs"] as Dictionary<string, object>;
+        if (nodeInputs == null) return;
+        nodeInputs[key] = value;
     }
 
     private Button MakeButton(string t, int x, int y, int w, int h, Color bg) { return new Button { Text = t, Left = x, Top = y, Width = w, Height = h, BackColor = bg, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, FlatAppearance = { BorderSize = 0 } }; }
