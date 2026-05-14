@@ -10,8 +10,8 @@
 - **WDAC policy:** Not installed separately. If needed, follow Fusion/Lab hash-based WDAC pattern.
 
 ## Active Dashboard Target
-- **Current:** `Creators\Forge\Open Forge.vbs` (PowerShell — working)
-- **Staged:** `Creators\C-Forge\Forge.exe` (C# — signed, awaiting confirmation)
+- **Current:** `Creators\C-Forge\Forge.exe` (C# — active, trusted, opens directly)
+- **Old PowerShell preserved as Forge-PS:** `Creators\Forge\`
 
 ## PowerShell Source App
 - **Name:** Forge

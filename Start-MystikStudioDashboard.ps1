@@ -277,7 +277,7 @@ $tileW = 185; $tileH = 195; $imgSz = 128
 
 $launcherDefs = @(
     @{Text="Studio"; Color="#DC143C"; Desc="Character Studio - generate characters";  Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")}
-    @{Text="Forge";  Color="#8C325A"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\Forge\Open Forge.vbs")}
+    @{Text="Forge";  Color="#8C325A"; Desc="Character Forge - final composition";     Target=(Join-Path $StudioRoot "Creators\C-Forge\Forge.exe")}
     @{Text="Fusion"; Color="#5A328C"; Desc="Fusion - dual LoRA testing (C#)";         Target=(Join-Path $StudioRoot "Creators\C-Fusion\C-Fusion.exe")}
     @{Text="Lab";    Color="#325A8C"; Desc="LoRA Lab - single LoRA testing";          Target=(Join-Path $StudioRoot "Creators\C-Lab\Lab.exe")}
 )

@@ -1,35 +1,28 @@
-# C-Studio — Future C# Migration Scaffold
+# C-Studio — Staged C# Migration
 
-**Status:** Scaffold only — not an active Dashboard target.
+**Status:** Staged C# migration.
+**Not yet active Dashboard target** until user confirms Studio.exe opens directly.
+**Active Dashboard target remains Studio PowerShell** until confirmation.
 
-## Purpose
-Future C# counterpart for the current PowerShell Studio app.
+## Trust Status
+- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing`
+- **Direct launch test:** Pending user confirmation
+
+## Active Dashboard Target
+- **Current:** `Creators\Studio\Open Studio.vbs` (PowerShell — working)
+- **Staged:** `Creators\C-Studio\Studio.exe` (C# — signed, awaiting confirmation)
 
 ## PowerShell Source App
 - **Name:** Studio
 - **Location:** `H:\MystikStudio\Creators\Studio`
 - **Launch:** `Open Studio.vbs` → `Start-Studio.ps1`
 - **Config:** `Studio.config.json`
-- **Current Dashboard target:** `Creators\Studio\Open Studio.vbs`
 
 ## Planned Implementation
 - **Exe name:** `Studio.exe`
-- **Output path:** `Creators\C-Studio\build\Studio.exe`
+- **Output path:** `Creators\C-Studio\Studio.exe`
 - **Icon:** `H:\MystikStudio\Icons\Studio.ico`
-- **Compile:** `csc.exe /target:winexe /win32icon:"H:\MystikStudio\Icons\Studio.ico"`
-- **Dashboard target (future):** `Creators\C-Studio\build\Studio.exe`
-
-## Known Inputs
-- Character prompts (user input)
-- Config: `Studio.config.json`
-- ComfyUI workflow files
-
-## Known Outputs
-- Generated character images
-- Character save data: `Studio-saves.json`
-- Reports
 
 ## Rollback
 - Original PowerShell files remain at `Creators\Studio\`
 - Archive rollback docs at `Creators\archive\Studio-PowerShell\README.txt`
-- Do not use as active Dashboard target until migration is complete.

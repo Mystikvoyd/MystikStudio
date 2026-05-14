@@ -1,20 +1,28 @@
-Studio-PowerShell — Archive Preparation
+Studio-PowerShell — Preserved as Studio-PS
 =========================================
-Prepared: 2026-05-13
-Baseline: V01.02.01xxB
+Archived: 2026-05-13
+Baseline at migration: V01.02.01xxB
 
-The current PowerShell Studio app has not yet been moved.
-This folder is prepared for the future migration.
+The old PowerShell Studio app is preserved as Studio-PS.
 
-When migration is approved:
-The PowerShell version will be preserved as "Studio-PS".
-The new C# version will be the active Dashboard target.
-Rollback instructions will be added here at that time.
+Current Dashboard Studio target: Creators\Studio\Open Studio.vbs (PowerShell — working)
+Staged C# Studio target: Creators\C-Studio\Studio.exe (C# — signed, blocked by App Control)
 
-Current PowerShell location:
+C-Studio.exe is signed (Valid) with the same dev cert as Fusion/Lab/Forge.
+But Windows Smart App Control blocks it because the self-signed cert lacks cloud reputation.
+
+To activate C-Studio later:
+1. Install a hash-based WDAC supplemental policy for Studio.exe
+   (same pattern as Install-CFusionLocalTrustPolicy.ps1)
+2. Confirm Studio.exe opens directly on user machine
+3. Change Dashboard target to: Creators\C-Studio\Studio.exe
+4. Update this README accordingly
+
+Old PowerShell Studio location (preserved):
   H:\MystikStudio\Creators\Studio
 
-Current Dashboard launch:
-  H:\MystikStudio\Creators\Studio\Open Studio.vbs
-
-Do not delete the original PowerShell files.
+Rollback instructions (if switching later):
+  1. Edit the Dashboard script
+  2. Find the $launcherDefs array and change Studio Target back to:
+       Target=(Join-Path $StudioRoot "Creators\Studio\Open Studio.vbs")
+  3. Save and restart the Dashboard.
