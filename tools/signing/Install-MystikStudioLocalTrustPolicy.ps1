@@ -1,6 +1,8 @@
-# Install-MystikStudioLocalTrustPolicy.ps1
-# Creates and installs a WDAC supplemental policy covering all current C# creator exes.
-# Default: Dry-run mode. Use -Install to actually apply.
+﻿# Install-MystikStudioLocalTrustPolicy.ps1
+# NOTE: WDAC supplemental policy installation was attempted and does not work on this system.
+# The system base WDAC Enterprise signing level blocks self-signed dev certs.
+# Supplemental policies cannot override this here. Keep PowerShell fallback for Lab and Forge.
+# This script is preserved as a reference only.
 
 param([switch]$Install, [switch]$Test, [switch]$Status)
 
@@ -59,7 +61,7 @@ if (-not $isAdmin) { Write-Host "ERROR: -Install requires Administrator privileg
 Write-Host ""
 Write-Host "INSTALLING..." -ForegroundColor Yellow
 
-$scanDir = Join-Path $baseDir "Creators\C-Fusion"
+$scanDir = Join-Path $baseDir "Creators"
 $scanXml = "$env:TEMP\${policyName}_scan.xml"
 $finalXml = "$env:TEMP\${policyName}.xml"
 $binPath = "$env:TEMP\${policyName}.p7b"
@@ -99,3 +101,4 @@ Write-Host "  .\tools\signing\Test-MystikStudioCreatorTrust.ps1" -ForegroundColo
 Write-Host ""
 Write-Host "Then activate C# targets with:" -ForegroundColor Cyan
 Write-Host "  .\tools\Activate-CSharpCreatorTargets.ps1" -ForegroundColor White
+

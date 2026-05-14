@@ -1,23 +1,19 @@
-# C-Lab — Staged C# Migration
+# C-Lab — Staged C# Migration (WDAC Blocked)
 
-**Status:** Staged C# migration. Blocked by system WDAC Enterprise signing level.
-**Dashboard target restored to PowerShell fallback** until admin installs supplemental WDAC policy.
+**Status:** C# migration staged but BLOCKED by Microsoft WDAC Enterprise signing level.
+**Dashboard target is permanently on PowerShell fallback** — the WDAC supplemental policy was attempted and removed.
+**C# activation is NOT supported on this system** unless a future Microsoft-trusted code signing certificate is used.
 
 ## Trust Status
 - **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
 - **Thumbprint:** `03DF7DEC03A342769B3130D3C97888051E2CD22F`
-- **Block source:** System base WDAC policy (Policy ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`) at Enterprise signing level. Self-signed certs do not meet this level.
-- **WDAC supplemental policy:** Pre-generated at `%TEMP%\MystikStudioCLab_v2.p7b` — requires admin to install:
-  ```
-  Copy-Item "$env:TEMP\MystikStudioCLab_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
-  Restart-Computer
-  ```
+- **Block source:** System base WDAC policy (Policy ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`) at Enterprise signing level. Self-signed dev certificates do not meet this level. Supplemental WDAC policy was attempted (policy `{25AB9671-E031-4D8F-9E21-6880D5384D5B}`) and removed because the system did not accept it.
+- **C# activation: NOT SUPPORTED** — The WDAC supplemental policy path does not work on this system. A Microsoft-trusted code signing certificate (EV or standard CA) would be needed to meet the Enterprise signing level. Until then, the PowerShell fallback is the only supported launch path.
 - **Current hash:** `B1CE724529BCA0B1C98539B355A45B1696033BF173B47D992DF64AED3DFCEE7B`
-- **Note:** Dashboard restored to PowerShell fallback (Creators\Lab\Open Lab.vbs). Switch back to C# exe after WDAC policy is installed and confirmed working.
 
 ## Active Dashboard Target
-- **Current:** `Creators\Lab\Open Lab.vbs` (PowerShell — fallback)
-- **C# exe staged at:** `Creators\C-Lab\Lab.exe` (blocked until WDAC policy installed)
+- **Current:** `Creators\Lab\Open Lab.vbs` (PowerShell — permanent fallback)
+- **C# exe staged at:** `Creators\C-Lab\Lab.exe` (blocked — WDAC activation failed, do not retry)
 
 ## Purpose
 Future C# counterpart for the current PowerShell Studio app.

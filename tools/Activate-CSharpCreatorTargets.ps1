@@ -1,6 +1,24 @@
 # Activate-CSharpCreatorTargets.ps1
-# After WDAC trust policy is installed and rebooted, this script tests whether
-# C-Lab and C-Forge are trusted, and only then switches Dashboard targets.
+# DISABLED: WDAC supplemental policy path does not work on this system.
+# The system base WDAC Enterprise signing level blocks self-signed dev certs.
+# Supplemental policies cannot override this on this system.
+# Do not retry C# activation. Keep PowerShell fallback.
+
+Write-Host "=============================================" -ForegroundColor Red
+Write-Host "  C# TARGET ACTIVATION IS DISABLED" -ForegroundColor Red
+Write-Host "=============================================" -ForegroundColor Red
+Write-Host ""
+Write-Host "The WDAC supplemental policy path was attempted and removed." -ForegroundColor Yellow
+Write-Host "This system's base WDAC Enterprise signing level requires" -ForegroundColor Yellow
+Write-Host "a Microsoft-trusted code signing certificate (EV or standard CA)." -ForegroundColor Yellow
+Write-Host "Self-signed dev certificates + WDAC supplemental policy does not work here." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "Dashboard targets remain on PowerShell fallback:" -ForegroundColor Cyan
+Write-Host "  Lab:   Creators\Lab\Open Lab.vbs"
+Write-Host "  Forge: Creators\Forge\Open Forge.vbs"
+Write-Host ""
+Write-Host "C# exes are staged but blocked. Do not retry activation." -ForegroundColor Yellow
+exit 0
 
 $dashPath = "H:\MystikStudio\Start-MystikStudioDashboard.ps1"
 $baseDir = "H:\MystikStudio\Creators"
