@@ -1,34 +1,29 @@
-# C-Forge — Future C# Migration Scaffold
+# C-Forge — Staged C# Migration
 
-**Status:** Scaffold only — not an active Dashboard target.
+**Status:** Staged C# migration.
+**Not yet active Dashboard target** until user confirms Forge.exe opens directly.
+**Active Dashboard target remains Forge PowerShell** until confirmation.
 
-## Purpose
-Future C# counterpart for the current PowerShell Forge app.
+## Trust Status
+- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing`
+- **Direct launch test:** Pending user confirmation
+- **WDAC policy:** Not installed separately. If needed, follow Fusion/Lab hash-based WDAC pattern.
+
+## Active Dashboard Target
+- **Current:** `Creators\Forge\Open Forge.vbs` (PowerShell — working)
+- **Staged:** `Creators\C-Forge\Forge.exe` (C# — signed, awaiting confirmation)
 
 ## PowerShell Source App
 - **Name:** Forge
 - **Location:** `H:\MystikStudio\Creators\Forge`
 - **Launch:** `Open Forge.vbs` → `Start-Forge.ps1`
 - **Config:** `Forge.config.json`
-- **Current Dashboard target:** `Creators\Forge\Open Forge.vbs`
 
 ## Planned Implementation
 - **Exe name:** `Forge.exe`
-- **Output path:** `Creators\C-Forge\build\Forge.exe`
+- **Output path:** `Creators\C-Forge\Forge.exe`
 - **Icon:** `H:\MystikStudio\Icons\Forge.ico`
-- **Compile:** `csc.exe /target:winexe /win32icon:"H:\MystikStudio\Icons\Forge.ico"`
-- **Dashboard target (future):** `Creators\C-Forge\build\Forge.exe`
-
-## Known Inputs
-- Character composition data
-- Config: `Forge.config.json`
-- ComfyUI workflow files
-
-## Known Outputs
-- Production-ready character images
-- Reports
 
 ## Rollback
 - Original PowerShell files remain at `Creators\Forge\`
 - Archive rollback docs at `Creators\archive\Forge-PowerShell\README.txt`
-- Do not use as active Dashboard target until migration is complete.

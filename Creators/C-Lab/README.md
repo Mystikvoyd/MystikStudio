@@ -15,8 +15,8 @@
 - **Direct launch test:** Lab.exe opens successfully (confirmed 2026-05-13).
 
 ## Active Dashboard Target
-- **Current:** `Creators\Lab\Open Lab.vbs` (PowerShell — working)
-- **Staged:** `Creators\C-Lab\Lab.exe` (C# — signed, launches directly, not yet switched)
+- **Current:** `Creators\C-Lab\Lab.exe` (C# — active, trusted, opens directly)
+- **Old PowerShell preserved as Lab-PS:** `Creators\Lab\`
 
 ## Purpose
 Future C# counterpart for the current PowerShell Studio app.
