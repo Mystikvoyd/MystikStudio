@@ -1,21 +1,22 @@
-# C-Forge — Active C# Version
+# C-Forge — Staged C# Version (Blocked)
 
-**Status:** Active Dashboard target. Forge.exe signed, opens directly, ComfyUI integration complete.
+**Status:** Staged C# migration. Blocked by system WDAC Enterprise signing level.
+**Dashboard target restored to PowerShell fallback.**
 
 ## Active Dashboard Target
-- **Current:** `Creators\C-Forge\Forge.exe` (C# — active, signed, requires WDAC refresh after rebuild)
-- **Old PowerShell preserved as Forge-PS:** `Creators\Forge\`
+- **Current:** `Creators\Forge\Open Forge.vbs` (PowerShell — fallback)
+- **C# exe staged at:** `Creators\C-Forge\Forge.exe` (blocked until WDAC policy installed)
 
 ## Trust Status
 - **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
-- **Direct launch test:** Requires WDAC trust refresh after GPU rebuild (Entry 55).
-- **WDAC policy:** Hash-based supplemental policy at `%TEMP%\MystikStudioCForge_v2.p7b`.
-  **Admin must run in elevated PowerShell, then reboot:**
+- **Block source:** System base WDAC policy (Policy ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`) blocks self-signed exes at Enterprise signing level.
+- **WDAC supplemental policy:** Pre-generated at `%TEMP%\MystikStudioCForge_v2.p7b` — requires admin to install:
   ```
   Copy-Item "$env:TEMP\MystikStudioCForge_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
+  Restart-Computer
   ```
 - **Current hash:** `27784822EE7F6AC3E7031199F886C9EAF21840A657AEE1C91CFF5F3D60E85AA4`
-- **Note:** Any rebuild changes this hash. Consider signer-based WDAC to avoid per-rebuild updates.
+- **Note:** Dashboard restored to PowerShell fallback (Creators\Forge\Open Forge.vbs). Switch back to C# exe after WDAC policy is installed and confirmed working.
 
 ## Features
 - Triple LoRA character composition (3 LoRA slots with individual strength controls)

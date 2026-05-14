@@ -1339,3 +1339,31 @@ Notes:
     Then reboot.
   Lab and Forge still blocked until admin runs the above commands.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 60
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Lab Forge Application Control diagnosis
+Change Type: Application Control trust diagnosis
+Summary: Diagnosed persistent Lab and Forge Application Control blocks — confirmed system base WDAC policy (Policy ID {0283ac0f-fff1-49ae-ada1-8a933130cad6}) blocks self-signed exes at Enterprise signing level. Since supplemental WDAC policies cannot be installed without admin rights, restored Dashboard targets to PowerShell fallback.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Lab and Forge targets restored to PowerShell fallback)
+  Creators\C-Lab\README.md (updated - fallback status, block source, policy ID)
+  Creators\C-Forge\README.md (updated - fallback status, block source, policy ID)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Actual block source identified via Microsoft-Windows-CodeIntegrity/Operational events:
+    Event ID 3077 and 3033 for both Lab.exe and Forge.exe.
+    Policy ID: {0283ac0f-fff1-49ae-ada1-8a933130cad6} — system base WDAC Enterprise signing level.
+    Reason: "did not meet the Enterprise signing level requirements".
+  This is NOT a Smart App Control block — it is the system's base WDAC policy that requires
+    Enterprise signing (certificates that chain to a trusted root via Microsoft). Self-signed
+    dev certificates do not meet this level.
+  Supplemental policies (MystikStudioCLab_v2.p7b, MystikStudioCForge_v2.p7b) can override this
+    but require Admin privileges to copy to C:\Windows\System32\CodeIntegrity\.
+  Since admin rights are unavailable, Dashboard targets restored to PowerShell:
+    Lab: Creators\Lab\Open Lab.vbs
+    Forge: Creators\Forge\Open Forge.vbs
+  C-Lab and C-Forge files preserved at Creators\C-Lab\ and Creators\C-Forge\ for future use
+    when admin installs the supplemental WDAC policies.
+  Dashboard baseline remains V01.02.01xxB.
