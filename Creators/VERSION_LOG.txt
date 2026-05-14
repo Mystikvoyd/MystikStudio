@@ -1279,3 +1279,24 @@ Notes:
     Fusion: Creators\C-Fusion\C-Fusion.exe (C# active)
     Lab: Creators\C-Lab\Lab.exe (C# active)
   Dashboard version V01.02.01xxB confirmed.
+
+Entry 57
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Dashboard VBS launcher
+Change Type: dashboard launcher bugfix
+Summary: Fixed VBS Dashboard launcher Null conversion error by adding safe Null handling around CStr and preserving normal Dashboard startup.
+Files Changed:
+  Open MystikStudio Dashboard.vbs (updated - replaced direct CStr(proc.CommandLine) with SafeStr helper;
+    added On Error Resume Next / On Error Goto 0 around WMI enumeration;
+    SafeStr returns empty string for Null/Empty values)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Root cause: WMI query "SELECT CommandLine FROM Win32_Process WHERE Name='powershell.exe'" returned
+    a process with a Null CommandLine. Direct CStr(Null) in VBScript throws "Invalid use of Null" (0x800A005E).
+    This prevented the VBS launcher from starting the Dashboard.
+  Fix: Added SafeStr() function that checks IsNull/IsEmpty before calling CStr, returning "" for Null values.
+    Also wrapped the WMI enumeration in On Error Resume Next to handle unexpected WMI failures gracefully.
+  VBS launcher tested with cscript.exe — no errors, Dashboard opened (PID 49600, title "MystikStudio Dashboard v01.02.01xxB").
+  Dashboard direct launch also working (Show-ExistingDashboardWindow brings existing window to front).
+  Dashboard baseline remains V01.02.01xxB.
