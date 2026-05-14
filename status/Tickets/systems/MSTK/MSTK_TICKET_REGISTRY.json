@@ -1,0 +1,10 @@
+{
+  "system_code": "MSTK",
+  "system_name": "MystikStudio",
+  "ticket_format": "MSTK-T-{parent:09}-{stub:04}",
+  "next_parent_number": 3,
+  "last_issued_ticket": "MSTK-T-000000002-0000",
+  "ticket_count": 2,
+  "stub_count": 0,
+  "updated_at": "2026-05-14"
+}
