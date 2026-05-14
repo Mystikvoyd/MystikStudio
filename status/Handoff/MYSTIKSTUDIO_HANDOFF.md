@@ -154,6 +154,18 @@ Lab user config folder:
 
 `H:\MystikStudio\Creators\C-Lab\configs`
 
+Lab ComfyUI workflow repo path:
+
+`Creators/comfyui/workflows/sdxl-basic-book-image.api.json`
+
+Lab ComfyUI workflow local path:
+
+`H:\MystikStudio\Creators\comfyui\workflows\sdxl-basic-book-image.api.json`
+
+Important workflow path note:
+
+Lab currently builds the workflow path from the Lab executable folder by going up one level to `H:\MystikStudio\Creators`, then appending `comfyui\workflows\sdxl-basic-book-image.api.json`. The correct current repo path is therefore `Creators/comfyui/workflows/sdxl-basic-book-image.api.json`, not repo-root `comfyui/workflows/sdxl-basic-book-image.api.json`.
+
 Forge source:
 
 `H:\MystikStudio\Creators\C-Forge\Forge.cs`
@@ -371,7 +383,7 @@ Required UI wiring:
 - LoRA enabled state
 - LoRA strength
 
-Status: UI exists. Workflow wiring must be verified and fixed if the workflow contains a LoRA node. If no node exists, add or document the missing workflow requirement before forcing support.
+Status: UI exists. Current Lab source dynamically adds a `LoraLoader` node during generation when LoRA is enabled and rewires KSampler plus positive and negative CLIP encoders to that node. This must still be tested locally against the running ComfyUI payload before marking verified.
 
 ### Phase 3: ControlNet workflow
 
@@ -392,7 +404,7 @@ Required UI wiring:
 - Start
 - End
 
-Status: UI exists. Current report says ControlNet is UI-only in Lab. Do not fake support. Wire only after confirming the workflow node map.
+Status: UI exists. Current workflow does not contain ControlNet nodes. ControlNet is UI-only until the workflow is expanded with real ControlNet nodes and Lab maps to those nodes.
 
 ### Phase 4: VAE override
 
@@ -496,14 +508,16 @@ Before committing, Leonardo should:
 
 ## Current Next Action
 
-Leonardo is currently investigating and wiring the Lab ComfyUI workflow.
+Leonardo is currently investigating and verifying the Lab ComfyUI workflow.
 
 Current immediate target:
 
-1. Inspect `comfyui/workflows/sdxl-basic-book-image.api.json`.
-2. Map workflow nodes.
-3. Wire selected checkpoint if a checkpoint loader node exists.
-4. Wire selected LoRA if a LoRA loader node exists.
-5. Report ControlNet and Realism Boost as either wired or not supported by current workflow.
-6. Do not fake wiring.
-7. Preserve currently working UI and generation behavior.
+1. Inspect `Creators/comfyui/workflows/sdxl-basic-book-image.api.json`.
+2. Confirm Lab resolves the local workflow path as `H:\MystikStudio\Creators\comfyui\workflows\sdxl-basic-book-image.api.json`.
+3. Map workflow nodes.
+4. Verify selected checkpoint changes node `3` input `ckpt_name` in the outgoing ComfyUI payload.
+5. Verify selected LoRA dynamically adds a `LoraLoader` node and rewires node `7` model plus nodes `4` and `5` clip inputs.
+6. Report ControlNet as UI-only because the current workflow does not contain ControlNet nodes.
+7. Report Realism Boost as UI-only because no defined workflow behavior exists yet.
+8. Do not fake wiring.
+9. Preserve currently working UI and generation behavior.
