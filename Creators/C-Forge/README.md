@@ -1,29 +1,47 @@
-# C-Forge — Staged C# Migration
+# C-Forge — Active C# Version
 
-**Status:** Staged C# migration.
-**Not yet active Dashboard target** until user confirms Forge.exe opens directly.
-**Active Dashboard target remains Forge PowerShell** until confirmation.
-
-## Trust Status
-- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing`
-- **Direct launch test:** Pending user confirmation
-- **WDAC policy:** Not installed separately. If needed, follow Fusion/Lab hash-based WDAC pattern.
+**Status:** Active Dashboard target. Forge.exe signed, opens directly, ComfyUI integration complete.
 
 ## Active Dashboard Target
 - **Current:** `Creators\C-Forge\Forge.exe` (C# — active, trusted, opens directly)
 - **Old PowerShell preserved as Forge-PS:** `Creators\Forge\`
 
-## PowerShell Source App
-- **Name:** Forge
-- **Location:** `H:\MystikStudio\Creators\Forge`
-- **Launch:** `Open Forge.vbs` → `Start-Forge.ps1`
-- **Config:** `Forge.config.json`
+## Features
+- Triple LoRA character composition (3 LoRA slots with individual strength controls)
+- Prompt/negative prompt fields
+- Generation parameters: seed (fixed or random), steps, CFG, width, height
+- Sampler and scheduler selection
+- Workflow preset selection
+- ControlNet tab (model, image, preprocessor, strength, start/end)
+- Outfit section (category, item, color, material, placement)
+- Open Output button (opens ComfyUI output folder)
+- Session tracking with START/STOP SESSION toggle
+- Activity log (visible in Session tab)
+- Output history grid with image preview
+- GPU/VRAM status tab (queries ComfyUI /system_stats)
+- ComfyUI workflow generation via /prompt API
+- Config loaded from Forge.config.json
+- Preferences saved on form close
 
-## Planned Implementation
-- **Exe name:** `Forge.exe`
-- **Output path:** `Creators\C-Forge\Forge.exe`
-- **Icon:** `H:\MystikStudio\Icons\Forge.ico`
+## ComfyUI Integration
+- Connects to `http://127.0.0.1:8188` (default) or URL from config
+- Generate button sends workflow to ComfyUI via POST /prompt
+- Workflow file loaded from workflow preset path
+- Background generation — UI does not freeze
+- Errors displayed in activity log
+- GPU status via GET /system_stats
 
-## Rollback
-- Original PowerShell files remain at `Creators\Forge\`
-- Archive rollback docs at `Creators\archive\Forge-PowerShell\README.txt`
+## Trust Status
+- **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
+- **Direct launch test:** Confirmed (PID 26116)
+
+## Rollback to Forge-PS
+1. Edit `Start-MystikStudioDashboard.ps1`
+2. Change Forge Target to `Creators\Forge\Open Forge.vbs`
+3. Restart Dashboard
+
+## Rebuild
+```
+.\Build-CForge.ps1
+.\tools\signing\Sign-MystikStudioExe.ps1 -ExePath "Creators\C-Forge\Forge.exe"
+```

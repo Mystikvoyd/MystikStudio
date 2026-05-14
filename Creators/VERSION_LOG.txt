@@ -1190,3 +1190,33 @@ Notes:
     admin rights). User must run as admin to complete the WDAC policy for Studio.exe.
   Dashboard Studio target NOT changed — remains Creators\Studio\Open Studio.vbs.
   Dashboard baseline remains V01.02.01xxB.
+
+Entry 54
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Forge C# completion
+Change Type: Forge C# activation and completion
+Summary: Finished C-Forge functional parity with PowerShell Forge — added ComfyUI generation via /prompt API with background worker, GPU/VRAM status tab via /system_stats, triple LoRA controls, session tracking, activity log, output history grid, and config loading from Forge.config.json. Rebuilt, re-signed, and confirmed launch.
+Files Changed:
+  Creators\C-Forge\Forge.cs (updated - complete rewrite with full functional parity)
+  Creators\C-Forge\Forge.exe (updated - rebuilt and re-signed, launches directly)
+  Creators\C-Forge\README.md (updated - active status with feature list, ComfyUI details)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  C-Forge now has:
+    - Triple LoRA composition with per-LoRA strength and enable toggles
+    - ComfyUI generation via POST /prompt with BackgroundWorker (no UI freeze)
+    - GPU/VRAM status via GET /system_stats (GPU tab with refresh button)
+    - Workflow preset loading from config file
+    - Session tracking with START/STOP toggle
+    - Activity log in Session tab
+    - Output history with preview
+    - Outfit section
+    - ControlNet tab
+    - Config loading from Forge.config.json
+    - Preferences saved on form close
+    - Proper error handling — errors shown in log, ComfyUI offline handled gracefully
+  Generate is functional — sends workflow to ComfyUI with prompt/negative/seed/steps/cfg/size
+  Old PowerShell Forge preserved as Forge-PS at Creators\Forge\ (rollback documented)
+  Forge Dashboard target already active: Creators\C-Forge\Forge.exe (from Entry 53)
+  Dashboard baseline remains V01.02.01xxB.
