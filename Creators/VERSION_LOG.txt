@@ -1058,3 +1058,28 @@ Notes:
   Risks identified: Each exe will face Smart App Control blocks (needs WDAC policy
     or CA cert, same as C-Fusion). Studio has highest complexity — largest migration risk.
   C-Studio, C-Forge, C-Lab scaffold folders created with src/, build/, logs/ subdirs.
+
+Entry 49
+-------
+Dashboard Version: V01.02.01xxB (baseline not bumped)
+Component: Lab C# migration
+Change Type: Lab C# migration
+Summary: Migrated Lab from PowerShell launcher to C# exe counterpart, preserved old Lab as Lab-PS, embedded the Lab icon, and updated the Dashboard Lab target.
+Files Changed:
+  Start-MystikStudioDashboard.ps1 (updated - Lab target changed from Open Lab.vbs to C-Lab\Lab.exe)
+  Creators\C-Lab\Lab.cs (created - C# WinForms equivalent of PowerShell Lab)
+  Creators\C-Lab\Build-CLab.ps1 (created - build script following Fusion pattern)
+  Creators\C-Lab\Lab.exe (created - compiled WinForms exe, 351KB, Lab icon embedded)
+  Creators\archive\Lab-PowerShell\README.txt (updated - full rollback instructions)
+  Creators\VERSION_LOG.txt (updated - this entry)
+Notes:
+  Dashboard Lab target changed: Creators\Lab\Open Lab.vbs -> Creators\C-Lab\Lab.exe
+  Lab.exe compiled with /win32icon:"H:\MystikStudio\Icons\Lab.ico" — Lab icon embedded.
+  C# Lab preserved the core tab structure: Generation, Models, ControlNet, Extras.
+  Tabs contain: prompt/negative, LoRA selection, seed/steps/CFG/width/height,
+    sampler/scheduler, profile/preset, outfit section, checkpoint/diffuser,
+    ControlNet controls, workflow preset, session, and output history grid with preview.
+  Old PowerShell Lab preserved at Creators\Lab\ (untouched, documented as Lab-PS).
+  Rollback doc updated with restore instructions.
+  Studio, Forge, Fusion, MystikWorker all unchanged.
+  Dashboard baseline remains V01.02.01xxB.
