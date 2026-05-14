@@ -14,12 +14,36 @@ $SavesPath          = Join-Path $StudioRoot "Studio-saves.json"
 $WorkflowScriptPath = Join-Path $ProjectRoot "Creators\comfyui\scripts\Invoke-ComfyCharacterLockImage.ps1"
 $AssetsRoot         = Join-Path $ProjectRoot "book-design\assets"
 
+function Resolve-FirstExistingPath {
+    param(
+        [string[]]$Candidates,
+        [string]$Fallback
+    )
+    foreach ($candidate in $Candidates) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+            return $candidate
+        }
+    }
+    return $Fallback
+}
+
+$ConfigPath = Resolve-FirstExistingPath -Candidates @(
+    (Join-Path $StudioRoot "Studio.config.json"),
+    (Join-Path $StudioRoot "character-generator.config.json")
+) -Fallback (Join-Path $StudioRoot "Studio.config.json")
+
+$SavesPath = Resolve-FirstExistingPath -Candidates @(
+    (Join-Path $StudioRoot "Studio-saves.json"),
+    (Join-Path $StudioRoot "character-generator-saves.json")
+) -Fallback (Join-Path $StudioRoot "Studio-saves.json")
+
 function Read-GeneratorConfig {
     if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) {
         throw "Missing generator config: $ConfigPath"
     }
 
-    Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
+    $raw = [System.IO.File]::ReadAllText($ConfigPath, [System.Text.Encoding]::UTF8)
+    $raw | ConvertFrom-Json
 }
 
 function Get-ConfigArray {
@@ -100,7 +124,8 @@ function Read-GeneratorSaves {
         return New-EmptySavesDocument
     }
 
-    $doc = Get-Content -LiteralPath $SavesPath -Raw | ConvertFrom-Json
+    $raw = [System.IO.File]::ReadAllText($SavesPath, [System.Text.Encoding]::UTF8)
+    $doc = $raw | ConvertFrom-Json
     if ($null -eq $doc) {
         return New-EmptySavesDocument
     }
@@ -1364,6 +1389,18 @@ if ($ValidateOnly) {
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class StudioTaskbarIcon {
+    [DllImport("user32.dll")]
+    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    public const uint WM_SETICON = 0x0080;
+    public const int ICON_BIG = 1;
+    public const int ICON_SMALL = 0;
+    public const int ICON_SMALL2 = 2;
+}
+"@
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $Characters = Get-ConfigArray -Value $Config.characters
@@ -1377,6 +1414,17 @@ $form.Size = New-Object System.Drawing.Size(1450, 980)
 $form.MinimumSize = New-Object System.Drawing.Size(1320, 900)
 $form.BackColor = [System.Drawing.Color]::FromArgb(245, 242, 236)
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+
+$iconPath = Join-Path $ProjectRoot "Icons\Studio.ico"
+if (Test-Path $iconPath) {
+    $form.Icon = [System.Drawing.Icon]::new($iconPath)
+    $form.Add_Shown({
+        $h = $form.Icon.Handle
+        [StudioTaskbarIcon]::SendMessage($form.Handle, [StudioTaskbarIcon]::WM_SETICON, [IntPtr][StudioTaskbarIcon]::ICON_SMALL, $h)
+        [StudioTaskbarIcon]::SendMessage($form.Handle, [StudioTaskbarIcon]::WM_SETICON, [IntPtr][StudioTaskbarIcon]::ICON_BIG, $h)
+        [StudioTaskbarIcon]::SendMessage($form.Handle, [StudioTaskbarIcon]::WM_SETICON, [IntPtr][StudioTaskbarIcon]::ICON_SMALL2, $h)
+    }.GetNewClosure())
+}
 
 $toolTip = New-Object System.Windows.Forms.ToolTip
 $toolTip.AutoPopDelay = 20000

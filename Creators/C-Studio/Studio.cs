@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -29,19 +29,27 @@ public class StudioForm : Form {
         right.RowStyles.Add(new RowStyle(SizeType.Percent, 32));
         this.Controls.Add(right);
 
-        var left = new Panel { Dock = DockStyle.Left, Width = 620, Padding = new Padding(6) };
+        var left = new Panel { Dock = DockStyle.Left, Width = 500, Padding = new Padding(6) };
         this.Controls.Add(left);
 
+        // 3x2 command panel (Fusion style) below tabs
         tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 8.5f) };
         left.Controls.Add(tabs);
 
-        var actionBar = new Panel { Dock = DockStyle.Bottom, Height = 48, BackColor = Color.FromArgb(45, 45, 52) };
-        left.Controls.Add(actionBar);
-        btnGenerate = NewButton("Generate", 4, 8, 90, 32, Color.FromArgb(220, 60, 30));
-        btnRefresh = NewButton("Refresh Models", 98, 8, 90, 32, Color.FromArgb(50, 50, 60));
-        btnOutput = NewButton("Open Output", 192, 8, 80, 32, Color.FromArgb(50, 50, 60));
+        var cmdPanel = new Panel { Dock = DockStyle.Bottom, Height = 150, BackColor = Color.FromArgb(32, 32, 40) };
+        left.Controls.Add(cmdPanel);
+
+        var cmdGrid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 2, Padding = new Padding(4) };
+        cmdPanel.Controls.Add(cmdGrid);
+
+        var gbRun = CmdGroupBox(cmdGrid, 0, 0, "Run");
+        var gbFiles = CmdGroupBox(cmdGrid, 2, 0, "Files");
+        var gbTools = CmdGroupBox(cmdGrid, 2, 1, "Tools");
+
+        btnGenerate = CmdButton(gbRun, "Generate", Color.FromArgb(200, 50, 20), FontStyle.Bold);
+        btnOutput = CmdButton(gbFiles, "Output", Color.FromArgb(50, 50, 60), FontStyle.Regular);
         btnOutput.Click += (o, e) => { string p = @"C:\Users\Michael\Documents\ComfyUI\output"; if (Directory.Exists(p)) System.Diagnostics.Process.Start(p); };
-        actionBar.Controls.Add(btnGenerate); actionBar.Controls.Add(btnRefresh); actionBar.Controls.Add(btnOutput);
+        btnRefresh = CmdButton(gbTools, "Refresh", Color.FromArgb(50, 50, 60), FontStyle.Regular);
 
         tabChar = new TabPage("Character") { Padding = new Padding(6), AutoScroll = true };
         tabPose = new TabPage("Pose & Identity") { Padding = new Padding(6) };
@@ -73,6 +81,17 @@ public class StudioForm : Form {
 
     private Button NewButton(string t, int x, int y, int w, int h, Color bg) { return new Button { Text = t, Left = x, Top = y, Width = w, Height = h, BackColor = bg, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, FlatAppearance = { BorderSize = 0 } }; }
     private Label Lbl(string t, int x, int y, int w = 100, int h = 18) { return new Label { Text = t, Left = x, Top = y, Width = w, Height = h }; }
+    private GroupBox CmdGroupBox(TableLayoutPanel parent, int col, int row, string title) {
+        var gb = new GroupBox { Text = "  " + title, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 7.5f, FontStyle.Bold), ForeColor = Color.FromArgb(150, 170, 200) };
+        parent.Controls.Add(gb, col, row);
+        return gb;
+    }
+    private Button CmdButton(GroupBox parent, string text, Color bg, FontStyle fs) {
+        var btn = new Button { Text = text, Width = parent.Width - 12, Height = 26, FlatStyle = FlatStyle.Flat, FlatAppearance = { BorderSize = 0 }, Font = new Font("Segoe UI", 8, fs), BackColor = bg, ForeColor = Color.White, TextAlign = ContentAlignment.MiddleCenter };
+        btn.Left = 6; btn.Top = 18;
+        parent.Controls.Add(btn);
+        return btn;
+    }
     private void SetPreview(string path) { if (string.IsNullOrEmpty(path) || !File.Exists(path)) return; try { if (previewBox.Image != null) previewBox.Image.Dispose(); previewBox.Image = Image.FromFile(path); } catch { } }
 
     private void BuildCharTab() {
@@ -179,3 +198,4 @@ class Program {
         Application.Run(new StudioForm());
     }
 }
+

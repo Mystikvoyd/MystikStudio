@@ -1,1 +1,4 @@
-001.002.001
+Component: PowerShell Studio
+Version: 0.1.0-alpha.1
+Schema Version: 1
+Stage: alpha
