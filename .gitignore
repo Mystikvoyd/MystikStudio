@@ -8,3 +8,19 @@
 *-err.log
 *-out.log
 /.git-cache/
+
+# Secrets
+*Token*.txt
+*token*.txt
+*.token
+
+# Local runtime and build artifacts
+**/logs/
+*.log
+.backups/
+local-debug-backups/
+*.tmp
+*.bak
+**/bin/
+**/obj/
+**/seed_diagnostic.txt
