@@ -9,9 +9,12 @@
 - **Smart App Control:** Exe is signed but self-signed cert lacks cloud reputation.
   After the GPU status rebuild (Entry 55), the new binary hash requires a WDAC trust refresh.
 - **WDAC policy:** Hash-based supplemental policy generated at `%TEMP%\MystikStudioCLab_v2.p7b`.
-  Admin must install: `Copy-Item "$env:TEMP\MystikStudioCLab_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force`
-  then reboot.
-- **Direct launch test:** Blocked until admin installs the WDAC policy (previously confirmed on build before GPU rebuild).
+  **Admin must run the following in an elevated PowerShell, then reboot:**
+  ```
+  Copy-Item "$env:TEMP\MystikStudioCLab_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
+  ```
+- **Current hash:** `B1CE724529BCA0B1C98539B355A45B1696033BF173B47D992DF64AED3DFCEE7B`
+- **Note:** Any future rebuild changes this hash, requiring a new WDAC policy. Consider switching to signer-based trust to avoid per-rebuild policy updates.
 
 ## Active Dashboard Target
 - **Current:** `Creators\C-Lab\Lab.exe` (C# — active, trusted, opens directly)

@@ -8,9 +8,14 @@
 
 ## Trust Status
 - **Signature:** Signed with `CN=MystikStudio Local Dev Code Signing` — Status: Valid
-- **Direct launch test:** Confirmed on previous builds. After GPU status rebuild (Entry 55), new binary hash requires WDAC trust refresh.
-- **WDAC policy:** Hash-based supplemental policy at `%TEMP%\MystikStudioCForge_v2.p7b`. Admin must run:
-  `Copy-Item "$env:TEMP\MystikStudioCForge_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force` then reboot.
+- **Direct launch test:** Requires WDAC trust refresh after GPU rebuild (Entry 55).
+- **WDAC policy:** Hash-based supplemental policy at `%TEMP%\MystikStudioCForge_v2.p7b`.
+  **Admin must run in elevated PowerShell, then reboot:**
+  ```
+  Copy-Item "$env:TEMP\MystikStudioCForge_v2.p7b" "C:\Windows\System32\CodeIntegrity\" -Force
+  ```
+- **Current hash:** `27784822EE7F6AC3E7031199F886C9EAF21840A657AEE1C91CFF5F3D60E85AA4`
+- **Note:** Any rebuild changes this hash. Consider signer-based WDAC to avoid per-rebuild updates.
 
 ## Features
 - Triple LoRA character composition (3 LoRA slots with individual strength controls)
