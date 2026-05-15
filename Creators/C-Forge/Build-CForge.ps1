@@ -42,9 +42,15 @@ gridOutputs.Rows.Insert(0, DateTime.Now.ToString("HH:mm:ss"), Path.GetFileName(f
 $forgeSource = Join-Path $PSScriptRoot "Forge.cs"
 $generatedSource = Join-Path $PSScriptRoot "_generated_Forge.cs"
 $forgeOut = Join-Path $PSScriptRoot "Forge.exe"
+$iconArg = ""
+if (Test-Path "H:\MystikStudio\Icons\Forge.ico") {
+    $iconArg = '/win32icon:"H:\MystikStudio\Icons\Forge.ico"'
+} else {
+    Write-Host "WARNING: Forge.ico not found - building without icon" -ForegroundColor Yellow
+}
 if (Test-Path $forgeSource) {
     New-PatchedForgeSource -SourcePath $forgeSource -OutPath $generatedSource
-    & $csc /target:winexe /win32icon:"H:\MystikStudio\Icons\Forge.ico" /out:$forgeOut @refArgs (Join-Path $PSScriptRoot "_version.cs"), $generatedSource, $shared 2>&1
+    & $csc /target:winexe $iconArg /out:$forgeOut @refArgs (Join-Path $PSScriptRoot "_version.cs"), $generatedSource, $shared 2>&1
     if ($LASTEXITCODE -eq 0) { Write-Host "Forge.exe built: $forgeOut" -ForegroundColor Green } else { Write-Host "Forge build failed" -ForegroundColor Red }
 } else { Write-Host "Forge.cs not found" -ForegroundColor Yellow }
 

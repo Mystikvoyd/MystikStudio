@@ -43,11 +43,11 @@ public class ForgeForm : Form {
         LoadConfig();
 
         this.Text = "Character Forge";
-        this.Size = new Size(1450, 980);
+        this.WindowState = FormWindowState.Maximized;
         this.StartPosition = FormStartPosition.CenterScreen;
         this.Font = new Font("Segoe UI", 9);
         string iconPath = @"H:\MystikStudio\Icons\Forge.ico";
-        if (File.Exists(iconPath)) this.Icon = new Icon(iconPath);
+        if (File.Exists(iconPath)) { try { this.Icon = new Icon(iconPath); } catch { } }
 
         var right = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(8), ColumnCount = 1, RowCount = 2 };
         right.RowStyles.Add(new RowStyle(SizeType.Percent, 65));
@@ -233,53 +233,70 @@ public class ForgeForm : Form {
 
     private void BuildCompTab() {
         int y = 4;
+        int cw = 450; // control width
         tabMain.Controls.Add(Lbl("Prompt", 8, y));
-        txtPrompt = new TextBox { Left = 8, Top = y + 18, Width = 440, Height = 55, Multiline = true, ScrollBars = ScrollBars.Vertical, Text = Cfg("prompt") };
+        txtPrompt = new TextBox { Left = 8, Top = y + 18, Width = cw, Height = 55, Multiline = true, ScrollBars = ScrollBars.Vertical, Text = Cfg("prompt") };
         tabMain.Controls.Add(txtPrompt); y += 80;
         tabMain.Controls.Add(Lbl("Negative prompt", 8, y));
-        txtNegative = new TextBox { Left = 8, Top = y + 18, Width = 440, Height = 45, Multiline = true, ScrollBars = ScrollBars.Vertical, Text = Cfg("negativePrompt") };
+        txtNegative = new TextBox { Left = 8, Top = y + 18, Width = cw, Height = 45, Multiline = true, ScrollBars = ScrollBars.Vertical, Text = Cfg("negativePrompt") };
         tabMain.Controls.Add(txtNegative); y += 70;
-        int lx = 8;
-        tabMain.Controls.Add(Lbl("LoRA 1", lx, y + 2, 60));
-        comboLora1 = MakeCombo(lx + 60, y, 200); comboLora1.Items.Add("None");
-        chkLora1 = new CheckBox { Text = "Use", Left = lx + 264, Top = y + 2, Width = 40 };
-        numLora1Str = new NumericUpDown { Left = lx + 308, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.80m };
+        // LoRA 1
+        tabMain.Controls.Add(Lbl("LoRA 1", 8, y + 2, 50));
+        comboLora1 = MakeCombo(60, y, 220); comboLora1.Items.Add("None");
+        chkLora1 = new CheckBox { Text = "Use", Left = 286, Top = y + 2, Width = 40 };
+        numLora1Str = new NumericUpDown { Left = 330, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.80m };
         tabMain.Controls.Add(comboLora1); tabMain.Controls.Add(chkLora1); tabMain.Controls.Add(numLora1Str); y += 24;
-        tabMain.Controls.Add(Lbl("LoRA 2", lx, y + 2, 60));
-        comboLora2 = MakeCombo(lx + 60, y, 200); comboLora2.Items.Add("None");
-        chkLora2 = new CheckBox { Text = "Use", Left = lx + 264, Top = y + 2, Width = 40 };
-        numLora2Str = new NumericUpDown { Left = lx + 308, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.65m };
+        // LoRA 2
+        tabMain.Controls.Add(Lbl("LoRA 2", 8, y + 2, 50));
+        comboLora2 = MakeCombo(60, y, 220); comboLora2.Items.Add("None");
+        chkLora2 = new CheckBox { Text = "Use", Left = 286, Top = y + 2, Width = 40 };
+        numLora2Str = new NumericUpDown { Left = 330, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.65m };
         tabMain.Controls.Add(comboLora2); tabMain.Controls.Add(chkLora2); tabMain.Controls.Add(numLora2Str); y += 24;
-        tabMain.Controls.Add(Lbl("LoRA 3", lx, y + 2, 60));
-        comboLora3 = MakeCombo(lx + 60, y, 200); comboLora3.Items.Add("None");
-        chkLora3 = new CheckBox { Text = "Use", Left = lx + 264, Top = y + 2, Width = 40 };
-        numLora3Str = new NumericUpDown { Left = lx + 308, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.50m };
+        // LoRA 3
+        tabMain.Controls.Add(Lbl("LoRA 3", 8, y + 2, 50));
+        comboLora3 = MakeCombo(60, y, 220); comboLora3.Items.Add("None");
+        chkLora3 = new CheckBox { Text = "Use", Left = 286, Top = y + 2, Width = 40 };
+        numLora3Str = new NumericUpDown { Left = 330, Top = y, Width = 70, DecimalPlaces = 2, Minimum = 0, Maximum = 2, Increment = 0.05m, Value = 0.50m };
         tabMain.Controls.Add(comboLora3); tabMain.Controls.Add(chkLora3); tabMain.Controls.Add(numLora3Str); y += 30;
-        tabMain.Controls.Add(Lbl("Seed", 8, y)); tabMain.Controls.Add(Lbl("Steps", 100, y)); tabMain.Controls.Add(Lbl("CFG", 180, y)); tabMain.Controls.Add(Lbl("Width", 250, y)); tabMain.Controls.Add(Lbl("Height", 330, y)); y += 18;
-        chkRandomSeed = new CheckBox { Text = "Rnd", Left = 8, Top = y, Width = 40, Height = 18, Checked = true };
-        numSeed = new NumericUpDown { Left = 46, Top = y, Width = 50, Maximum = int.MaxValue, Minimum = 1, Value = new Random().Next(1, int.MaxValue), Enabled = false };
-        chkRandomSeed.CheckedChanged += (o, e) => { numSeed.Enabled = !chkRandomSeed.Checked; if (chkRandomSeed.Checked) numSeed.Value = new Random().Next(1, int.MaxValue); };
-        numSteps = new NumericUpDown { Left = 100, Top = y, Width = 60, Minimum = 1, Maximum = 150, Value = 30 };
-        numCfg = new NumericUpDown { Left = 170, Top = y, Width = 60, DecimalPlaces = 1, Minimum = 1, Maximum = 20, Increment = 0.1m, Value = 6 };
-        numWidth = new NumericUpDown { Left = 240, Top = y, Width = 70, Minimum = 256, Maximum = 2048, Increment = 64, Value = 1024 };
-        tabMain.Controls.Add(new Label { Text = "x", Left = 312, Top = y + 2, Width = 12 });
-        numHeight = new NumericUpDown { Left = 324, Top = y, Width = 70, Minimum = 256, Maximum = 2048, Increment = 64, Value = 1024 };
-        tabMain.Controls.Add(chkRandomSeed); tabMain.Controls.Add(numSeed); tabMain.Controls.Add(numSteps); tabMain.Controls.Add(numCfg); tabMain.Controls.Add(numWidth); tabMain.Controls.Add(numHeight); y += 24;
-        tabMain.Controls.Add(Lbl("Sampler", 8, y, 120)); tabMain.Controls.Add(Lbl("Scheduler", 140, y, 120)); y += 18;
-        comboSampler = MakeCombo(8, y + 18, 120); comboSampler.Items.AddRange(new[] { "dpmpp_2m", "dpmpp_2m_sde", "euler", "euler_ancestral", "heun", "ddim" }); comboSampler.SelectedIndex = 0;
+        // Row 1: Seed, Random, Width, Height
+        tabMain.Controls.Add(Lbl("Seed", 8, y));
+        numSeed = new NumericUpDown { Left = 50, Top = y, Width = 80, Maximum = int.MaxValue, Minimum = 1, Value = new Random().Next(1, int.MaxValue), BackColor = Color.White, ForeColor = Color.Black };
+        tabMain.Controls.Add(numSeed);
+        chkRandomSeed = new CheckBox { Text = "Random", Left = 138, Top = y, Width = 70, Height = 18, Checked = true };
+        chkRandomSeed.CheckedChanged += (o, e) => { if (!chkRandomSeed.Checked) { numSeed.ForeColor = Color.Black; numSeed.BackColor = Color.White; } };
+        tabMain.Controls.Add(chkRandomSeed);
+        tabMain.Controls.Add(Lbl("Width", 220, y));
+        numWidth = new NumericUpDown { Left = 220, Top = y + 18, Width = 70, Minimum = 256, Maximum = 2048, Increment = 64, Value = 1024, BackColor = Color.White, ForeColor = Color.Black };
+        tabMain.Controls.Add(numWidth);
+        tabMain.Controls.Add(new Label { Text = "x", Left = 292, Top = y + 20, Width = 12 });
+        numHeight = new NumericUpDown { Left = 304, Top = y + 18, Width = 70, Minimum = 256, Maximum = 2048, Increment = 64, Value = 1024, BackColor = Color.White, ForeColor = Color.Black };
+        tabMain.Controls.Add(numHeight);
+        tabMain.Controls.Add(Lbl("Height", 376, y));
+        y += 44;
+        // Row 2: Steps, CFG, Sampler, Scheduler
+        tabMain.Controls.Add(Lbl("Steps", 8, y));
+        numSteps = new NumericUpDown { Left = 8, Top = y + 18, Width = 60, Minimum = 1, Maximum = 150, Value = 30, BackColor = Color.White, ForeColor = Color.Black };
+        tabMain.Controls.Add(numSteps);
+        tabMain.Controls.Add(Lbl("CFG", 80, y));
+        numCfg = new NumericUpDown { Left = 80, Top = y + 18, Width = 60, DecimalPlaces = 1, Minimum = 1, Maximum = 20, Increment = 0.1m, Value = 6, BackColor = Color.White, ForeColor = Color.Black };
+        tabMain.Controls.Add(numCfg);
+        tabMain.Controls.Add(Lbl("Sampler", 160, y));
+        comboSampler = MakeCombo(160, y + 18, 120); comboSampler.Items.AddRange(new[] { "dpmpp_2m", "dpmpp_2m_sde", "euler", "euler_ancestral", "heun", "ddim" }); comboSampler.SelectedIndex = 0;
         tabMain.Controls.Add(comboSampler);
-        comboScheduler = MakeCombo(140, y + 18, 120); comboScheduler.Items.AddRange(new[] { "karras", "exponential", "simple", "normal" }); comboScheduler.SelectedIndex = 0;
+        tabMain.Controls.Add(Lbl("Scheduler", 300, y));
+        comboScheduler = MakeCombo(300, y + 18, 120); comboScheduler.Items.AddRange(new[] { "karras", "exponential", "simple", "normal" }); comboScheduler.SelectedIndex = 0;
         tabMain.Controls.Add(comboScheduler); y += 44;
+        // Workflow Preset
         tabMain.Controls.Add(Lbl("Workflow Preset", 8, y));
         comboWorkflow = MakeCombo(8, y + 18, 300); comboWorkflow.Items.Add("Standard"); comboWorkflow.SelectedIndex = 0;
         tabMain.Controls.Add(comboWorkflow); y += 46;
-        // Models group box (Fusion style)
+        // Models group box
         var modelBox = new GroupBox { Text = "Models", Left = 6, Top = y, Width = 460, Height = 80 };
         tabMain.Controls.Add(modelBox); int my = 20;
         modelBox.Controls.Add(Lbl("Checkpoint", 8, my));
         comboCheckpoint = MakeCombo(8, my + 18, 300); comboCheckpoint.Items.Add("None"); comboCheckpoint.SelectedIndex = 0;
         modelBox.Controls.Add(comboCheckpoint); y += 56;
-        // ControlNet group box (Fusion style)
+        // ControlNet group box
         y += 4;
         var cnBox = new GroupBox { Text = "ControlNet", Left = 6, Top = y, Width = 460, Height = 170 };
         tabMain.Controls.Add(cnBox); int cy = 20;
@@ -321,19 +338,77 @@ public class ForgeForm : Form {
     private string Fmt(long b) { return (b / (1024.0 * 1024.0 * 1024.0)).ToString("0.00") + " GB"; }
 
     private void LoadModels() {
-        string loraRoot = @"C:\Users\Michael\Documents\ComfyUI\models\loras";
+        string mr = @"C:\Users\Michael\Documents\ComfyUI\models";
+        Log("Model root: " + mr);
+        // Scan checkpoints
+        string ckptRoot = Path.Combine(mr, "checkpoints");
+        comboCheckpoint.Items.Clear(); comboCheckpoint.Items.Add("None");
+        if (Directory.Exists(ckptRoot)) {
+            var ckpts = Directory.GetFiles(ckptRoot, "*.safetensors", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(ckptRoot, "*.ckpt", SearchOption.AllDirectories))
+                .Concat(Directory.GetFiles(ckptRoot, "*.pt", SearchOption.AllDirectories))
+                .OrderBy(f => f).ToArray();
+            Log("Checkpoints found: " + ckpts.Length);
+            foreach (var f in ckpts) {
+                string rel = f.Substring(ckptRoot.Length).TrimStart('\\');
+                comboCheckpoint.Items.Add(rel);
+                Log("  checkpoint: " + rel);
+            }
+        } else { Log("Checkpoint folder not found: " + ckptRoot); }
+        if (comboCheckpoint.Items.Count > 1) comboCheckpoint.SelectedIndex = 1;
+        else comboCheckpoint.SelectedIndex = 0;
+        Log("Selected checkpoint: " + (comboCheckpoint.SelectedItem != null ? comboCheckpoint.SelectedItem.ToString() : "None"));
+        // Scan LoRAs
+        string loraRoot = Path.Combine(mr, "loras");
         comboLora1.Items.Clear(); comboLora2.Items.Clear(); comboLora3.Items.Clear();
         comboLora1.Items.Add("None"); comboLora2.Items.Add("None"); comboLora3.Items.Add("None");
         if (Directory.Exists(loraRoot)) {
-            foreach (var f in Directory.GetFiles(loraRoot, "*.safetensors", SearchOption.AllDirectories).Concat(Directory.GetFiles(loraRoot, "*.ckpt", SearchOption.AllDirectories)).Concat(Directory.GetFiles(loraRoot, "*.pt", SearchOption.AllDirectories)).OrderBy(f => f)) {
-                string rel = f.Substring(loraRoot.Length).TrimStart('\\'); comboLora1.Items.Add(rel); comboLora2.Items.Add(rel); comboLora3.Items.Add(rel);
+            var loras = Directory.GetFiles(loraRoot, "*.safetensors", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(loraRoot, "*.ckpt", SearchOption.AllDirectories))
+                .Concat(Directory.GetFiles(loraRoot, "*.pt", SearchOption.AllDirectories))
+                .OrderBy(f => f).ToArray();
+            Log("LoRAs found: " + loras.Length);
+            foreach (var f in loras) {
+                string rel = f.Substring(loraRoot.Length).TrimStart('\\');
+                comboLora1.Items.Add(rel); comboLora2.Items.Add(rel); comboLora3.Items.Add(rel);
             }
-        }
+        } else { Log("LoRA folder not found: " + loraRoot); }
         comboLora1.SelectedIndex = comboLora2.SelectedIndex = comboLora3.SelectedIndex = 0;
     }
 
-    private void LoadPrefs() { }
-    private void SavePrefs() { }
+    private void LoadPrefs() {
+        if (!File.Exists(prefsPath)) return;
+        try {
+            string raw = File.ReadAllText(prefsPath, Encoding.UTF8);
+            var d = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(raw);
+            if (d != null && d.ContainsKey("WindowState")) {
+                string ws = d["WindowState"].ToString();
+                if (ws == "Maximized") { this.WindowState = FormWindowState.Maximized; return; }
+                if (ws == "Normal" && d.ContainsKey("WindowX") && d.ContainsKey("WindowY")) {
+                    int wx = Convert.ToInt32(d["WindowX"]), wy = Convert.ToInt32(d["WindowY"]);
+                    int ww = d.ContainsKey("WindowW") ? Convert.ToInt32(d["WindowW"]) : 1450;
+                    int wh = d.ContainsKey("WindowH") ? Convert.ToInt32(d["WindowH"]) : 980;
+                    bool onScreen = false;
+                    foreach (var screen in Screen.AllScreens) {
+                        var r = screen.Bounds;
+                        if (wx >= r.Left && wx + ww <= r.Right && wy >= r.Top && wy + wh <= r.Bottom) { onScreen = true; break; }
+                    }
+                    if (onScreen) { this.WindowState = FormWindowState.Normal; this.StartPosition = FormStartPosition.Manual; this.Location = new Point(wx, wy); this.Size = new Size(ww, wh); }
+                }
+            }
+        } catch { }
+    }
+    private void SavePrefs() {
+        try {
+            var d = new Dictionary<string, object>();
+            d["WindowState"] = this.WindowState.ToString();
+            if (this.WindowState == FormWindowState.Normal) {
+                d["WindowX"] = this.Location.X; d["WindowY"] = this.Location.Y;
+                d["WindowW"] = this.Size.Width; d["WindowH"] = this.Size.Height;
+            }
+            File.WriteAllText(prefsPath, new JavaScriptSerializer().Serialize(d));
+        } catch { }
+    }
 
     private void ToggleSession() {
         sessionActive = !sessionActive;
