@@ -13,3 +13,4 @@ Current system code: `MSTK`
 | MSTK-T-000000001-0000 | Implement MystikStudio ticket system standard | T | Committed | Leonardo | 2026-05-14 | 2026-05-14 | Issued before the universal SYS4 standard was finalized. Kept as issued. |
 | MSTK-T-000000002-0000 | C-Forge runtime screenshot validation | T | Partially Validated | Leonardo | 2026-05-14 | 2026-05-14 | Main UI evidence accepted after redo. Dropdown population and generation remain NOT VERIFIED. |
 | MSTK-T-000000002-0001 | C-Forge validation evidence redo | A | Closed | Leonardo | 2026-05-14 | 2026-05-14 | Redo ZIP accepted. Evidence records dropdown population as NOT VERIFIED without assumptions. |
+| MSTK-T-000000002-0002 | C-Forge dropdown and generation validation | A | Open | Leonardo | 2026-05-14 | 2026-05-14 | Stub under MSTK-T-000000002-0000 to verify checkpoint dropdown population and optional generation. |
