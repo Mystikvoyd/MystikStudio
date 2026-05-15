@@ -22,7 +22,7 @@ Validate the remaining C-Forge runtime items not proven by the accepted redo pac
 
 ## Reason
 
-The C-Forge main UI evidence was accepted, but checkpoint dropdown population and generation remain NOT VERIFIED.
+The C-Forge main UI evidence was accepted, but dropdown-open evidence and generation remain unverified. A later user-provided screenshot shows checkpoint population is working, but layout and startup/window behavior still need repair before generation validation should continue.
 
 ## Scope
 
@@ -32,9 +32,9 @@ The C-Forge main UI evidence was accepted, but checkpoint dropdown population an
 
 ## Out of Scope
 
-- Do not modify Forge source.
-- Do not stage Forge source.
-- Do not commit Forge source.
+- Do not modify Forge source under this validation ticket.
+- Do not stage Forge source under this validation ticket.
+- Do not commit Forge source under this validation ticket.
 - Do not touch Fusion.
 - Do not rebuild Fusion.
 - Do not change Dashboard targets.
@@ -47,7 +47,7 @@ The C-Forge main UI evidence was accepted, but checkpoint dropdown population an
 2. Report states dropdown population as PASS, FAIL, or NOT VERIFIED.
 3. If generation is tested, report records PASS or FAIL and the output evidence path.
 4. If generation is skipped, report clearly states why.
-5. No source files are changed, staged, or committed.
+5. No source files are changed, staged, or committed under this validation ticket.
 6. ZIP package includes report, screenshots, and ticket.txt.
 7. ZIP filename starts with this ticket ID.
 
@@ -101,20 +101,23 @@ Reason: The screenshot again showed the desktop rather than the C-Forge window o
 
 User manually provided a screenshot of the running C-Forge window.
 
-Result: Blocked by bug.
+Result: Blocked by `MSTK-B-000000003-0000`.
 
 Observed:
 
 - C-Forge window is visible.
 - ComfyUI status bar shows online.
 - Checkpoint control is visible.
-- Checkpoint value is `None`.
+- Checkpoint value is populated as `SDXL\\dreamshaperXL_lightningDPMSDE.safetensors`.
+- Checkpoint population is visually proven at least for selected value.
 - Dropdown list is not open.
-- Dropdown population is not proven.
-- The screenshot suggests the checkpoint/model population may be failing in the clean clone.
-- User reported Forge opens near the cursor and then closes, indicating launch position or startup behavior may also need correction.
+- UI layout is cramped compared with C-Lab.
+- Seed, Steps, CFG, Width, Height region is cramped and labels are difficult to read.
+- Three LoRA rows are visible, but labels and enable checkboxes are cramped.
+- User wants Forge to follow the working C-Lab layout pattern.
+- User reports Forge opens near the cursor and then closes, indicating launch position or startup behavior may also need correction.
 
-New related bug ticket created:
+Related bug ticket:
 
 `MSTK-B-000000003-0000`
 
@@ -126,17 +129,17 @@ This ticket file only.
 
 - Fusion files
 - Dashboard targets
-- Forge source files
+- Forge source files unless working the related bug ticket
 - Forge binary files unless rebuilt locally by the build script
-- Config files
+- Config files unless explicitly needed for position persistence
 
 ## Risks
 
-Generation may fail because checkpoint/model population appears unverified and may be broken.
+Generation validation may fail or be misleading while layout and startup/window behavior remain unstable.
 
 ## Rollback Plan
 
-No source changes are expected. If this ticket is wrong, mark it Open and remove the bug dependency.
+No source changes are expected under this ticket. If this ticket is wrong, mark it Open and remove the bug dependency.
 
 ## Current Result
 
@@ -144,7 +147,7 @@ Blocked by `MSTK-B-000000003-0000`.
 
 ## Next Action
 
-Fix or diagnose C-Forge checkpoint/model population and launch positioning in `MSTK-B-000000003-0000`, then return to this validation ticket.
+Fix C-Forge layout parity and startup positioning in `MSTK-B-000000003-0000`, then return to this validation ticket for generation validation closure.
 
 ## Close Criteria
 
