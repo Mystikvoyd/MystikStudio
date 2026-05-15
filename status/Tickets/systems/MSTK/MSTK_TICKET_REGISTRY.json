@@ -14,7 +14,8 @@
                           "D",
                           "K",
                           "A",
-                          "M"
+                          "M",
+                          "F"
                       ],
     "numbering_rules":  {
                             "system_code_length":  4,
@@ -30,11 +31,11 @@
                                                    "M":  7,
                                                    "A":  1,
                                                    "K":  1,
-                                                   "F":  5
+                                                   "F":  6
                                                }
                         },
-    "last_issued_ticket":  "MSTK-F-000000001-0004",
-    "ticket_count":  11,
-    "stub_count":  7,
-    "updated_at":  "2026-05-14"
+    "last_issued_ticket":  "MSTK-F-000000001-0005",
+    "ticket_count":  12,
+    "stub_count":  8,
+    "updated_at":  "2026-05-15"
 }

@@ -217,3 +217,8 @@ Status: Packaged for Review
 ### MSTK-F-000000001-0004
 Title: Restore icon source assets
 Status: Committed and Pushed
+
+### MSTK-F-000000001-0005
+Title: Replace placeholder icons with real source assets
+Status: Committed and Pushed
+

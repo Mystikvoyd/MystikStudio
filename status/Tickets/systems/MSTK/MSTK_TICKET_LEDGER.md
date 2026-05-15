@@ -84,3 +84,12 @@ Current system code: `MSTK`
 - Parent: MSTK-F-000000001-0000
 - Created: 2026-05-14
 - File: tickets/MSTK-F-000000001-0004_restore-icons-folder-source-assets.md
+
+### MSTK-F-000000001-0005
+- Title: Replace placeholder icons with real source assets
+- Type: Bug (F type child)
+- Status: Committed and Pushed
+- Parent: MSTK-F-000000001-0000
+- Created: 2026-05-15
+- File: tickets/MSTK-F-000000001-0005_replace-placeholder-icons-with-real-source-assets.md
+
