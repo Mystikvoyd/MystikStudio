@@ -375,6 +375,67 @@ Use these rules for tickets that depend on screenshots, UI layout, rendered outp
 - Validation items must be marked only as PASS, FAIL, or NOT VERIFIED.
 - `Assumed PASS` is not allowed.
 
+## Canonical Ticket Template Rule
+
+The ticket template in `TICKET_TEMPLATE.md` is part of the active project ticket rules.
+The template is the **required format** for ongoing tickets.
+The template is not only an example.
+If `TICKET_TEMPLATE.md` changes then this standard must be reviewed and updated so the rules stay aligned.
+All new ongoing tickets must follow `TICKET_TEMPLATE.md` unless a ticket has a documented exception.
+
+## Required Ticket Template (MystikStudio Project)
+
+This template is the canonical format for all MystikStudio ongoing tickets.
+Every ticket should follow this structure unless a documented exception applies.
+
+```
+Ticket:             MSTK-[TYPE]-[TYPE-SEQUENCE]-[CHILD-SEQUENCE]
+Title:              [short title]
+Project:            MystikVoyd Studios
+Repo:               Mystikvoyd/MystikStudio
+Branch:             master
+Local repo:         H:\MystikStudio
+System:             MSTK
+Type:               [B, T, M, F, R, or other project approved type]
+Parent:             [parent ticket ID or N/A]
+Child:              [child ticket ID or N/A]
+Status:             [Open, Active, Blocked, Build Blocked, Needs Review, Needs Visual Review, Needs Validation, Packaged, Packaged - Needs Commit Approval, Committed, Closed, Reopened]
+Owner:              [Aegis, Leo, Human, or assigned worker]
+Created:            [YYYY-MM-DD]
+Updated:            [YYYY-MM-DD]
+Summary:            [short plain language summary]
+Purpose:            [why the ticket exists]
+Scope:              Files or areas that may be changed:
+                    1. [file or folder]
+Files not to change: 1. [file or folder]
+Requirements:       1. [requirement]
+Acceptance Criteria: 1. [measurable pass condition]
+Validation Commands: 1. [command]
+Expected Output:    [expected result]
+Known Risks:        1. [risk]
+Rollback Notes:     [how to undo safely if needed]
+Report Package:     C:\Users\Michael\Documents\Leonardo Prompts\Reports\[TICKET-ID].zip
+  Required: reviewed source files, Leo Reports.txt, changed ticket/handoff/ledger/registry files, validation output
+  Exclude: executables, bin, obj, model files, config files (unless required), build output, unrelated files
+Final Report:       Begin with Ticket/Stub/Status lines. Include commands run, files changed, build/launch/validation results, git status, zip path, zip contents, upload files.
+```
+
+### Per-Type Numbering Reminder
+
+```
+Ticket numbers use per-type independent sequences.
+Format: MSTK-[TYPE]-[TYPE-SEQUENCE]-[CHILD-SEQUENCE]
+B tickets count only B tickets.
+T tickets count only T tickets.
+M tickets count only M tickets.
+F tickets count only F tickets.
+R tickets count only R tickets.
+A new T ticket does not increase the B counter.
+A new B ticket does not increase the T counter.
+A new M ticket does not increase B or T.
+The final four digit section is for child tickets or stubs under the parent ticket.
+```
+
 ## Rules
 
 - The repo registry is the source of truth for ticket numbering.
@@ -387,6 +448,7 @@ Use these rules for tickets that depend on screenshots, UI layout, rendered outp
 - Do not commit report ZIPs unless explicitly approved.
 - Do not use one system code for every project.
 - Use `T` when unsure. Use a more specific type only when it clearly fits.
+- The ticket template is part of the active project rules. See `TICKET_TEMPLATE.md` and the Required Ticket Template section above.
 
 ## Suggested Type Selection
 

@@ -1,4 +1,4 @@
-# MystikStudio Status and Handoff
+﻿# MystikStudio Status and Handoff
 
 Last updated: 2026-05-14
 Repo: `Mystikvoyd/MystikStudio`
@@ -20,6 +20,8 @@ Use this file first when continuing MystikStudio work.
 5. Leonardo should write full reports to the local report file and reply only `Done!` when finished.
 6. Every ticket or child ticket worked must produce a zip package in `C:\Users\Michael\Documents\Leonardo Prompts\Reports` named with the exact ticket number. See `status/Tickets/TICKET_STANDARD.md` for full packaging rules.
 7. Ticket numbers use per-type independent sequences: `MSTK-[TYPE]-[TYPE-SEQUENCE]-[CHILD-SEQUENCE]`. Each ticket type has its own counter. See `status/Tickets/TICKET_STANDARD.md` for the full numbering rule.
+
+8. MystikStudio ticket rules now treat TICKET_TEMPLATE.md as the canonical ongoing ticket format. TICKET_STANDARD.md must include or reflect the same template. If the template changes then the ticket standard must be reviewed and updated.
 
 ## Current High-Level State
 
@@ -523,3 +525,5 @@ Current immediate target:
 7. Report Realism Boost as UI-only because no defined workflow behavior exists yet.
 8. Do not fake wiring.
 9. Preserve currently working UI and generation behavior.
+
+

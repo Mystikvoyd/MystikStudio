@@ -30,3 +30,10 @@ Current system code: `MSTK`
 - Created: 2026-05-14
 - File: tickets/MSTK-M-000000005-0000_update-per-type-numbering.md
 
+
+### MSTK-M-000000006-0000
+- Title: Update ticket rules — template is canonical
+- Type: Maintenance
+- Status: Packaged - Needs Commit Approval
+- Created: 2026-05-14
+- File: tickets/MSTK-M-000000006-0000_update-ticket-rules-template-canon.md

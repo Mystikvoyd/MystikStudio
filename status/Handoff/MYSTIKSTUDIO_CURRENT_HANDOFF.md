@@ -190,3 +190,8 @@ Do not include:
 - Dashboard files
 - report ZIPs
 
+
+## Ticket Template Rule
+
+MystikStudio ticket rules now treat TICKET_TEMPLATE.md as the canonical ongoing ticket format. TICKET_STANDARD.md must include or reflect the same template. If the template changes then the ticket standard must be reviewed and updated.
+

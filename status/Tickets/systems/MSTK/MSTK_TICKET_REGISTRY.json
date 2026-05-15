@@ -1,27 +1,39 @@
 ﻿{
-  "schema_version": "2.0",
-  "system_code": "MSTK",
-  "system_name": "MystikStudio",
-  "ticket_format": "<SYS4>-<TYPE>-<TYPE-SEQUENCE>-<CHILD-SEQUENCE>",
-  "allowed_types": ["T", "I", "P", "R", "C", "B", "E", "D", "K", "A", "M"],
-  "numbering_rules": {
-    "system_code_length": 4,
-    "parent_number_digits": 9,
-    "stub_number_digits": 4,
-    "parent_stub_number": "0000",
-    "registry_is_source_of_truth": true,
-    "do_not_reuse_ticket_ids": true,
-    "do_not_renumber_closed_tickets": true,
-    "type_sequences": {
-      "T": 3,
-      "B": 4,
-      "M": 6,
-      "A": 1,
-      "K": 1
-    }
-  },
-  "last_issued_ticket": "MSTK-M-000000005-0000",
-  "ticket_count": 5,
-  "stub_count": 2,
-  "updated_at": "2026-05-14"
+    "schema_version":  "2.0",
+    "system_code":  "MSTK",
+    "system_name":  "MystikStudio",
+    "ticket_format":  "\u003cSYS4\u003e-\u003cTYPE\u003e-\u003cTYPE-SEQUENCE\u003e-\u003cCHILD-SEQUENCE\u003e",
+    "allowed_types":  [
+                          "T",
+                          "I",
+                          "P",
+                          "R",
+                          "C",
+                          "B",
+                          "E",
+                          "D",
+                          "K",
+                          "A",
+                          "M"
+                      ],
+    "numbering_rules":  {
+                            "system_code_length":  4,
+                            "parent_number_digits":  9,
+                            "stub_number_digits":  4,
+                            "parent_stub_number":  "0000",
+                            "registry_is_source_of_truth":  true,
+                            "do_not_reuse_ticket_ids":  true,
+                            "do_not_renumber_closed_tickets":  true,
+                            "type_sequences":  {
+                                                   "T":  3,
+                                                   "B":  4,
+                                                   "M":  7,
+                                                   "A":  1,
+                                                   "K":  1
+                                               }
+                        },
+    "last_issued_ticket":  "MSTK-M-000000006-0000",
+    "ticket_count":  6,
+    "stub_count":  2,
+    "updated_at":  "2026-05-14"
 }
