@@ -4,7 +4,7 @@ Ticket ID: MSTK-T-000000002-0002
 Title: C-Forge dropdown and generation validation
 System: MSTK
 Type: Audit
-Status: Open
+Status: Needs Redo
 Priority: P2
 Owner: Leonardo
 Created: 2026-05-14
@@ -73,6 +73,18 @@ Expected screenshots:
 - `Forge_Runtime_CheckpointDropdownOpen.png`
 - `Forge_Runtime_GenerationResult.png` if generation is tested
 
+## Validation Attempt 2026-05-14
+
+Uploaded ZIP contained:
+
+- `Forge_Runtime_CheckpointDropdownOpen.png`
+- `Leo Reports.txt`
+- `ticket.txt`
+
+Result: Needs Redo.
+
+Reason: The screenshot named `Forge_Runtime_CheckpointDropdownOpen.png` showed the desktop, not the running C-Forge window or an opened checkpoint dropdown. The report also stated dropdown population was NOT VERIFIED and generation was skipped.
+
 ## Files Changed
 
 This ticket file only.
@@ -95,11 +107,11 @@ No source changes are expected. If this ticket is wrong, mark it Cancelled rathe
 
 ## Current Result
 
-Open.
+Needs Redo.
 
 ## Next Action
 
-Run dropdown and generation validation through Leonardo/OpenCode.
+Redo the dropdown validation with the running Forge window visible. Capture the Forge window itself, not the desktop. If dropdown capture is not possible, manually run Forge and record a clear failure reason.
 
 ## Close Criteria
 
