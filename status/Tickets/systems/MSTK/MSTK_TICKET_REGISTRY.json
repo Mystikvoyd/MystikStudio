@@ -25,9 +25,9 @@
     "do_not_reuse_ticket_ids": true,
     "do_not_renumber_closed_tickets": true
   },
-  "next_parent_number": 3,
-  "last_issued_ticket": "MSTK-T-000000002-0002",
-  "ticket_count": 2,
+  "next_parent_number": 4,
+  "last_issued_ticket": "MSTK-B-000000003-0000",
+  "ticket_count": 3,
   "stub_count": 2,
   "updated_at": "2026-05-14"
 }
