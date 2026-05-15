@@ -4,14 +4,14 @@ Ticket ID: MSTK-T-000000002-0002
 Title: C-Forge dropdown and generation validation
 System: MSTK
 Type: Audit
-Status: Needs Redo
+Status: Blocked
 Priority: P2
 Owner: Leonardo
 Created: 2026-05-14
 Updated: 2026-05-14
 Parent: MSTK-T-000000002-0000
 Stub: 0002
-Related tickets: MSTK-T-000000002-0000, MSTK-T-000000002-0001
+Related tickets: MSTK-T-000000002-0000, MSTK-T-000000002-0001, MSTK-B-000000003-0000
 Repo: Mystikvoyd/MystikStudio
 Branch: master
 Local path: H:\MystikStudio
@@ -97,6 +97,27 @@ Result: Needs Redo.
 
 Reason: The screenshot again showed the desktop rather than the C-Forge window or an opened checkpoint dropdown. The report stated build PASS and launch PASS, but dropdown population stayed NOT VERIFIED and generation was skipped. This does not satisfy the screenshot evidence requirement.
 
+## Manual Screenshot Review 2026-05-14
+
+User manually provided a screenshot of the running C-Forge window.
+
+Result: Blocked by bug.
+
+Observed:
+
+- C-Forge window is visible.
+- ComfyUI status bar shows online.
+- Checkpoint control is visible.
+- Checkpoint value is `None`.
+- Dropdown list is not open.
+- Dropdown population is not proven.
+- The screenshot suggests the checkpoint/model population may be failing in the clean clone.
+- User reported Forge opens near the cursor and then closes, indicating launch position or startup behavior may also need correction.
+
+New related bug ticket created:
+
+`MSTK-B-000000003-0000`
+
 ## Files Changed
 
 This ticket file only.
@@ -111,19 +132,19 @@ This ticket file only.
 
 ## Risks
 
-Generation may fail because of ComfyUI availability, model mismatch, or worker wiring. Any failure should be recorded rather than hidden.
+Generation may fail because checkpoint/model population appears unverified and may be broken.
 
 ## Rollback Plan
 
-No source changes are expected. If this ticket is wrong, mark it Cancelled rather than deleting it.
+No source changes are expected. If this ticket is wrong, mark it Open and remove the bug dependency.
 
 ## Current Result
 
-Needs Redo.
+Blocked by `MSTK-B-000000003-0000`.
 
 ## Next Action
 
-Redo the dropdown validation with the running Forge window visible. Capture the Forge window itself, not the desktop. If dropdown capture is not possible, manually run Forge and record a clear failure reason. Do not claim screenshot PASS unless the screenshot visibly contains the Forge window.
+Fix or diagnose C-Forge checkpoint/model population and launch positioning in `MSTK-B-000000003-0000`, then return to this validation ticket.
 
 ## Close Criteria
 
