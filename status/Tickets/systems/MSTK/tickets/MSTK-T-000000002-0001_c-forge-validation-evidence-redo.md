@@ -4,7 +4,7 @@ Ticket ID: MSTK-T-000000002-0001
 Title: C-Forge validation evidence redo
 System: MSTK
 Type: Audit
-Status: Open
+Status: Closed
 Priority: P2
 Owner: Leonardo
 Created: 2026-05-14
@@ -18,11 +18,11 @@ Local path: H:\MystikStudio
 
 ## Summary
 
-The uploaded report package for `MSTK-T-000000002-0000` contained the expected files, but the evidence did not satisfy the no-assumptions runtime validation standard.
+The first uploaded report package for `MSTK-T-000000002-0000` contained the expected files, but the evidence did not satisfy the no-assumptions runtime validation standard. This stub tracked the evidence redo.
 
 ## Reason
 
-The screenshots were full-screen captures where the Forge window was partially obscured by Notepad, File Explorer, and terminal windows. The model dropdown screenshot did not show opened or populated dropdowns. The report still used `Assumed PASS` language for several UI items.
+The original screenshots were full-screen captures where the Forge window was partially obscured by Notepad, File Explorer, and terminal windows. The model dropdown screenshot did not show opened or populated dropdowns. The report still used `Assumed PASS` language for several UI items.
 
 ## Scope
 
@@ -57,9 +57,24 @@ Redo C-Forge runtime validation with clear screenshots that show the actual Forg
 
 ## Evidence
 
-Expected ZIP path:
+Evidence ZIP received:
 
 `C:\Users\Michael\Documents\Leonardo Prompts\Reports\MSTK-T-000000002-0001_C-Forge-Validation-Evidence-Redo.zip`
+
+Contained:
+
+- `Forge_Runtime_Main.png`
+- `Forge_Runtime_ModelDropdowns.png`
+- `Leo Reports.txt`
+- `ticket.txt`
+
+## Validation Result
+
+Evidence package accepted for this redo stub.
+
+Visual evidence shows C-Forge unobstructed and the main UI visible. The report correctly references `MSTK-T-000000002-0001` and uses PASS / NOT VERIFIED wording instead of assumed pass language.
+
+Dropdown population remains NOT VERIFIED because the dropdown was not captured open. This is a remaining caveat for the parent validation ticket, not a blocker for closing this evidence redo stub.
 
 ## Files Changed
 
@@ -75,20 +90,20 @@ This ticket file only.
 
 ## Risks
 
-If validation is based on blocked screenshots or source inspection only, C-Forge may be committed with unverified layout issues.
+C-Forge should not be considered fully runtime-validated for model/dropdown population until the checkpoint dropdown is manually opened or a generation test is performed.
 
 ## Rollback Plan
 
-No runtime changes are expected. If this ticket is wrong, mark it Cancelled rather than deleting it.
+If this ticket closure is wrong, reopen it by setting Status back to Open and restoring the previous Next Action.
 
 ## Current Result
 
-Open.
+Closed.
 
 ## Next Action
 
-Redo C-Forge validation with unobstructed screenshots.
+Create or complete a separate validation step for dropdown population and generation before committing C-Forge source as fully runtime validated.
 
 ## Close Criteria
 
-Close when the evidence ZIP clearly proves the visual checklist or records any failures without assumptions.
+Closed because the evidence redo package clearly records the remaining caveat without assumptions.
