@@ -199,6 +199,8 @@ Pushed
 Closed
 Cancelled
 Deferred
+Needs Redo
+Partially Validated
 ```
 
 ## Priority Values
@@ -297,6 +299,21 @@ ticket.txt
 ```
 
 Do not commit report ZIPs unless explicitly approved.
+
+## Visual Evidence Rules
+
+Use these rules for tickets that depend on screenshots, UI layout, rendered output, image output, video output, or any other visual evidence.
+
+- Do not claim visual PASS from file existence alone.
+- Do not claim visual PASS from source inspection alone.
+- Do not claim screenshot PASS unless the expected application window or output is visibly present in the screenshot.
+- If the agent cannot inspect image contents directly, the report must say `VISUAL REVIEW REQUIRED`.
+- If another reviewer or user provides the visual judgment, record `Screenshot source` and `Visual reviewer` in the report.
+- Dropdown validation requires the dropdown list to be visibly open or the selected value to prove population. A closed dropdown showing `None` does not prove population.
+- Full desktop screenshots are acceptable only when the target window is clearly visible and not obstructed.
+- For multi-monitor systems, launch or move the app to the primary display before capturing evidence.
+- Validation items must be marked only as PASS, FAIL, or NOT VERIFIED.
+- `Assumed PASS` is not allowed.
 
 ## Rules
 
