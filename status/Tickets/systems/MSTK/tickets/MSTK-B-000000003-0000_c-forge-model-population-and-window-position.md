@@ -4,7 +4,7 @@ Ticket ID: MSTK-B-000000003-0000
 Title: C-Forge Lab layout parity and window behavior
 System: MSTK
 Type: Bug
-Status: Open
+Status: Needs Visual Review
 Priority: P1
 Owner: Leonardo
 Created: 2026-05-14
@@ -20,7 +20,7 @@ Local path: H:\MystikStudio
 
 C-Forge launches and the user-provided screenshot now shows the checkpoint field populated with `SDXL\\dreamshaperXL_lightningDPMSDE.safetensors`. That means checkpoint population is no longer the primary blocker.
 
-The remaining problem is that Forge needs to match the working C-Lab layout and runtime behavior. The current Forge screenshot shows cramped controls, label wrapping, bottom controls crowded into the lower-left area, and unreliable window placement/capture behavior. The user reports Forge opens where the cursor is and then closes. The app should open maximized or on the primary display, or restore its last valid closed position.
+The remaining problem is that Forge needs to match the working C-Lab layout and runtime behavior. The prior Forge screenshot showed cramped controls, label wrapping, bottom controls crowded into the lower-left area, and unreliable window placement/capture behavior. The user reports Forge opens where the cursor is and then closes. The app should open maximized or on the primary display, or restore its last valid closed position.
 
 ## Reason
 
@@ -92,9 +92,37 @@ User-provided screenshot shows:
 - Dropdown list is not open.
 - Generation is not verified.
 
+## Local Fix Report 2026-05-14
+
+Leonardo reports local source changes in `Creators/C-Forge/Forge.cs` only.
+
+Reported changes:
+
+- Forge opens maximized by default.
+- Window position persistence saves and restores maximized state and normal position.
+- Off-screen detection added for restored normal position.
+- Generation tab layout rebuilt to match C-Lab row structure.
+- Row 1: Seed, Random, Width, Height.
+- Row 2: Steps, CFG, Sampler, Scheduler.
+- Row 3: Workflow Preset.
+- Models group preserved.
+- ControlNet group preserved.
+- LoRA rows widened and aligned.
+- Numeric controls use white background and black text.
+- Build PASS.
+- Launch PASS.
+
+Files staged or committed by Leonardo: None.
+
+Current status: Needs Visual Review before any source commit.
+
 ## Files Changed
 
-This ticket file only.
+Ticket file updated by ChatGPT.
+
+Local pending source change reported by Leonardo:
+
+- `Creators/C-Forge/Forge.cs`
 
 ## Files Not To Touch
 
@@ -105,19 +133,19 @@ This ticket file only.
 
 ## Risks
 
-If this is ignored, C-Forge source may be committed while layout, window positioning, and generation remain unstable or unverified.
+If this is committed without visual review, C-Forge may still have layout or positioning problems not visible in source inspection.
 
 ## Rollback Plan
 
-If the diagnosis shows no bug, mark this ticket Closed with evidence and return to the validation ticket.
+If visual review fails, keep the source uncommitted and send Leonardo a targeted correction prompt.
 
 ## Current Result
 
-Open.
+Needs Visual Review.
 
 ## Next Action
 
-Dispatch Leo to align C-Forge with the C-Lab layout pattern, fix startup positioning, and preserve verified checkpoint population.
+User should pull the ticket update if needed, run the locally built Forge, take a manual screenshot, and upload it for visual review.
 
 ## Close Criteria
 
