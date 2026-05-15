@@ -1,6 +1,7 @@
 # Non-code directories
 /book-design/
-/Icons/
+/Icons/*
+!/Icons/*.ico
 
 # Runtime data
 *.prefs.json

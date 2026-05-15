@@ -45,3 +45,42 @@ Current system code: `MSTK`
 - Parent: MSTK-M-000000006-0000
 - Created: 2026-05-14
 - File: tickets/MSTK-M-000000006-0001_status-hygiene-after-template-canon-commit.md
+
+### MSTK-F-000000001-0000
+- Title: Lab and Forge fixed seed UI freeze repair
+- Type: Bug (F type)
+- Status: Packaged for Review
+- Created: 2026-05-14
+- File: tickets/MSTK-F-000000001-0000_lab-forge-fixed-seed-ui-freeze.md
+
+### MSTK-F-000000001-0001
+- Title: Lab and Forge completion detection and settings persistence
+- Type: Bug (F type child)
+- Status: Packaged for Review
+- Parent: MSTK-F-000000001-0000
+- Created: 2026-05-14
+- File: tickets/MSTK-F-000000001-0001_lab-forge-completion-detection-and-settings-persistence.md
+
+### MSTK-F-000000001-0002
+- Title: Config save/load and workflow image reference repair
+- Type: Bug (F type child)
+- Status: Packaged for Review
+- Parent: MSTK-F-000000001-0000
+- Created: 2026-05-14
+- File: tickets/MSTK-F-000000001-0002_config-save-load-and-workflow-image-reference-repair.md
+
+### MSTK-F-000000001-0003
+- Title: Config load default config and workflow image state
+- Type: Bug (F type child)
+- Status: Packaged for Review
+- Parent: MSTK-F-000000001-0000
+- Created: 2026-05-14
+- File: tickets/MSTK-F-000000001-0003_config-load-default-config-and-workflow-image-state.md
+
+### MSTK-F-000000001-0004
+- Title: Restore icon source assets
+- Type: Bug (F type child)
+- Status: Committed and Pushed
+- Parent: MSTK-F-000000001-0000
+- Created: 2026-05-14
+- File: tickets/MSTK-F-000000001-0004_restore-icons-folder-source-assets.md

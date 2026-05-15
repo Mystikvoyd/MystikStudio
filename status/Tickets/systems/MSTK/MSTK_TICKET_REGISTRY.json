@@ -29,11 +29,12 @@
                                                    "B":  4,
                                                    "M":  7,
                                                    "A":  1,
-                                                   "K":  1
+                                                   "K":  1,
+                                                   "F":  5
                                                }
                         },
-    "last_issued_ticket":  "MSTK-M-000000006-0001",
-    "ticket_count":  6,
-    "stub_count":  3,
+    "last_issued_ticket":  "MSTK-F-000000001-0004",
+    "ticket_count":  11,
+    "stub_count":  7,
     "updated_at":  "2026-05-14"
 }

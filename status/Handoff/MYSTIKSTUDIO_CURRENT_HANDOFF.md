@@ -199,3 +199,21 @@ MystikStudio ticket rules now treat TICKET_TEMPLATE.md as the canonical ongoing 
 
 MSTK-M-000000006-0000 committed at 3aa4bbd. MSTK-M-000000006-0001 created for status hygiene.
 
+
+### MSTK-F-000000001-0000
+Title: Lab and Forge fixed seed UI freeze repair
+Type: Bug (F type)
+Status: Packaged for Review
+Lab generation moved to background thread. Forge already async.
+
+### MSTK-F-000000001-0002
+Title: Config save/load and workflow image reference repair
+Status: Packaged for Review
+
+### MSTK-F-000000001-0003
+Title: Config load default config and workflow image state
+Status: Packaged for Review
+
+### MSTK-F-000000001-0004
+Title: Restore icon source assets
+Status: Committed and Pushed
