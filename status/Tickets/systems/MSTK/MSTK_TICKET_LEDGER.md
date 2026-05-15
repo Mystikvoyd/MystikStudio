@@ -34,6 +34,14 @@ Current system code: `MSTK`
 ### MSTK-M-000000006-0000
 - Title: Update ticket rules — template is canonical
 - Type: Maintenance
-- Status: Packaged - Needs Commit Approval
+- Status: Committed - 3aa4bbd
 - Created: 2026-05-14
 - File: tickets/MSTK-M-000000006-0000_update-ticket-rules-template-canon.md
+
+### MSTK-M-000000006-0001
+- Title: Status hygiene after template canon commit
+- Type: Maintenance (child)
+- Status: Packaged - Needs Commit Approval
+- Parent: MSTK-M-000000006-0000
+- Created: 2026-05-14
+- File: tickets/MSTK-M-000000006-0001_status-hygiene-after-template-canon-commit.md
