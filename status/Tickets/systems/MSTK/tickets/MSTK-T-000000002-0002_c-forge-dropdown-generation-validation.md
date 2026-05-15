@@ -73,7 +73,7 @@ Expected screenshots:
 - `Forge_Runtime_CheckpointDropdownOpen.png`
 - `Forge_Runtime_GenerationResult.png` if generation is tested
 
-## Validation Attempt 2026-05-14
+## Validation Attempt 2026-05-14 A
 
 Uploaded ZIP contained:
 
@@ -84,6 +84,18 @@ Uploaded ZIP contained:
 Result: Needs Redo.
 
 Reason: The screenshot named `Forge_Runtime_CheckpointDropdownOpen.png` showed the desktop, not the running C-Forge window or an opened checkpoint dropdown. The report also stated dropdown population was NOT VERIFIED and generation was skipped.
+
+## Validation Attempt 2026-05-14 B
+
+Uploaded ZIP contained:
+
+- `Forge_Runtime_CheckpointDropdownOpen.png`
+- `Leo Reports.txt`
+- `ticket.txt`
+
+Result: Needs Redo.
+
+Reason: The screenshot again showed the desktop rather than the C-Forge window or an opened checkpoint dropdown. The report stated build PASS and launch PASS, but dropdown population stayed NOT VERIFIED and generation was skipped. This does not satisfy the screenshot evidence requirement.
 
 ## Files Changed
 
@@ -111,7 +123,7 @@ Needs Redo.
 
 ## Next Action
 
-Redo the dropdown validation with the running Forge window visible. Capture the Forge window itself, not the desktop. If dropdown capture is not possible, manually run Forge and record a clear failure reason.
+Redo the dropdown validation with the running Forge window visible. Capture the Forge window itself, not the desktop. If dropdown capture is not possible, manually run Forge and record a clear failure reason. Do not claim screenshot PASS unless the screenshot visibly contains the Forge window.
 
 ## Close Criteria
 
