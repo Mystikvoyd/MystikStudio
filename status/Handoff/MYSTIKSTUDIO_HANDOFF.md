@@ -18,6 +18,8 @@ Use this file first when continuing MystikStudio work.
 3. GitHub becomes the source of truth only after the user approves the tested local state.
 4. Leonardo should read prompts from the local prompt file instead of receiving long chat prompts.
 5. Leonardo should write full reports to the local report file and reply only `Done!` when finished.
+6. Every ticket or child ticket worked must produce a zip package in `C:\Users\Michael\Documents\Leonardo Prompts\Reports` named with the exact ticket number. See `status/Tickets/TICKET_STANDARD.md` for full packaging rules.
+7. Ticket numbers use per-type independent sequences: `MSTK-[TYPE]-[TYPE-SEQUENCE]-[CHILD-SEQUENCE]`. Each ticket type has its own counter. See `status/Tickets/TICKET_STANDARD.md` for the full numbering rule.
 
 ## Current High-Level State
 

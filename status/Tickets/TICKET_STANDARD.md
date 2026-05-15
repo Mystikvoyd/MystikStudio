@@ -102,6 +102,37 @@ MSTK-T-000000001-0001  First subtask
 MSTK-T-000000001-0002  Second subtask
 ```
 
+## Per-Type Numbering Rule
+
+The numeric sequence after the system prefix and type code increments independently inside each ticket type.
+
+- B tickets count only B tickets.
+- T tickets count only T tickets.
+- M tickets count only M tickets.
+- A new T ticket does not increase the B counter.
+- A new B ticket does not increase the T counter.
+- A new M ticket does not increase B or T.
+
+The registry tracks the next number for each type independently.
+
+Examples of valid independent sequences:
+
+```text
+MSTK-B-000000001-0000
+MSTK-B-000000002-0000
+MSTK-B-000000003-0000
+
+MSTK-T-000000001-0000
+MSTK-T-000000002-0000
+MSTK-T-000000003-0000
+MSTK-T-000000004-0000
+
+MSTK-M-000000001-0000
+MSTK-M-000000002-0000
+```
+
+Do not renumber existing tickets unless the current ticket standard explicitly requires a migration. Existing tickets keep their current IDs. This rule applies going forward.
+
 ## Ticket Type Definitions
 
 ### T = Task
@@ -288,17 +319,46 @@ Recommended local report folder:
 C:\Users\Michael\Documents\Leonardo Prompts\Reports
 ```
 
-The ZIP should contain:
+The ZIP filename must be the exact ticket number:
 
 ```text
-Leo Reports.txt
-screenshots if created
-payload JSON if created
-validation logs if created
-ticket.txt
+[TICKET-NUMBER].zip
 ```
 
+Example:
+
+```text
+MSTK-B-000000003-0000.zip
+```
+
+Every ticket or child ticket worked by an agent must produce a zip package in the reports folder.
+
+The ZIP must include:
+1. Every reviewed source or script file the reviewer needs to inspect.
+2. The current Leo Reports.txt file.
+3. Any ticket or handoff file changed during the work.
+4. Any validation output file if one was created.
+
+The ZIP must exclude:
+1. Executables such as Forge.exe, Lab.exe, and Fusion.exe.
+2. bin and obj folders.
+3. Model files.
+4. Config files.
+5. Generated build output.
+6. Unrelated files.
+
 Do not commit report ZIPs unless explicitly approved.
+
+Every final agent report must include:
+- Ticket: [exact ticket number]
+- Stub: [stub or child ticket number if applicable]
+- Status: [PASS, FAIL, BLOCKED, NEEDS REVIEW, or PACKAGED]
+- Zip created: path to zip
+- Zip contents verified: [list exact files inside the zip]
+- Upload back to ChatGPT: [list exact files to upload]
+
+If work continues under a parent ticket and no child ticket exists, use the parent ticket number for the zip.
+If a child ticket exists, use the child ticket number for the zip and include the parent ticket number inside Leo Reports.txt.
 
 ## Visual Evidence Rules
 

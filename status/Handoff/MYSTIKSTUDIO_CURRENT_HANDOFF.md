@@ -1,4 +1,4 @@
-# MystikStudio Current Handoff
+﻿# MystikStudio Current Handoff
 
 Last updated: 2026-05-14
 Repo: `Mystikvoyd/MystikStudio`
@@ -22,32 +22,26 @@ Next session should read this file first, then read:
 
 Title: C-Forge Lab layout parity and window behavior
 Type: Bug
-Status: Build Blocked
-Priority: P1
+Status: Build Fix Passed - Needs Visual Review
+Priority: P2
 
-Current blocker:
+Build blocker fix completed:
 
-C-Forge build fails on a fresh clone because `Build-CForge.ps1` references a missing icon:
-
-`H:\MystikStudio\Icons\Forge.ico`
-
-Observed build error:
-
-`Creators\C-Forge\Forge.exe: error CS1567: Error generating Win32 resource: Error reading icon 'h:\MystikStudio\Icons\Forge.ico' -- The system cannot find the file specified.`
-
-This means the Forge window screenshot after the build failure came from the existing local `Forge.exe`, not a newly validated build.
+1. The missing Forge.ico build blocker has been fixed.
+2. `Build-CForge.ps1` now treats `Icons\Forge.ico` as optional.
+3. `Forge.cs` now catches runtime icon load failure.
+4. Build passed with and without the icon file.
+5. Launch passed.
+6. Remaining work: visual review, layout polish, and generation validation.
 
 ### `MSTK-T-000000002-0002`
 
 Title: C-Forge dropdown and generation validation
 Type: Audit
-Status: Blocked
+Status: Needs Validation
 
-Blocked by:
-
-`MSTK-B-000000003-0000`
-
-Do not continue generation validation until the C-Forge build blocker is resolved and the updated source builds cleanly.
+Previously blocked by MSTK-B-000000003-0000 build failure.
+Build blocker is now resolved. Validation can proceed.
 
 ## Latest Local Findings
 
@@ -63,7 +57,7 @@ User-provided screenshot after local run showed:
 - Layout is still cramped.
 - Seed, Steps, CFG, Width, Height area is hard to read.
 - LoRA checkbox labels/spacing still need polish.
-- Build did not pass because of the missing icon.
+- Build blocker (missing Forge.ico) has been fixed. Build now passes with and without icon.
 
 ## Current Dirty Local Files Last Reported
 
@@ -84,23 +78,12 @@ Important:
 
 ## Required Next Work
 
-Work ticket:
+Work tickets:
 
-`MSTK-B-000000003-0000`
+`MSTK-B-000000003-0000` — Remaining: visual review, layout polish, generation validation
+`MSTK-T-000000002-0002` — Generation validation, no longer blocked by build
 
-Immediate task:
-
-Fix `Creators/C-Forge/Build-CForge.ps1` so the icon is optional.
-
-Required build behavior:
-
-1. If `H:\MystikStudio\Icons\Forge.ico` exists, build with `/win32icon`.
-2. If the icon is missing, print a warning and build without `/win32icon`.
-3. Clean clone must build successfully without the icon file.
-
-Then rebuild and launch C-Forge.
-
-Only after the build passes should visual review continue.
+Build blocker is resolved. Next session should continue with visual review and generation tests.
 
 ## Hard Rules
 
@@ -117,6 +100,41 @@ Only after the build passes should visual review continue.
 - Do not stage config files.
 - Do not claim visual PASS from screenshot file existence.
 - Screenshots require user or ChatGPT visual review.
+
+## Ticket Numbering Rule
+
+Ticket numbers use per-type independent sequences: `MSTK-[TYPE]-[TYPE-SEQUENCE]-[CHILD-SEQUENCE]`. Each type (B, T, M, etc.) has its own counter. See `status/Tickets/TICKET_STANDARD.md` for the full rule.
+
+## Standing Report Packaging Rule
+
+Every ticket or child ticket worked by an agent must produce a zip package in:
+`C:\Users\Michael\Documents\Leonardo Prompts\Reports`
+
+The zip filename must be the exact ticket number: `[TICKET-NUMBER].zip`
+
+The zip must include:
+1. Every reviewed source or script file the reviewer needs to inspect.
+2. The current Leo Reports.txt file.
+3. Any ticket or handoff file changed during the work.
+4. Any validation output file if one was created.
+
+The zip must exclude:
+1. Executables such as Forge.exe, Lab.exe, and Fusion.exe.
+2. bin and obj folders.
+3. Model files.
+4. Config files.
+5. Generated build output.
+6. Unrelated files.
+
+Every final Leo report must include:
+- Ticket: [exact ticket number]
+- Stub: [stub or child ticket number if applicable]
+- Status: [PASS, FAIL, BLOCKED, NEEDS REVIEW, or PACKAGED]
+- Zip created: path to zip
+- Zip contents verified: [list exact files inside]
+- Upload back to ChatGPT: [list exact files]
+
+If work continues under a parent ticket without a child ticket, use the parent ticket number for the zip.
 
 ## Commands Next Session Should Use First
 
@@ -171,3 +189,4 @@ Do not include:
 - Fusion files
 - Dashboard files
 - report ZIPs
+
